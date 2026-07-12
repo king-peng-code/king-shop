@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Catalog\CategoryController;
+use App\Http\Controllers\Catalog\OrderController as CatalogOrderController;
 use App\Http\Controllers\Catalog\ProductController;
 use App\Http\Controllers\Admin\SystemConfigController;
 use App\Http\Controllers\Admin\UploadController;
@@ -43,4 +44,8 @@ Route::middleware(['auth:sanctum', 'password.changed'])->group(function (): void
     Route::get('/categories', [CategoryController::class, 'index']);
     Route::get('/products', [ProductController::class, 'index']);
     Route::get('/products/{product}', [ProductController::class, 'show']);
+    Route::post('/orders', [CatalogOrderController::class, 'store']);
+    Route::get('/orders', [CatalogOrderController::class, 'index']);
+    Route::get('/orders/{order}', [CatalogOrderController::class, 'show']);
+    Route::post('/orders/{order}/cancel', [CatalogOrderController::class, 'cancel']);
 });

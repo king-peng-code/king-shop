@@ -3,6 +3,7 @@
 namespace App\Infrastructure\Persistence\Eloquent;
 
 use App\Application\Order\DTO\AdminOrderListQuery;
+use App\Application\Order\DTO\UserOrderListQuery;
 use App\Domain\Order\Entities\Order;
 use App\Domain\Order\Entities\OrderItem;
 use App\Domain\Order\Repositories\OrderRepositoryInterface;
@@ -44,7 +45,7 @@ class EloquentOrderRepository implements OrderRepositoryInterface
     public function save(Order $order): Order
     {
         if ($order->id === null) {
-            throw new \LogicException('Order creation is not supported in admin repository.');
+            return $this->create($order);
         }
 
         $model = OrderModel::query()->findOrFail($order->id);
@@ -56,6 +57,69 @@ class EloquentOrderRepository implements OrderRepositoryInterface
         $model->save();
 
         return $this->findById($model->id) ?? throw new \RuntimeException('Failed to reload order.');
+    }
+
+    public function searchUser(UserOrderListQuery $query): array
+    {
+        $builder = OrderModel::query()
+            ->where('user_id', $query->userId)
+            ->orderByDesc('orders.id');
+
+        if ($query->status !== null && $query->status !== '') {
+            $builder->where('status', $query->status);
+        }
+
+        $paginator = $builder->paginate($query->perPage, ['orders.*'], 'page', $query->page);
+
+        return [
+            'items' => $paginator->getCollection()
+                ->map(fn (OrderModel $model) => $this->toDomain($model, includeItems: false))
+                ->all(),
+            'total' => $paginator->total(),
+        ];
+    }
+
+    public function findExpiredPendingPayment(int $minutes): array
+    {
+        $cutoff = now()->subMinutes($minutes);
+
+        return OrderModel::query()
+            ->where('status', OrderStatus::PENDING_PAYMENT)
+            ->where('created_at', '<', $cutoff)
+            ->orderBy('id')
+            ->get()
+            ->map(fn (OrderModel $model) => $this->toDomain($model, includeItems: false))
+            ->all();
+    }
+
+    private function create(Order $order): Order
+    {
+        $model = OrderModel::query()->create([
+            'order_no' => $order->orderNo,
+            'user_id' => $order->userId,
+            'total_amount' => $order->totalAmount,
+            'status' => $order->status->value,
+            'payment_method' => $order->paymentMethod->value,
+            'paid_by_user_id' => $order->paidByUserId,
+            'paid_at' => $order->paidAt?->format('Y-m-d H:i:s'),
+            'remark' => $order->remark,
+            'cancelled_at' => $order->cancelledAt?->format('Y-m-d H:i:s'),
+            'cancel_reason' => $order->cancelReason,
+        ]);
+
+        foreach ($order->items as $item) {
+            OrderItemModel::query()->create([
+                'order_id' => $model->id,
+                'product_id' => $item->productId,
+                'product_name' => $item->productName,
+                'product_image' => $item->productImage,
+                'price' => $item->price,
+                'quantity' => $item->quantity,
+                'subtotal' => $item->subtotal,
+            ]);
+        }
+
+        return $this->findById($model->id) ?? throw new \RuntimeException('Failed to reload created order.');
     }
 
     /**
