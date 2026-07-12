@@ -32,9 +32,11 @@ class OrderResource extends JsonResource
         }
 
         if ($order->paidByExternalUserId !== null) {
-            $data['paid_by_user'] = [
+            $data['paid_by_payer'] = [
                 'id' => $order->paidByExternalUserId,
                 'name' => $order->paidByPayerName,
+                'phone' => $order->paidByPayerPhone,
+                'provider' => $order->paidByPayerProvider ?? null,
             ];
         }
 

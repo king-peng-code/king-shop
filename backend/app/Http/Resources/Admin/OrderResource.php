@@ -26,11 +26,11 @@ class OrderResource extends JsonResource
             'total_amount' => $order->totalAmount,
             'status' => $order->status->value,
             'payment_method' => $order->paymentMethod->value,
-            'paid_by_user' => $order->paidByExternalUserId !== null ? [
+            'paid_by_payer' => $order->paidByExternalUserId !== null ? [
                 'id' => $order->paidByExternalUserId,
                 'name' => $order->paidByPayerName,
                 'phone' => $order->paidByPayerPhone,
-                'department' => null,
+                'provider' => $order->paidByPayerProvider ?? null,
             ] : null,
             'paid_at' => $order->paidAt?->format(DATE_ATOM),
             'remark' => $order->remark,
