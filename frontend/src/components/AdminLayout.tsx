@@ -7,6 +7,7 @@ import {
   LogoutOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
+  FileTextOutlined,
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -34,7 +35,9 @@ export default function AdminLayout() {
     ? 'settings'
     : location.pathname.startsWith('/employees')
       ? 'employees'
-      : '';
+      : location.pathname.startsWith('/orders')
+        ? 'orders'
+        : '';
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -60,6 +63,12 @@ export default function AdminLayout() {
               icon: <TeamOutlined />,
               label: '员工管理',
               onClick: () => navigate('/employees'),
+            },
+            {
+              key: 'orders',
+              icon: <FileTextOutlined />,
+              label: '订单管理',
+              onClick: () => navigate('/orders'),
             },
             {
               key: 'settings',
