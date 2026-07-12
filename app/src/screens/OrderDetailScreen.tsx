@@ -194,7 +194,9 @@ export default function OrderDetailScreen() {
 
   const statusColor = getOrderStatusColor(order.status);
   const statusLabel = getOrderStatusLabel(order.status);
-  const showPayActions = order.status === 'pending_payment';
+  const showPendingActions = order.status === 'pending_payment';
+  const showSelfPayButton =
+    showPendingActions && order.payment_method === 'self';
   const showCompleteAction = order.status === 'ready';
 
   return (
@@ -278,20 +280,26 @@ export default function OrderDetailScreen() {
         {error ? <Text style={styles.inlineError}>{error}</Text> : null}
       </ScrollView>
 
-      {showPayActions || showCompleteAction ? (
+      {showPendingActions || showCompleteAction ? (
         <View style={styles.footer}>
-          {showPayActions ? (
+          {showPendingActions ? (
             <>
-              <Pressable
-                style={[styles.primaryButton, isActionLoading && styles.disabled]}
-                onPress={() => setShowPayModal(true)}
-                disabled={isActionLoading}>
-                {isActionLoading ? (
-                  <ActivityIndicator color="#fff" />
-                ) : (
-                  <Text style={styles.primaryButtonText}>去支付</Text>
-                )}
-              </Pressable>
+              {showSelfPayButton ? (
+                <Pressable
+                  style={[styles.primaryButton, isActionLoading && styles.disabled]}
+                  onPress={() => setShowPayModal(true)}
+                  disabled={isActionLoading}>
+                  {isActionLoading ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={styles.primaryButtonText}>去支付</Text>
+                  )}
+                </Pressable>
+              ) : (
+                <Text style={styles.proxyHint}>
+                  代付订单请通过代付链接完成支付
+                </Text>
+              )}
               <Pressable
                 style={[styles.secondaryButton, isActionLoading && styles.disabled]}
                 onPress={handleCancel}
@@ -484,6 +492,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#ddd',
+  },
+  proxyHint: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    lineHeight: 20,
+    paddingVertical: 8,
   },
   primaryButtonText: {
     color: '#fff',
