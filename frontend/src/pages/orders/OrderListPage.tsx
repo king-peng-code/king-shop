@@ -181,7 +181,7 @@ export default function OrderListPage() {
           },
           {
             title: '代付人',
-            render: (_, record) => record.paid_by_user?.name ?? '-',
+            render: (_, record) => record.paid_by_payer?.name ?? '-',
           },
           {
             title: '下单时间',

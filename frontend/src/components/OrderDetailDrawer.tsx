@@ -158,7 +158,7 @@ export default function OrderDetailDrawer({
             </Descriptions.Item>
             {order.payment_method === 'proxy' && (
               <Descriptions.Item label="代付人">
-                {order.paid_by_user?.name ?? '-'}
+                {order.paid_by_payer?.name ?? '-'}
               </Descriptions.Item>
             )}
             <Descriptions.Item label="订单金额">

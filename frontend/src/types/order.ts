@@ -9,6 +9,13 @@ export interface OrderUser {
   department?: string | null;
 }
 
+export interface OrderPayer {
+  id: number;
+  name: string;
+  phone: string | null;
+  provider: string | null;
+}
+
 export interface OrderItem {
   id: number;
   product_id: number;
@@ -26,7 +33,7 @@ export interface Order {
   total_amount: number;
   status: OrderStatus;
   payment_method: PaymentMethod;
-  paid_by_user: OrderUser | null;
+  paid_by_payer: OrderPayer | null;
   paid_at: string | null;
   remark: string | null;
   cancelled_at: string | null;

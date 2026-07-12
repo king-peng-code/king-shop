@@ -29,7 +29,10 @@ export const proxyPayApi = {
     return request<ProxyPayPreview>(`/proxy-pay/${token}`);
   },
 
-  pay(token: string, payload: { channel?: string; openid?: string } = {}): Promise<ProxyPayInitResult> {
+  pay(
+    token: string,
+    payload: { channel?: string; provider: string; external_id?: string; payer_name?: string },
+  ): Promise<ProxyPayInitResult> {
     return request<ProxyPayInitResult>(`/proxy-pay/${token}/pay`, {
       method: 'POST',
       body: JSON.stringify(payload),

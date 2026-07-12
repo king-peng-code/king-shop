@@ -1,20 +1,26 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Button, Card, Descriptions, Input, Space, Typography, message } from 'antd';
+import { useParams } from 'react-router-dom';
+import { Button, Card, Descriptions, Typography, message } from 'antd';
 import { proxyPayApi } from '../../api/proxyPay';
-import { ApiError, getToken, setToken } from '../../api/client';
-import { authApi } from '../../api/auth';
+import { ApiError } from '../../api/client';
 import { fenToYuan } from '../../utils/price';
+
+const FAKE_PAYER_KEY = 'proxy_pay_fake_external_id';
+
+function getOrCreateFakeExternalId(): string {
+  let id = localStorage.getItem(FAKE_PAYER_KEY);
+  if (!id) {
+    id = crypto.randomUUID();
+    localStorage.setItem(FAKE_PAYER_KEY, id);
+  }
+  return id;
+}
 
 export default function ProxyPayPage() {
   const { token = '' } = useParams();
-  const navigate = useNavigate();
   const [preview, setPreview] = useState<Awaited<ReturnType<typeof proxyPayApi.preview>> | null>(null);
   const [loading, setLoading] = useState(true);
-  const [phone, setPhone] = useState('');
-  const [password, setPassword] = useState('');
   const [paying, setPaying] = useState(false);
-  const [loggedIn, setLoggedIn] = useState(Boolean(getToken()));
 
   useEffect(() => {
     void proxyPayApi
@@ -28,23 +34,16 @@ export default function ProxyPayPage() {
       .finally(() => setLoading(false));
   }, [token]);
 
-  const handleLogin = async () => {
-    try {
-      const result = await authApi.login(phone, password);
-      setToken(result.token);
-      setLoggedIn(true);
-      message.success('登录成功');
-    } catch (e) {
-      if (e instanceof ApiError) {
-        message.error(e.message);
-      }
-    }
-  };
-
   const handlePay = async () => {
     setPaying(true);
     try {
-      const result = await proxyPayApi.pay(token, { channel: 'fake' });
+      const external_id = getOrCreateFakeExternalId();
+      const result = await proxyPayApi.pay(token, {
+        channel: 'fake',
+        provider: 'fake',
+        external_id,
+        payer_name: 'H5代付人',
+      });
       await fetch(`${import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000/api/v1'}/payments/notify/wechat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
@@ -87,30 +86,16 @@ export default function ProxyPayPage() {
         <Descriptions.Item label="有效期">{new Date(preview.expires_at).toLocaleString()}</Descriptions.Item>
       </Descriptions>
 
-      {!loggedIn ? (
-        <Space direction="vertical" style={{ width: '100%', marginTop: 24 }}>
-          <Typography.Text>请先登录后再代付</Typography.Text>
-          <Input placeholder="手机号" value={phone} onChange={(e) => setPhone(e.target.value)} />
-          <Input.Password placeholder="密码" value={password} onChange={(e) => setPassword(e.target.value)} />
-          <Button type="primary" block onClick={() => void handleLogin()}>
-            登录
-          </Button>
-          <Button type="link" block onClick={() => navigate('/login')}>
-            前往登录页
-          </Button>
-        </Space>
-      ) : (
-        <Button
-          type="primary"
-          block
-          style={{ marginTop: 24 }}
-          loading={paying}
-          disabled={!preview.payable}
-          onClick={() => void handlePay()}
-        >
-          {preview.payable ? '确认代付' : '订单不可支付'}
-        </Button>
-      )}
+      <Button
+        type="primary"
+        block
+        style={{ marginTop: 24 }}
+        loading={paying}
+        disabled={!preview.payable}
+        onClick={() => void handlePay()}
+      >
+        {preview.payable ? '确认代付' : '订单不可支付'}
+      </Button>
     </Card>
   );
 }
