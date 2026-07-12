@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\EmployeeController;
+use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\SystemConfigController;
 use App\Http\Controllers\Admin\UploadController;
 use App\Http\Controllers\AuthController;
@@ -24,4 +26,6 @@ Route::middleware(['auth:sanctum', 'password.changed', 'admin'])->prefix('admin'
     Route::put('/configs', [SystemConfigController::class, 'update']);
     Route::post('/upload', [UploadController::class, 'store']);
     Route::apiResource('employees', EmployeeController::class);
+    Route::apiResource('categories', CategoryController::class);
+    Route::apiResource('products', ProductController::class)->except(['destroy']);
 });
