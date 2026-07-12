@@ -10,6 +10,7 @@ use App\Http\Controllers\Catalog\OrderController as CatalogOrderController;
 use App\Http\Controllers\Catalog\ProductController;
 use App\Http\Controllers\Catalog\ProxyPayController;
 use App\Http\Controllers\PaymentNotifyController;
+use App\Http\Controllers\Admin\StatsController;
 use App\Http\Controllers\Admin\SystemConfigController;
 use App\Http\Controllers\Admin\UploadController;
 use App\Http\Controllers\AuthController;
@@ -42,6 +43,8 @@ Route::middleware(['auth:sanctum', 'password.changed', 'admin'])->prefix('admin'
     Route::apiResource('categories', AdminCategoryController::class);
     Route::apiResource('products', AdminProductController::class)->except(['destroy']);
     Route::get('dashboard/stats', [DashboardController::class, 'stats']);
+    Route::get('stats/employees', [StatsController::class, 'employeeStats']);
+    Route::get('stats/proxy-payers', [StatsController::class, 'proxyPayerStats']);
     Route::get('orders', [AdminOrderController::class, 'index']);
     Route::get('orders/{order}', [AdminOrderController::class, 'show']);
     Route::post('orders/{order}/cancel', [AdminOrderController::class, 'cancel']);

@@ -8,6 +8,7 @@ import {
   ShoppingOutlined,
   SettingOutlined,
   FileTextOutlined,
+  BarChartOutlined,
   LogoutOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
@@ -43,8 +44,10 @@ export default function AdminLayout() {
 
   const selectedKey = location.pathname.startsWith('/dashboard')
     ? 'dashboard'
-    : location.pathname.startsWith('/orders')
-      ? 'orders'
+    : location.pathname.startsWith('/statistics')
+      ? 'statistics'
+      : location.pathname.startsWith('/orders')
+        ? 'orders'
       : location.pathname.startsWith('/products')
         ? 'products'
         : location.pathname.startsWith('/categories')
@@ -79,6 +82,12 @@ export default function AdminLayout() {
               icon: <DashboardOutlined />,
               label: '数据统计',
               onClick: () => navigate('/dashboard'),
+            },
+            {
+              key: 'statistics',
+              icon: <BarChartOutlined />,
+              label: '统计报表',
+              onClick: () => navigate('/statistics'),
             },
             {
               key: 'employees',
