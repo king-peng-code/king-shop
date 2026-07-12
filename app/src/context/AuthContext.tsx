@@ -4,6 +4,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from 'react';
 import * as authApi from '../api/auth';
@@ -28,12 +29,18 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({children}: {children: React.ReactNode}) {
   const [token, setTokenState] = useState<string | null>(null);
+  const tokenRef = useRef<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const updateToken = useCallback((next: string | null) => {
+    tokenRef.current = next;
+    setTokenState(next);
+  }, []);
+
   useEffect(() => {
-    setTokenGetter(() => token);
-  }, [token]);
+    setTokenGetter(() => tokenRef.current);
+  }, []);
 
   const refreshUser = useCallback(async () => {
     const me = await authApi.getMe();
@@ -47,37 +54,37 @@ export function AuthProvider({children}: {children: React.ReactNode}) {
         if (!stored) {
           return;
         }
-        setTokenState(stored);
+        updateToken(stored);
         const me = await authApi.getMe();
         setUser(me);
       } catch (e) {
         if (e instanceof ApiError && e.code === 401) {
           await clearToken();
-          setTokenState(null);
+          updateToken(null);
           setUser(null);
         }
       } finally {
         setIsLoading(false);
       }
     })();
-  }, []);
+  }, [updateToken]);
 
   const login = useCallback(async (phone: string, password: string) => {
     const result = await authApi.login(phone, password);
     await setToken(result.token);
-    setTokenState(result.token);
+    updateToken(result.token);
     setUser(result.user);
-  }, []);
+  }, [updateToken]);
 
   const logout = useCallback(async () => {
     try {
       await authApi.logout();
     } finally {
       await clearToken();
-      setTokenState(null);
+      updateToken(null);
       setUser(null);
     }
-  }, []);
+  }, [updateToken]);
 
   const changePassword = useCallback(
     async (current: string, newPassword: string) => {
