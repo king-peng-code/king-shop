@@ -16,12 +16,12 @@ import EmptyState from '../components/EmptyState';
 import LoadingView from '../components/LoadingView';
 import ProductListItem from '../components/ProductListItem';
 import {useAuth} from '../context/AuthContext';
-import type {MainStackParamList} from '../navigation/types';
+import type {ShopStackParamList} from '../navigation/types';
 import type {Category, Product} from '../types/api';
 
 export default function HomeScreen() {
   const navigation =
-    useNavigation<NativeStackNavigationProp<MainStackParamList>>();
+    useNavigation<NativeStackNavigationProp<ShopStackParamList>>();
   const {refreshUser} = useAuth();
 
   const [categories, setCategories] = useState<Category[]>([]);

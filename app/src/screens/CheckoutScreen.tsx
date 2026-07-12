@@ -19,14 +19,14 @@ import PaymentChannelPicker from '../components/PaymentChannelPicker';
 import PaymentMethodPicker from '../components/PaymentMethodPicker';
 import LoadingView from '../components/LoadingView';
 import {useAuth} from '../context/AuthContext';
-import type {MainStackParamList} from '../navigation/types';
+import type {ShopStackParamList} from '../navigation/types';
 import type {PayChannel, PaymentMethod} from '../types/order';
 import type {Product} from '../types/api';
 import {formatPrice} from '../utils/formatPrice';
 import {selfPayChannels} from '../utils/payChannels';
 
-type CheckoutRouteProp = RouteProp<MainStackParamList, 'Checkout'>;
-type CheckoutNavProp = NativeStackNavigationProp<MainStackParamList, 'Checkout'>;
+type CheckoutRouteProp = RouteProp<ShopStackParamList, 'Checkout'>;
+type CheckoutNavProp = NativeStackNavigationProp<ShopStackParamList, 'Checkout'>;
 
 export default function CheckoutScreen() {
   const route = useRoute<CheckoutRouteProp>();

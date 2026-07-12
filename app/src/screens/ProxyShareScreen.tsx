@@ -14,13 +14,13 @@ import {generateProxyPayLink, getOrder} from '../api/orders';
 import {ApiError} from '../api/client';
 import LoadingView from '../components/LoadingView';
 import {useAuth} from '../context/AuthContext';
-import type {MainStackParamList} from '../navigation/types';
+import type {ShopStackParamList} from '../navigation/types';
 import type {Order} from '../types/order';
 import {formatPrice} from '../utils/formatPrice';
 
-type ProxyShareRouteProp = RouteProp<MainStackParamList, 'ProxyShare'>;
+type ProxyShareRouteProp = RouteProp<ShopStackParamList, 'ProxyShare'>;
 type ProxyShareNavProp = NativeStackNavigationProp<
-  MainStackParamList,
+  ShopStackParamList,
   'ProxyShare'
 >;
 

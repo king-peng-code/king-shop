@@ -5,13 +5,13 @@ import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import type {RouteProp} from '@react-navigation/native';
 import {getOrder} from '../api/orders';
 import LoadingView from '../components/LoadingView';
-import type {MainStackParamList} from '../navigation/types';
+import type {ShopStackParamList} from '../navigation/types';
 import type {Order, PaymentOutcome} from '../types/order';
 import {formatPrice} from '../utils/formatPrice';
 
-type PaymentResultRouteProp = RouteProp<MainStackParamList, 'PaymentResult'>;
+type PaymentResultRouteProp = RouteProp<ShopStackParamList, 'PaymentResult'>;
 type PaymentResultNavProp = NativeStackNavigationProp<
-  MainStackParamList,
+  ShopStackParamList,
   'PaymentResult'
 >;
 
