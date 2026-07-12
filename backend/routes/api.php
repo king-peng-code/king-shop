@@ -1,8 +1,10 @@
 <?php
 
-use App\Http\Controllers\Admin\CategoryController;
+use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\EmployeeController;
-use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\ProductController as AdminProductController;
+use App\Http\Controllers\Catalog\CategoryController;
+use App\Http\Controllers\Catalog\ProductController;
 use App\Http\Controllers\Admin\SystemConfigController;
 use App\Http\Controllers\Admin\UploadController;
 use App\Http\Controllers\AuthController;
@@ -26,6 +28,12 @@ Route::middleware(['auth:sanctum', 'password.changed', 'admin'])->prefix('admin'
     Route::put('/configs', [SystemConfigController::class, 'update']);
     Route::post('/upload', [UploadController::class, 'store']);
     Route::apiResource('employees', EmployeeController::class);
-    Route::apiResource('categories', CategoryController::class);
-    Route::apiResource('products', ProductController::class)->except(['destroy']);
+    Route::apiResource('categories', AdminCategoryController::class);
+    Route::apiResource('products', AdminProductController::class)->except(['destroy']);
+});
+
+Route::middleware(['auth:sanctum', 'password.changed'])->group(function (): void {
+    Route::get('/categories', [CategoryController::class, 'index']);
+    Route::get('/products', [ProductController::class, 'index']);
+    Route::get('/products/{product}', [ProductController::class, 'show']);
 });
