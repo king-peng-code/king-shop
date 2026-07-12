@@ -1,0 +1,3 @@
+# Laravel Scheduler — 追加到宿主机 crontab（crontab -e）
+# 将 /path/to/king-shop 替换为实际项目路径
+* * * * * cd /path/to/king-shop && docker compose -f docker-compose.prod.yml exec -T backend php artisan schedule:run >> /dev/null 2>&1

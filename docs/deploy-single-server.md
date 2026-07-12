@@ -1,5 +1,8 @@
 # 单机生产部署指南
 
+> **完整上线指引（备案、SSL、微信商户、App 构建）见 [deploy-guide.md](./deploy-guide.md)。**  
+> 本文侧重架构说明与运维速查。
+
 ## 架构
 
 **MySQL、Redis、PHP 全部在同一台云服务器上**，通过 Docker 内网互访，不拆云数据库/云 Redis。
@@ -73,7 +76,7 @@ docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
 ### 4. 验证
 
 ```bash
-curl http://your-server/api/v1/health
+./scripts/health-check.sh
 docker compose -f docker-compose.prod.yml ps
 ```
 
