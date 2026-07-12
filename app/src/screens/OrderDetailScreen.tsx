@@ -232,10 +232,10 @@ export default function OrderDetailScreen() {
               {PAYMENT_METHOD_LABELS[order.payment_method]}
             </Text>
           </View>
-          {order.paid_by_user ? (
+          {order.paid_by_payer ? (
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>代付人</Text>
-              <Text style={styles.infoValue}>{order.paid_by_user.name}</Text>
+              <Text style={styles.infoValue}>{order.paid_by_payer.name}</Text>
             </View>
           ) : null}
           <View style={styles.infoRow}>

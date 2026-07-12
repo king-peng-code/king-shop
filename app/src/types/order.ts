@@ -26,7 +26,7 @@ export interface Order {
   cancel_reason: string | null;
   created_at: string;
   items?: OrderItem[];
-  paid_by_user?: {id: number; name: string};
+  paid_by_payer?: {id: number; name: string; provider?: string};
 }
 
 export interface CreateOrderPayload {
