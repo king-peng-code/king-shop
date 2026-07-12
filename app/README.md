@@ -4,9 +4,16 @@ React Native 0.76 移动端应用，支持 Android 和 iOS。
 
 ## 前置要求
 
-- Node.js 18+
-- Android Studio（Android 开发）
-- Xcode（iOS 开发，仅 macOS）
+- Node.js 18+（见根目录 `.nvmrc`，推荐 20）
+- **Android 开发：** 见 **[Mac Android 环境配置指南](../docs/app-android-setup-mac.md)**（小白向，含 Android Studio 安装步骤）
+- Xcode（仅 iOS，本期 Android 优先）
+
+快捷脚本（网络良好时）：
+
+```bash
+./scripts/setup-android-mac.sh   # 自动装 JDK + SDK + 模拟器
+./scripts/run-android-dev.sh     # 启动模拟器 + 后端 + App
+```
 
 ## 快速开始
 

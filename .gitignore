@@ -45,3 +45,6 @@ yarn-error.log*
 
 # Docker 镜像离线备份
 docker/images/*.tar
+
+# Git worktrees (isolated feature branches)
+.worktrees/
