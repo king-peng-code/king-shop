@@ -1,14 +1,18 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Layout, Menu, Button, Space, Tag, Typography } from 'antd';
 import {
   TeamOutlined,
+  AppstoreOutlined,
+  ShoppingOutlined,
   SettingOutlined,
+  FileTextOutlined,
   LogoutOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
 } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
+import { loadMediaConfig } from '../utils/loadMediaConfig';
 
 const { Header, Sider, Content } = Layout;
 
@@ -30,11 +34,23 @@ export default function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const selectedKey = location.pathname.startsWith('/settings')
-    ? 'settings'
-    : location.pathname.startsWith('/employees')
-      ? 'employees'
-      : '';
+  useEffect(() => {
+    if (user) {
+      void loadMediaConfig();
+    }
+  }, [user]);
+
+  const selectedKey = location.pathname.startsWith('/orders')
+    ? 'orders'
+    : location.pathname.startsWith('/products')
+    ? 'products'
+    : location.pathname.startsWith('/categories')
+      ? 'categories'
+      : location.pathname.startsWith('/settings')
+        ? 'settings'
+        : location.pathname.startsWith('/employees')
+          ? 'employees'
+          : '';
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -60,6 +76,24 @@ export default function AdminLayout() {
               icon: <TeamOutlined />,
               label: '员工管理',
               onClick: () => navigate('/employees'),
+            },
+            {
+              key: 'categories',
+              icon: <AppstoreOutlined />,
+              label: '分类管理',
+              onClick: () => navigate('/categories'),
+            },
+            {
+              key: 'products',
+              icon: <ShoppingOutlined />,
+              label: '商品管理',
+              onClick: () => navigate('/products'),
+            },
+            {
+              key: 'orders',
+              icon: <FileTextOutlined />,
+              label: '订单管理',
+              onClick: () => navigate('/orders'),
             },
             {
               key: 'settings',
