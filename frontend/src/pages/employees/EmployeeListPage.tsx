@@ -105,8 +105,6 @@ export default function EmployeeListPage() {
     try {
       await employeesApi.update(record.id, {
         name: record.name,
-        employee_no: record.employee_no ?? undefined,
-        department: record.department ?? undefined,
         role: record.role,
         status: record.status,
         reset_password: true,
@@ -131,18 +129,6 @@ export default function EmployeeListPage() {
   const columns = [
     { title: '姓名', dataIndex: 'name', key: 'name' },
     { title: '手机号', dataIndex: 'phone', key: 'phone' },
-    {
-      title: '工号',
-      dataIndex: 'employee_no',
-      key: 'employee_no',
-      render: (v: string | null) => v ?? '-',
-    },
-    {
-      title: '部门',
-      dataIndex: 'department',
-      key: 'department',
-      render: (v: string | null) => v ?? '-',
-    },
     {
       title: '角色',
       dataIndex: 'role',
@@ -212,7 +198,7 @@ export default function EmployeeListPage() {
     <>
       <Space style={{ marginBottom: 16, width: '100%', justifyContent: 'space-between' }}>
         <Input.Search
-          placeholder="搜索姓名 / 手机号 / 工号"
+          placeholder="搜索姓名 / 手机号"
           allowClear
           onSearch={handleSearch}
           onChange={(e) => scheduleSearch(e.target.value)}

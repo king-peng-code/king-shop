@@ -45,7 +45,6 @@ abstract class OrderStatusTransitionHandler
             items: $order->items,
             userName: $order->userName,
             userPhone: $order->userPhone,
-            userDepartment: $order->userDepartment,
             paidByPayerName: $order->paidByPayerName,
             paidByPayerPhone: $order->paidByPayerPhone,
             paidByPayerProvider: $order->paidByPayerProvider,

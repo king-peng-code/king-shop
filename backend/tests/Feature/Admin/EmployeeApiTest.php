@@ -29,8 +29,6 @@ class EmployeeApiTest extends TestCase
             ->postJson('/api/v1/admin/employees', [
                 'name' => '张三',
                 'phone' => '13890000005',
-                'employee_no' => 'E005',
-                'department' => '技术部',
             ]);
 
         $response->assertCreated()

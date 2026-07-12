@@ -16,7 +16,7 @@ class UserModel extends Authenticatable
     protected $table = 'users';
 
     protected $fillable = [
-        'name', 'email', 'phone', 'employee_no', 'department',
+        'name', 'email', 'phone',
         'role', 'status', 'avatar', 'must_change_password', 'password',
     ];
 

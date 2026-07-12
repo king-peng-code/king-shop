@@ -15,8 +15,6 @@ const mockUser: User = {
   id: 1,
   name: 'Test User',
   phone: '13800138000',
-  employee_no: 'E001',
-  department: 'Sales',
   role: 'employee',
   status: 'active',
   avatar: null,

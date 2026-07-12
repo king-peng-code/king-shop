@@ -65,7 +65,7 @@ class IdentityHandlerTest extends TestCase
     public function create_employee_sets_default_password_and_must_change_flag(): void
     {
         $user = app(CreateEmployeeHandler::class)->handle(
-            new CreateEmployeeCommand('张三', '13890000100', 'E100', '技术部', Role::employee()),
+            new CreateEmployeeCommand('张三', '13890000100', Role::employee()),
             Role::admin(),
         );
 
@@ -79,7 +79,7 @@ class IdentityHandlerTest extends TestCase
     {
         $this->expectException(ForbiddenRoleAssignmentException::class);
         app(CreateEmployeeHandler::class)->handle(
-            new CreateEmployeeCommand('管理员', '13890000101', null, null, Role::admin()),
+            new CreateEmployeeCommand('管理员', '13890000101', Role::admin()),
             Role::admin(),
         );
     }

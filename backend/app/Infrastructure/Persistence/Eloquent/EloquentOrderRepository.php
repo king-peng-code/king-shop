@@ -192,7 +192,6 @@ class EloquentOrderRepository implements OrderRepositoryInterface
             items: $items,
             userName: $model->user?->name,
             userPhone: $model->user?->phone,
-            userDepartment: $model->user?->department,
             paidByPayerName: $model->paidByExternalUser?->name,
             paidByPayerPhone: $model->paidByExternalUser?->phone,
             paidByPayerProvider: $model->paidByExternalUser?->provider,

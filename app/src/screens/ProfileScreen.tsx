@@ -56,19 +56,9 @@ export default function ProfileScreen() {
             <Text style={styles.value}>{user.name}</Text>
           </View>
           <View style={styles.infoRow}>
-            <Text style={styles.label}>部门</Text>
-            <Text style={styles.value}>{user.department ?? '未设置'}</Text>
-          </View>
-          <View style={styles.infoRow}>
             <Text style={styles.label}>手机号</Text>
             <Text style={styles.value}>{user.phone}</Text>
           </View>
-          {user.employee_no ? (
-            <View style={styles.infoRow}>
-              <Text style={styles.label}>工号</Text>
-              <Text style={styles.value}>{user.employee_no}</Text>
-            </View>
-          ) : null}
         </View>
       </View>
 

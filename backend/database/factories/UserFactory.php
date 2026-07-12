@@ -29,8 +29,6 @@ class UserFactory extends Factory
             'name' => fake()->name(),
             'email' => null,
             'phone' => fake()->unique()->numerify('138########'),
-            'employee_no' => fake()->unique()->bothify('E###'),
-            'department' => fake()->word(),
             'role' => 'employee',
             'status' => 'active',
             'must_change_password' => false,

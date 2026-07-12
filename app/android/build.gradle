@@ -8,10 +8,10 @@ buildscript {
         kotlinVersion = "1.9.25"
     }
     repositories {
-        maven { url 'https://maven.aliyun.com/repository/google' }
-        maven { url 'https://maven.aliyun.com/repository/public' }
-        google()
-        mavenCentral()
+        // Tencent mirror proxies both Maven Central and Google Maven
+        maven { url 'https://mirrors.tencent.com/nexus/repository/maven-public/' }
+        // Gradle Plugin Portal (not covered by Tencent)
+        maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
     }
     dependencies {
         classpath("com.android.tools.build:gradle")
@@ -20,13 +20,9 @@ buildscript {
     }
 }
 
-gradle.beforeProject { project ->
-    project.buildscript {
-        repositories {
-            maven { url 'https://maven.aliyun.com/repository/google' }
-            maven { url 'https://maven.aliyun.com/repository/public' }
-            maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
-        }
+allprojects {
+    repositories {
+        maven { url 'https://mirrors.tencent.com/nexus/repository/maven-public/' }
     }
 }
 

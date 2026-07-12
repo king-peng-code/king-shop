@@ -9,8 +9,6 @@ final class CreateEmployeeCommand
     public function __construct(
         public readonly string $name,
         public readonly string $phone,
-        public readonly ?string $employeeNo,
-        public readonly ?string $department,
         public readonly Role $role,
     ) {}
 }

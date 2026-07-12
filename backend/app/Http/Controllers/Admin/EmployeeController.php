@@ -46,8 +46,6 @@ class EmployeeController extends Controller
             new CreateEmployeeCommand(
                 name: $validated['name'],
                 phone: $validated['phone'],
-                employeeNo: $validated['employee_no'] ?? null,
-                department: $validated['department'] ?? null,
                 role: Role::fromString($validated['role'] ?? Role::EMPLOYEE),
             ),
             $operatorRole,
@@ -73,8 +71,6 @@ class EmployeeController extends Controller
             new UpdateEmployeeCommand(
                 employeeId: $employee,
                 name: $validated['name'],
-                employeeNo: $validated['employee_no'] ?? null,
-                department: $validated['department'] ?? null,
                 role: Role::fromString($validated['role']),
                 status: UserStatus::fromString($validated['status']),
                 resetPassword: (bool) ($validated['reset_password'] ?? false),

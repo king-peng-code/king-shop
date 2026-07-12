@@ -30,8 +30,6 @@ class EloquentUserRepository implements UserRepositoryInterface
             'name' => $user->name,
             'email' => $user->email,
             'phone' => $user->phone,
-            'employee_no' => $user->employeeNo,
-            'department' => $user->department,
             'role' => $user->role->value,
             'status' => $user->status->value,
             'avatar' => $user->avatar,
@@ -57,8 +55,7 @@ class EloquentUserRepository implements UserRepositoryInterface
         if ($keyword !== '') {
             $query->where(function ($builder) use ($keyword): void {
                 $builder->where('name', 'like', "%{$keyword}%")
-                    ->orWhere('phone', 'like', "%{$keyword}%")
-                    ->orWhere('employee_no', 'like', "%{$keyword}%");
+                    ->orWhere('phone', 'like', "%{$keyword}%");
             });
         }
 
@@ -79,8 +76,6 @@ class EloquentUserRepository implements UserRepositoryInterface
             name: $model->name,
             email: $model->email,
             phone: $model->phone,
-            employeeNo: $model->employee_no,
-            department: $model->department,
             role: Role::fromString($model->role),
             status: UserStatus::fromString($model->status),
             avatar: $model->avatar,

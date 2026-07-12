@@ -26,7 +26,6 @@ final class Order
         public readonly array $items = [],
         public readonly ?string $userName = null,
         public readonly ?string $userPhone = null,
-        public readonly ?string $userDepartment = null,
         public readonly ?string $paidByPayerName = null,
         public readonly ?string $paidByPayerPhone = null,
         public readonly ?string $paidByPayerProvider = null,

@@ -39,8 +39,6 @@ class UpdateEmployeeHandler
 
         $updated = $employee->withProfile(
             name: $command->name,
-            employeeNo: $command->employeeNo,
-            department: $command->department,
             role: $command->role,
             status: $command->status,
         );

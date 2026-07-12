@@ -18,8 +18,6 @@ class AuthUserResource extends JsonResource
             'id' => $user->id,
             'name' => $user->name,
             'phone' => $user->phone,
-            'employee_no' => $user->employeeNo,
-            'department' => $user->department,
             'role' => $user->role->value,
             'status' => $user->status->value,
             'avatar' => $user->avatar,

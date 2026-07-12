@@ -6,7 +6,6 @@ export interface OrderUser {
   id: number;
   name: string;
   phone: string;
-  department?: string | null;
 }
 
 export interface OrderPayer {

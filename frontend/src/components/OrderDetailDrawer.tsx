@@ -140,11 +140,6 @@ export default function OrderDetailDrawer({
           <Descriptions column={1} size="small" title="员工信息">
             <Descriptions.Item label="姓名">{order.user.name}</Descriptions.Item>
             <Descriptions.Item label="手机号">{order.user.phone}</Descriptions.Item>
-            {order.user.department && (
-              <Descriptions.Item label="部门">
-                {order.user.department}
-              </Descriptions.Item>
-            )}
           </Descriptions>
 
           <Descriptions column={1} size="small" title="支付信息">

@@ -20,8 +20,6 @@ class CreateEmployeeRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:100'],
             'phone' => ['required', 'string', 'regex:/^1\d{10}$/', 'unique:users,phone'],
-            'employee_no' => ['nullable', 'string', 'max:50', 'unique:users,employee_no'],
-            'department' => ['nullable', 'string', 'max:100'],
             'role' => ['sometimes', 'string', Rule::in(['employee', 'admin', 'super_admin'])],
         ];
     }

@@ -33,8 +33,6 @@ class UserTest extends TestCase
             name: 'Test',
             email: null,
             phone: '13800000001',
-            employeeNo: 'E001',
-            department: '技术部',
             role: Role::employee(),
             status: $status,
             avatar: null,

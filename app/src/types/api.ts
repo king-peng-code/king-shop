@@ -8,8 +8,6 @@ export interface User {
   id: number;
   name: string;
   phone: string;
-  employee_no: string | null;
-  department: string | null;
   role: string;
   status: string;
   avatar: string | null;

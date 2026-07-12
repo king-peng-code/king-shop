@@ -27,8 +27,6 @@ class CreateEmployeeHandler
             name: $command->name,
             email: null,
             phone: $command->phone,
-            employeeNo: $command->employeeNo,
-            department: $command->department,
             role: $command->role,
             status: UserStatus::active(),
             avatar: null,

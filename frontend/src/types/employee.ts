@@ -5,8 +5,6 @@ export interface Employee {
   id: number;
   name: string;
   phone: string;
-  employee_no: string | null;
-  department: string | null;
   role: Role;
   status: Status;
   avatar: string | null;
@@ -24,15 +22,11 @@ export interface LoginResult {
 export interface CreateEmployeePayload {
   name: string;
   phone: string;
-  employee_no?: string;
-  department?: string;
   role?: Role;
 }
 
 export interface UpdateEmployeePayload {
   name: string;
-  employee_no?: string;
-  department?: string;
   role: Role;
   status: Status;
   reset_password?: boolean;

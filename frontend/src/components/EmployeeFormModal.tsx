@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Form, Input, Modal, Select, Switch, message } from 'antd';
+import { Form, Input, Modal, Select, message } from 'antd';
 import { employeesApi } from '../api/employees';
 import { ApiError } from '../api/client';
 import type { Employee, Role } from '../types/employee';
@@ -31,11 +31,7 @@ export default function EmployeeFormModal({
       form.setFieldsValue({
         name: employee.name,
         phone: employee.phone,
-        employee_no: employee.employee_no ?? '',
-        department: employee.department ?? '',
         role: employee.role,
-        status: employee.status,
-        reset_password: false,
       });
     } else {
       form.resetFields();
@@ -58,19 +54,14 @@ export default function EmployeeFormModal({
         await employeesApi.create({
           name: values.name,
           phone: values.phone,
-          employee_no: values.employee_no || undefined,
-          department: values.department || undefined,
           role: values.role,
         });
         message.success('创建成功，默认密码为 123456');
       } else if (employee) {
         await employeesApi.update(employee.id, {
           name: values.name,
-          employee_no: values.employee_no || undefined,
-          department: values.department || undefined,
           role: values.role,
-          status: values.status,
-          reset_password: values.reset_password || false,
+          status: employee.status,
         });
         message.success('保存成功');
       }
@@ -120,31 +111,9 @@ export default function EmployeeFormModal({
             <Input />
           </Form.Item>
         )}
-        <Form.Item label="工号" name="employee_no">
-          <Input />
-        </Form.Item>
-        <Form.Item label="部门" name="department">
-          <Input />
-        </Form.Item>
         <Form.Item label="角色" name="role" rules={[{ required: true }]}>
           <Select options={roleOptions} disabled={isSelf} />
         </Form.Item>
-        {mode === 'edit' && (
-          <>
-            <Form.Item label="状态" name="status" rules={[{ required: true }]}>
-              <Select
-                disabled={isSelf}
-                options={[
-                  { value: 'active', label: '正常' },
-                  { value: 'disabled', label: '已禁用' },
-                ]}
-              />
-            </Form.Item>
-            <Form.Item label="重置密码" name="reset_password" valuePropName="checked">
-              <Switch />
-            </Form.Item>
-          </>
-        )}
       </Form>
     </Modal>
   );
