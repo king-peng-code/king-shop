@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
+use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
@@ -39,6 +40,7 @@ Route::middleware(['auth:sanctum', 'password.changed', 'admin'])->prefix('admin'
     Route::apiResource('employees', EmployeeController::class);
     Route::apiResource('categories', AdminCategoryController::class);
     Route::apiResource('products', AdminProductController::class)->except(['destroy']);
+    Route::get('dashboard/stats', [DashboardController::class, 'stats']);
     Route::get('orders', [AdminOrderController::class, 'index']);
     Route::get('orders/{order}', [AdminOrderController::class, 'show']);
     Route::post('orders/{order}/preparing', [AdminOrderController::class, 'preparing']);
