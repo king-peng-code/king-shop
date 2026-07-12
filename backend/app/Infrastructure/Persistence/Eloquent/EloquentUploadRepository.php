@@ -8,6 +8,13 @@ use App\Infrastructure\Persistence\Eloquent\Models\UploadModel;
 
 class EloquentUploadRepository implements UploadRepositoryInterface
 {
+    public function findById(int $id): ?Upload
+    {
+        $model = UploadModel::query()->find($id);
+
+        return $model ? $this->toEntity($model) : null;
+    }
+
     public function save(Upload $upload): Upload
     {
         $model = UploadModel::query()->create([
