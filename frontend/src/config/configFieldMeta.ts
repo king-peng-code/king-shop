@@ -31,6 +31,7 @@ const META_OVERRIDES: Record<string, FieldMeta> = {
   },
   'payment.wechat.cert': { type: 'textarea', rows: 4 },
   'payment.alipay.private_key': { type: 'textarea', rows: 4 },
+  'payment.alipay.public_key': { type: 'textarea', rows: 4 },
 };
 
 export function fieldKey(group: string, key: string): string {
@@ -56,11 +57,13 @@ const WECHAT_KEYS = new Set([
   'wechat.mch_id',
   'wechat.api_key',
   'wechat.cert',
+  'wechat.app_id',
 ]);
 
 const ALIPAY_KEYS = new Set([
   'alipay.app_id',
   'alipay.private_key',
+  'alipay.public_key',
 ]);
 
 const LOCAL_KEYS = new Set(['local.public_base_url']);
@@ -106,6 +109,8 @@ const GROUP_FIELD_ORDER: Record<string, string[]> = {
     'provider',
     'alipay.app_id',
     'alipay.private_key',
+    'alipay.public_key',
+    'wechat.app_id',
     'wechat.mch_id',
     'wechat.api_key',
     'wechat.cert',

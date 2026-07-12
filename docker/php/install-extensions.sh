@@ -23,7 +23,8 @@ docker-php-ext-install -j"$(nproc)" \
     xml \
     bcmath \
     pcntl \
-    gd
+    gd \
+    opcache
 
 # redis：从 GitHub 源码编译（避免 pecl 网络问题）
 curl -fsSL https://github.com/phpredis/phpredis/archive/refs/tags/6.1.0.tar.gz -o /tmp/redis.tar.gz

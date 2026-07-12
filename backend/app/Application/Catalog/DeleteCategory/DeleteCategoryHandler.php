@@ -5,11 +5,13 @@ namespace App\Application\Catalog\DeleteCategory;
 use App\Domain\Catalog\Exceptions\CategoryHasProductsException;
 use App\Domain\Catalog\Exceptions\CategoryNotFoundException;
 use App\Domain\Catalog\Repositories\CategoryRepositoryInterface;
+use App\Infrastructure\Cache\CategoryListCache;
 
 class DeleteCategoryHandler
 {
     public function __construct(
         private readonly CategoryRepositoryInterface $repository,
+        private readonly CategoryListCache $cache,
     ) {}
 
     public function handle(int $id): void
@@ -22,5 +24,6 @@ class DeleteCategoryHandler
         }
 
         $this->repository->delete($id);
+        $this->cache->forget();
     }
 }

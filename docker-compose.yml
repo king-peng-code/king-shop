@@ -84,6 +84,7 @@ services:
       CACHE_STORE: redis
       SESSION_DRIVER: redis
       QUEUE_CONNECTION: redis
+      PHP_CLI_SERVER_WORKERS: "4"
     depends_on:
       mysql:
         condition: service_healthy

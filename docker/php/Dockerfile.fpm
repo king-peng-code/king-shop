@@ -12,9 +12,11 @@ LABEL org.opencontainers.image.description="King Shop PHP base image (FPM)"
 COPY install-extensions.sh /tmp/install-extensions.sh
 RUN chmod +x /tmp/install-extensions.sh && /tmp/install-extensions.sh && rm /tmp/install-extensions.sh
 
+COPY opcache.ini /usr/local/etc/php/conf.d/99-opcache.ini
+
 ARG COMPOSER_VERSION=2.8.5
 COPY --from=composer:2.8.5 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
-RUN php -v && php -m | grep -E 'pdo_mysql|redis|zip|mbstring|gd'
+RUN php -v && php -m | grep -E 'pdo_mysql|redis|zip|mbstring|gd|opcache'

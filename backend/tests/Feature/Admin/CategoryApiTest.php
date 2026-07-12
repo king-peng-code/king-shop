@@ -2,10 +2,12 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Infrastructure\Cache\CategoryListCache;
 use App\Infrastructure\Persistence\Eloquent\Models\CategoryModel;
 use App\Infrastructure\Persistence\Eloquent\Models\ProductModel;
 use App\Infrastructure\Persistence\Eloquent\Models\UserModel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
@@ -53,5 +55,40 @@ class CategoryApiTest extends TestCase
             ->assertOk();
 
         $this->assertDatabaseMissing('categories', ['id' => $category->id]);
+    }
+
+    #[Test]
+    public function category_list_uses_cache_until_category_is_updated(): void
+    {
+        Cache::flush();
+
+        $category = CategoryModel::factory()->create(['name' => '饮品']);
+
+        $this->withToken($this->adminToken())
+            ->getJson('/api/v1/admin/categories')
+            ->assertOk()
+            ->assertJsonPath('data.items.0.name', '饮品');
+
+        $category->update(['name' => '热饮']);
+
+        $this->withToken($this->adminToken())
+            ->getJson('/api/v1/admin/categories')
+            ->assertOk()
+            ->assertJsonPath('data.items.0.name', '饮品');
+
+        $this->withToken($this->adminToken())
+            ->putJson("/api/v1/admin/categories/{$category->id}", [
+                'name' => '热饮',
+                'sort' => $category->sort,
+                'status' => $category->status,
+            ])
+            ->assertOk();
+
+        $this->assertNull(app(CategoryListCache::class)->get());
+
+        $this->withToken($this->adminToken())
+            ->getJson('/api/v1/admin/categories')
+            ->assertOk()
+            ->assertJsonPath('data.items.0.name', '热饮');
     }
 }
