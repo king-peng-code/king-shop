@@ -2,28 +2,26 @@
 
 namespace App\Infrastructure\Persistence\Eloquent\Models;
 
-use Database\Factories\PaymentFactory;
+use Database\Factories\ProxyPayTokenFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class PaymentModel extends Model
+class ProxyPayTokenModel extends Model
 {
-    /** @use HasFactory<PaymentFactory> */
+    /** @use HasFactory<ProxyPayTokenFactory> */
     use HasFactory;
 
-    protected $table = 'payments';
+    protected $table = 'proxy_pay_tokens';
 
     protected $fillable = [
-        'order_id', 'payer_user_id', 'out_trade_no', 'trade_no', 'amount', 'channel',
-        'status', 'paid_at', 'raw_notify',
+        'order_id', 'token', 'expires_at',
     ];
 
     protected function casts(): array
     {
         return [
-            'paid_at' => 'datetime',
-            'raw_notify' => 'array',
+            'expires_at' => 'datetime',
         ];
     }
 
@@ -32,8 +30,8 @@ class PaymentModel extends Model
         return $this->belongsTo(OrderModel::class, 'order_id');
     }
 
-    protected static function newFactory(): PaymentFactory
+    protected static function newFactory(): ProxyPayTokenFactory
     {
-        return PaymentFactory::new();
+        return ProxyPayTokenFactory::new();
     }
 }

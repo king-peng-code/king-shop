@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Domain\Catalog\Repositories\CategoryRepositoryInterface;
 use App\Domain\Catalog\Repositories\ProductRepositoryInterface;
+use App\Domain\ProxyPay\Repositories\ProxyPayTokenRepositoryInterface;
 use App\Domain\Payment\Repositories\PaymentRepositoryInterface;
 use App\Domain\Payment\Services\PaymentGatewayResolverInterface;
 use App\Domain\Order\Repositories\OrderRepositoryInterface;
@@ -20,6 +21,7 @@ use App\Infrastructure\Payment\ConfigPaymentGatewayResolver;
 use App\Infrastructure\Persistence\Eloquent\EloquentCategoryRepository;
 use App\Infrastructure\Persistence\Eloquent\EloquentOrderRepository;
 use App\Infrastructure\Persistence\Eloquent\EloquentPaymentRepository;
+use App\Infrastructure\Persistence\Eloquent\EloquentProxyPayTokenRepository;
 use App\Infrastructure\Persistence\Eloquent\EloquentProductRepository;
 use App\Infrastructure\Persistence\Eloquent\EloquentSystemConfigRepository;
 use App\Infrastructure\Persistence\Eloquent\EloquentUploadRepository;
@@ -47,6 +49,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(ProductRepositoryInterface::class, EloquentProductRepository::class);
         $this->app->bind(OrderRepositoryInterface::class, EloquentOrderRepository::class);
         $this->app->bind(PaymentRepositoryInterface::class, EloquentPaymentRepository::class);
+        $this->app->bind(ProxyPayTokenRepositoryInterface::class, EloquentProxyPayTokenRepository::class);
         $this->app->bind(PaymentGatewayResolverInterface::class, ConfigPaymentGatewayResolver::class);
         $this->app->bind(OrderNumberGeneratorInterface::class, DatabaseOrderNumberGenerator::class);
 

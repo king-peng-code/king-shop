@@ -41,6 +41,7 @@ class ConfirmPaymentHandler
             $updatedPayment = $this->paymentRepository->save(new Payment(
                 id: $payment->id,
                 orderId: $payment->orderId,
+                payerUserId: $payment->payerUserId,
                 outTradeNo: $payment->outTradeNo,
                 tradeNo: $tradeNo,
                 amount: $payment->amount,
@@ -52,7 +53,7 @@ class ConfirmPaymentHandler
 
             $this->markOrderPaidHandler->handle(
                 orderId: $payment->orderId,
-                paidByUserId: $paidByUserId,
+                paidByUserId: $paidByUserId ?? $payment->payerUserId,
                 paidAt: $paidAt,
             );
 

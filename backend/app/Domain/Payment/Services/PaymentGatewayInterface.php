@@ -13,7 +13,7 @@ interface PaymentGatewayInterface
 {
     public function channel(): string;
 
-    public function createPayment(Payment $payment, Order $order): PaymentCreateResult;
+    public function createPayment(Payment $payment, Order $order, array $options = []): PaymentCreateResult;
 
     public function queryPayment(string $outTradeNo): PaymentQueryResult;
 

@@ -20,7 +20,7 @@ class HandleWechatNotifyHandler
     public function handle(Request $request): void
     {
         $params = $this->parseXml($request->getContent());
-        $outTradeNo = (string) ($params['out_trade_no'] ?? '');
+        $outTradeNo = (string) ($params['out_trade_no'] ?? $request->input('out_trade_no', ''));
         $payment = $outTradeNo !== '' ? $this->paymentRepository->findByOutTradeNo($outTradeNo) : null;
         $channel = $payment?->channel->value ?? PaymentChannel::WECHAT;
 
@@ -43,7 +43,9 @@ class HandleWechatNotifyHandler
      */
     private function parseXml(string $xml): array
     {
-        if ($xml === '') {
+        $xml = trim($xml);
+
+        if ($xml === '' || ! str_starts_with($xml, '<')) {
             return [];
         }
 

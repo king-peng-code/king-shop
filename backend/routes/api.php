@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Catalog\CategoryController;
 use App\Http\Controllers\Catalog\OrderController as CatalogOrderController;
 use App\Http\Controllers\Catalog\ProductController;
+use App\Http\Controllers\Catalog\ProxyPayController;
 use App\Http\Controllers\PaymentNotifyController;
 use App\Http\Controllers\Admin\SystemConfigController;
 use App\Http\Controllers\Admin\UploadController;
@@ -18,6 +19,8 @@ Route::get('/health', fn () => ApiResponse::success(['status' => 'healthy']));
 
 Route::post('/payments/notify/alipay', [PaymentNotifyController::class, 'alipay']);
 Route::post('/payments/notify/wechat', [PaymentNotifyController::class, 'wechat']);
+
+Route::get('/proxy-pay/{token}', [ProxyPayController::class, 'show']);
 
 Route::prefix('auth')->group(function (): void {
     Route::post('/login', [AuthController::class, 'login']);
@@ -52,5 +55,7 @@ Route::middleware(['auth:sanctum', 'password.changed'])->group(function (): void
     Route::get('/orders', [CatalogOrderController::class, 'index']);
     Route::get('/orders/{order}', [CatalogOrderController::class, 'show']);
     Route::post('/orders/{order}/pay', [CatalogOrderController::class, 'pay']);
+    Route::post('/orders/{order}/proxy-pay-link', [CatalogOrderController::class, 'proxyPayLink']);
     Route::post('/orders/{order}/cancel', [CatalogOrderController::class, 'cancel']);
+    Route::post('/proxy-pay/{token}/pay', [ProxyPayController::class, 'pay']);
 });

@@ -10,6 +10,7 @@ import EmployeeListPage from './pages/employees/EmployeeListPage';
 import CategoryListPage from './pages/categories/CategoryListPage';
 import ProductListPage from './pages/products/ProductListPage';
 import OrderListPage from './pages/orders/OrderListPage';
+import ProxyPayPage from './pages/proxy-pay/ProxyPayPage';
 import { SettingsPage } from './pages/settings/SettingsPage';
 
 export default function App() {
@@ -19,6 +20,7 @@ export default function App() {
         <AuthProvider>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/proxy-pay/:token" element={<ProxyPayPage />} />
             <Route
               path="/change-password"
               element={

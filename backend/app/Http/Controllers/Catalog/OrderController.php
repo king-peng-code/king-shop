@@ -10,6 +10,7 @@ use App\Application\Order\DTO\UserOrderListQuery;
 use App\Application\Order\GetMyOrder\GetMyOrderHandler;
 use App\Application\Order\ListMyOrders\ListMyOrdersHandler;
 use App\Application\Payment\InitiatePayment\InitiatePaymentHandler;
+use App\Application\ProxyPay\GenerateProxyPayLink\GenerateProxyPayLinkHandler;
 use App\Domain\Order\ValueObjects\PaymentMethod;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Catalog\CreateOrderRequest;
@@ -98,5 +99,13 @@ class OrderController extends Controller
             'payment' => new PaymentResource($result['payment']),
             'pay_params' => $result['pay_params'],
         ]);
+    }
+
+    public function proxyPayLink(
+        Request $request,
+        int $order,
+        GenerateProxyPayLinkHandler $handler,
+    ): JsonResponse {
+        return ApiResponse::success($handler->handle($order, $request->user()->id));
     }
 }

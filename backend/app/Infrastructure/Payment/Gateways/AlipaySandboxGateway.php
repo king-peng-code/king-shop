@@ -28,7 +28,7 @@ class AlipaySandboxGateway implements PaymentGatewayInterface
         return PaymentChannel::ALIPAY_SANDBOX;
     }
 
-    public function createPayment(Payment $payment, Order $order): PaymentCreateResult
+    public function createPayment(Payment $payment, Order $order, array $options = []): PaymentCreateResult
     {
         $bizContent = json_encode([
             'out_trade_no' => $payment->outTradeNo,

@@ -31,8 +31,10 @@ class WechatPayGateway implements PaymentGatewayInterface
         return PaymentChannel::WECHAT;
     }
 
-    public function createPayment(Payment $payment, Order $order): PaymentCreateResult
+    public function createPayment(Payment $payment, Order $order, array $options = []): PaymentCreateResult
     {
+        $tradeType = strtoupper((string) ($options['trade_type'] ?? 'APP'));
+
         $params = [
             'appid' => $this->config->get('wechat.app_id'),
             'mch_id' => $this->config->get('wechat.mch_id'),
@@ -42,8 +44,17 @@ class WechatPayGateway implements PaymentGatewayInterface
             'total_fee' => (string) $payment->amount,
             'spbill_create_ip' => '127.0.0.1',
             'notify_url' => $this->config->notifyBaseUrl().'/api/v1/payments/notify/wechat',
-            'trade_type' => 'APP',
+            'trade_type' => $tradeType,
         ];
+
+        if ($tradeType === 'JSAPI') {
+            $openid = (string) ($options['openid'] ?? '');
+            if ($openid === '') {
+                throw new \InvalidArgumentException('JSAPI 支付需要 openid');
+            }
+            $params['openid'] = $openid;
+        }
+
         $params['sign'] = $this->signer->sign($params, $this->config->get('wechat.api_key'));
 
         $response = Http::withBody($this->toXml($params), 'application/xml')
@@ -52,6 +63,32 @@ class WechatPayGateway implements PaymentGatewayInterface
         $result = $this->parseXml($response->body());
         if (($result['return_code'] ?? '') !== 'SUCCESS' || ($result['result_code'] ?? '') !== 'SUCCESS') {
             throw new \RuntimeException('WeChat unified order failed: '.($result['return_msg'] ?? 'unknown'));
+        }
+
+        if ($tradeType === 'JSAPI') {
+            $jsapiParams = [
+                'appId' => $params['appid'],
+                'timeStamp' => (string) time(),
+                'nonceStr' => Str::random(32),
+                'package' => 'prepay_id='.$result['prepay_id'],
+                'signType' => 'MD5',
+            ];
+            $jsapiParams['paySign'] = $this->signer->sign([
+                'appId' => $jsapiParams['appId'],
+                'timeStamp' => $jsapiParams['timeStamp'],
+                'nonceStr' => $jsapiParams['nonceStr'],
+                'package' => $jsapiParams['package'],
+                'signType' => $jsapiParams['signType'],
+            ], $this->config->get('wechat.api_key'));
+
+            return new PaymentCreateResult(
+                outTradeNo: $payment->outTradeNo,
+                payParams: [
+                    'channel' => PaymentChannel::WECHAT,
+                    'trade_type' => 'JSAPI',
+                    'jsapi' => $jsapiParams,
+                ],
+            );
         }
 
         $prepayParams = [

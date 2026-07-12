@@ -18,12 +18,15 @@ class FakePaymentGateway implements PaymentGatewayInterface
         return PaymentChannel::FAKE;
     }
 
-    public function createPayment(Payment $payment, Order $order): PaymentCreateResult
+    public function createPayment(Payment $payment, Order $order, array $options = []): PaymentCreateResult
     {
+        $tradeType = $options['trade_type'] ?? 'JSAPI';
+
         return new PaymentCreateResult(
             outTradeNo: $payment->outTradeNo,
             payParams: [
                 'channel' => PaymentChannel::FAKE,
+                'trade_type' => $tradeType,
                 'out_trade_no' => $payment->outTradeNo,
                 'amount' => $payment->amount,
                 'order_no' => $order->orderNo,

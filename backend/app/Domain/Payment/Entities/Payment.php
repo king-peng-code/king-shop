@@ -10,6 +10,7 @@ final class Payment
     public function __construct(
         public readonly ?int $id,
         public readonly int $orderId,
+        public readonly ?int $payerUserId,
         public readonly string $outTradeNo,
         public readonly ?string $tradeNo,
         public readonly int $amount,

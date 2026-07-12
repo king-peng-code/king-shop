@@ -50,6 +50,7 @@ class EloquentPaymentRepository implements PaymentRepositoryInterface
     {
         $attributes = [
             'order_id' => $payment->orderId,
+            'payer_user_id' => $payment->payerUserId,
             'out_trade_no' => $payment->outTradeNo,
             'trade_no' => $payment->tradeNo,
             'amount' => $payment->amount,
@@ -75,6 +76,7 @@ class EloquentPaymentRepository implements PaymentRepositoryInterface
         return new Payment(
             id: $model->id,
             orderId: $model->order_id,
+            payerUserId: $model->payer_user_id,
             outTradeNo: $model->out_trade_no,
             tradeNo: $model->trade_no,
             amount: $model->amount,

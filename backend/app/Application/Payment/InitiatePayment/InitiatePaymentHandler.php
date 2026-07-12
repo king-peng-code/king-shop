@@ -7,6 +7,7 @@ use App\Domain\Order\Exceptions\OrderAccessDeniedException;
 use App\Domain\Order\Exceptions\OrderNotFoundException;
 use App\Domain\Order\Repositories\OrderRepositoryInterface;
 use App\Domain\Order\ValueObjects\OrderStatus;
+use App\Domain\Order\ValueObjects\PaymentMethod;
 use App\Domain\Payment\DTO\PaymentCreateResult;
 use App\Domain\Payment\Entities\Payment;
 use App\Domain\Payment\Exceptions\OrderNotPayableException;
@@ -40,6 +41,10 @@ class InitiatePaymentHandler
             throw new OrderAccessDeniedException();
         }
 
+        if ($order->paymentMethod->value === PaymentMethod::PROXY) {
+            throw new OrderNotPayableException('代付订单请分享代付链接');
+        }
+
         if ($order->status->value !== OrderStatus::PENDING_PAYMENT) {
             throw new OrderNotPayableException();
         }
@@ -51,6 +56,7 @@ class InitiatePaymentHandler
         $payment = $existing ?? $this->paymentRepository->save(new Payment(
             id: null,
             orderId: $orderId,
+            payerUserId: null,
             outTradeNo: $this->outTradeNoGenerator->generate($orderId),
             tradeNo: null,
             amount: $order->totalAmount,
