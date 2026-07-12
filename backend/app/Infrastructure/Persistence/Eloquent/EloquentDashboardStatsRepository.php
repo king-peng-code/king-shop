@@ -10,6 +10,10 @@ use Illuminate\Database\Eloquent\Builder;
 
 class EloquentDashboardStatsRepository implements DashboardStatsRepositoryInterface
 {
+    /**
+     * Boundaries use Asia/Shanghai wall-clock Carbon values to match how orders
+     * persist paid_at / created_at in this codebase (local datetime strings).
+     */
     private const PAID_STATUSES = ['paid', 'preparing', 'ready', 'completed'];
 
     private const STATUS_LABELS = [

@@ -122,6 +122,27 @@ class EloquentDashboardStatsRepositoryTest extends TestCase
     }
 
     #[Test]
+    public function early_morning_shanghai_paid_order_counts_in_today(): void
+    {
+        $user = UserModel::factory()->create();
+
+        OrderModel::factory()->for($user, 'user')->paid()->create([
+            'total_amount' => 5000,
+            'paid_at' => Carbon::parse('2026-07-12 01:00:00', 'Asia/Shanghai'),
+            'created_at' => Carbon::parse('2026-07-12 01:00:00', 'Asia/Shanghai'),
+        ]);
+
+        $stats = $this->repository->getStats();
+
+        $this->assertSame(1, $stats['summary']['today']['order_count']);
+        $this->assertSame(1, $stats['summary']['today']['paid_order_count']);
+        $this->assertSame(5000, $stats['summary']['today']['sales_amount']);
+
+        $byDate = collect($stats['week_daily_sales'])->keyBy('date');
+        $this->assertSame(5000, $byDate['2026-07-12']['sales_amount']);
+    }
+
+    #[Test]
     public function week_daily_sales_fills_missing_days_with_zero(): void
     {
         $user = UserModel::factory()->create();
