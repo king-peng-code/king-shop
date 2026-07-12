@@ -15,6 +15,14 @@ React Native 0.76 移动端应用，支持 Android 和 iOS。
 ./scripts/run-android-dev.sh     # 启动模拟器 + 后端 + App
 ```
 
+## 支付配置（M09）
+
+自付三通道：`fake`（开发）、`alipay_sandbox`（WebView）、`wechat`（APP SDK）。
+
+1. **模拟支付：** 开发构建默认在确认页显示「模拟支付」；需 backend 运行在 `local` 环境。
+2. **微信 APP 支付：** 在 `src/config/payment.ts` 设置 `WECHAT_APP_ID`（微信开放平台 App 应用 ID），并在 Android 平台登记包名 `com.kingshop` 与签名。
+3. **支付宝沙箱：** 在管理后台 M01 配置 `payment.alipay.*`，确认页选择「支付宝」即可 WebView 打开收银台。
+
 ## 快速开始
 
 ```bash
