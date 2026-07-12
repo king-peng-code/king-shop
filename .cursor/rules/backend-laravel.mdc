@@ -1,0 +1,20 @@
+---
+description: Laravel 后端开发约束
+globs: backend/**/*
+alwaysApply: false
+---
+
+# Backend (Laravel)
+
+- **PHP 8.4**（锁定，禁止 8.3 及以下及 8.5+）
+- **Laravel 12**（锁定，禁止其他主版本）
+- **MySQL 8.0** / **Redis 7.4**（通过 `docker compose`，禁止其他版本）
+- 遵循 **DDD 分层**（Domain / Application / Infrastructure / Http）
+- DDD 开发细则与测试要求见 **`.cursor/rules/ddd-development.mdc`**
+- API 路由放 `routes/api.php`
+- 数据库变更只用 Migration
+- 缓存/Session/队列统一用 Redis（禁止 Memcached 作为主缓存）
+- 环境变量放 `.env`，模板放 `.env.example`
+- **DDD 开发必须写自动化测试**，无测试不得合并
+- 完成前执行：`docker compose exec backend php artisan test`
+- 版本详情见 `.cursor/rules/versions.mdc`

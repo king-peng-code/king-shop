@@ -1,0 +1,52 @@
+---
+description: king-shop 项目全局约束与架构
+alwaysApply: true
+---
+
+# king-shop 项目约束
+
+## 项目结构
+
+- `backend/` — Laravel API，唯一数据源和业务逻辑入口
+- `frontend/` — React 管理后台，只调用 backend API
+- `app/` — React Native 移动端，只调用 backend API
+- 禁止 frontend/app 直接访问 MySQL/Redis
+
+## 技术栈
+
+- 后端: Laravel 12, PHP 8.4, MySQL 8.0, Redis 7.4
+- 管理端: React 18.3 + TypeScript + Vite 5
+- 移动端: React Native 0.76 + TypeScript
+- 本地基础设施: `docker compose up -d --build`（**PHP 8.4 后端** + MySQL + Redis）
+- 后端在 Docker 内运行，**无需宿主机安装 PHP / Composer**
+
+## 版本约束（锁定，不可浮动）
+
+| 组件 | 锁定版本 |
+|------|----------|
+| PHP | **8.4** |
+| Laravel | **12** |
+| MySQL | **8.0** |
+| Redis | **7.4** |
+| React | **18.3** |
+
+完整禁止列表与 Docker 约定见 **`.cursor/rules/versions.mdc`**。
+
+## 开发原则
+
+1. 最小改动：只改当前任务相关文件
+2. 复用现有约定：命名、目录、API 风格保持一致
+3. 先读再写：修改前阅读同目录已有代码
+4. **DDD 业务开发必须配套自动化测试**（见 `.cursor/rules/ddd-development.mdc`）
+5. 任务完成前必须跑通测试：`docker compose exec backend php artisan test`
+
+## API 约定
+
+- 统一前缀: `/api/v1/`
+- 响应格式: `{ "code": 0, "message": "ok", "data": {} }`
+- 鉴权: Bearer Token (Laravel Sanctum)
+
+## 数据库
+
+- MySQL: 业务数据持久化
+- Redis: 缓存、Session、队列

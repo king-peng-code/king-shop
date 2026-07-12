@@ -1,0 +1,89 @@
+---
+description: DDD 领域驱动开发约束与自动化测试要求
+globs: backend/**/*
+alwaysApply: false
+---
+
+# DDD 开发约束
+
+> 进入业务功能开发阶段后，**必须**采用 DDD 分层，且**每个领域能力都必须有自动化测试**。
+
+## 分层目录（backend/app/）
+
+```
+Domain/           # 实体、值对象、领域服务、仓储接口、领域事件
+Application/      # 用例、应用服务、DTO、命令/查询
+Infrastructure/   # 仓储实现、外部服务适配、持久化
+Http/             # Controller、Request、Resource（接口层，不含业务逻辑）
+```
+
+## 职责边界
+
+| 层 | 允许 | 禁止 |
+|----|------|------|
+| Domain | 纯业务规则，不依赖框架 | Eloquent、HTTP、Redis 等基础设施 |
+| Application | 编排用例，调用 Domain + 仓储接口 | 直接操作 Request/Response |
+| Infrastructure | 实现仓储、第三方集成 | 业务规则 |
+| Http | 参数校验、调用 Application、返回 ApiResponse | 业务逻辑 |
+
+## 自动化测试（强制）
+
+**没有测试的领域代码不得合并。**
+
+### 测试分层
+
+| 类型 | 目录 | 覆盖对象 | 运行命令 |
+|------|------|----------|----------|
+| Unit | `tests/Unit/Domain/` | 实体、值对象、领域服务 | 不连数据库 |
+| Unit | `tests/Unit/Application/` | 用例、应用服务（Mock 仓储） | 不连数据库 |
+| Feature | `tests/Feature/` | API 端点、完整请求链路 | `RefreshDatabase` |
+| Integration | `tests/Feature/Infrastructure/` | 仓储实现、DB 交互 | `RefreshDatabase` |
+
+### 开发流程（TDD）
+
+1. **先写失败测试** → 描述领域行为或 API 契约
+2. **实现最小代码** → 使测试通过
+3. **重构** → 保持测试绿色
+4. **提交前** → 全量测试通过
+
+### 完成门槛
+
+```bash
+docker compose exec backend php artisan test
+```
+
+- 新增/修改领域逻辑 → 必须有对应 Unit 测试
+- 新增/修改 API → 必须有对应 Feature 测试
+- 测试失败或缺失 → **禁止声明任务完成**
+
+## 命名约定
+
+- 实体：`Domain/{BoundedContext}/Entities/Order.php`
+- 用例：`Application/{BoundedContext}/CreateOrder/CreateOrderHandler.php`
+- 仓储接口：`Domain/{BoundedContext}/Repositories/OrderRepositoryInterface.php`
+- 仓储实现：`Infrastructure/Persistence/Eloquent/EloquentOrderRepository.php`
+- 测试类：`{被测类名}Test.php`，与被测类同名
+
+## 示例
+
+```php
+// ❌ 业务逻辑写在 Controller
+public function store(Request $request) {
+    if ($request->stock < 1) throw ...;
+}
+
+// ✅ Controller 只调 Application
+public function store(CreateOrderRequest $request, CreateOrderHandler $handler) {
+    return ApiResponse::success($handler->handle($request->toCommand()));
+}
+```
+
+```php
+// ✅ 先写测试
+#[Test]
+public function order_cannot_be_created_with_zero_stock(): void
+{
+    $this->expectException(InsufficientStockException::class);
+    Order::create(product: $product, quantity: 0);
+}
+```

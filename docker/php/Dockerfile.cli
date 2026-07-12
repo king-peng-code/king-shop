@@ -1,0 +1,22 @@
+# king-shop 自有 PHP 基础镜像 — CLI 版（本地开发）
+# 镜像名: king-shop/php:8.4.3-cli
+# 构建: ./scripts/build-php-base.sh
+#
+# 仅在构建基础镜像时引用官方源，构建完成后即为自有镜像，可推送到私有仓库备份。
+
+ARG PHP_VERSION=8.4.3
+FROM php:${PHP_VERSION}-cli-bookworm
+
+LABEL org.opencontainers.image.title="king-shop/php-cli"
+LABEL org.opencontainers.image.version="${PHP_VERSION}"
+LABEL org.opencontainers.image.description="King Shop PHP base image (CLI)"
+
+COPY install-extensions.sh /tmp/install-extensions.sh
+RUN chmod +x /tmp/install-extensions.sh && /tmp/install-extensions.sh && rm /tmp/install-extensions.sh
+
+ARG COMPOSER_VERSION=2.8.5
+COPY --from=composer:${COMPOSER_VERSION} /usr/bin/composer /usr/bin/composer
+
+WORKDIR /var/www/html
+
+RUN php -v && php -m | grep -E 'pdo_mysql|redis|zip|mbstring'

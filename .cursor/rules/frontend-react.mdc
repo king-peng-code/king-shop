@@ -1,0 +1,16 @@
+---
+description: React 管理端开发约束
+globs: frontend/**/*
+alwaysApply: false
+---
+
+# Frontend (React 管理端)
+
+- **React 18.3**（锁定 `18.3.1`，禁止 18.2 及以下 / 19）
+- **TypeScript ~5.6** / **Vite 5.x**（禁止 Vite 4）
+- **Node 20 LTS**（≥18，见根目录 `.nvmrc`）
+- 组件: 函数式 + Hooks
+- API 请求集中在 `src/api/`
+- 页面放 `src/pages/`，通用组件放 `src/components/`
+- 不直连数据库，只通过 backend API
+- 版本详情见 `.cursor/rules/versions.mdc`

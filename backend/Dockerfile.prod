@@ -1,0 +1,28 @@
+# 生产镜像 — 基于自有基础镜像 king-shop/php:8.4.3-fpm
+FROM king-shop/php:8.4.3-fpm AS base
+
+# ── 依赖安装阶段 ──
+FROM base AS vendor
+
+WORKDIR /app
+COPY composer.json ./
+RUN composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader --no-scripts --no-ansi
+
+# ── 最终镜像 ──
+FROM base AS production
+
+WORKDIR /var/www/html
+
+COPY --from=vendor /app/vendor ./vendor
+COPY . .
+
+RUN composer dump-autoload --optimize \
+    && chown -R www-data:www-data storage bootstrap/cache
+
+COPY docker/entrypoint.prod.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
+
+EXPOSE 9000
+
+ENTRYPOINT ["entrypoint.sh"]
+CMD ["php-fpm", "-F"]

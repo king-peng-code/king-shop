@@ -1,0 +1,100 @@
+---
+description: king-shop 运行时与依赖版本约束（锁定基线，不可浮动）
+alwaysApply: true
+---
+
+# 版本约束（锁定基线）
+
+> **以下版本已定死，不得自行升级或降级。**
+> 变更须用户明确授权，并同步更新本文件、`composer.json` / `package.json`、`docker-compose.yml`。
+
+## 锁定版本（Fixed）
+
+| 组件 | 锁定版本 | 配置来源 |
+|------|----------|----------|
+| **PHP** | **8.4** | `docker/php/` → `king-shop/php:8.4.3-cli` / `fpm` |
+| **Laravel** | **12** | `backend/composer.json` |
+| **MySQL** | **8.0** | `docker-compose.yml` → `mysql:8.0.40` |
+| **Redis** | **7.4** | `docker-compose.yml` → `redis:7.4-alpine` |
+| **React** | **18.3** | `frontend/package.json` · `app/package.json` → `18.3.1` |
+
+## 禁止使用（Do NOT Use）
+
+| 禁止版本 | 原因 |
+|----------|------|
+| PHP 7.x / 8.0 / 8.1 / 8.2 / 8.3 / 8.5+ | 项目锁定 **PHP 8.4** |
+| Laravel 10 / 11 / 13+ | 项目锁定 **Laravel 12** |
+| MySQL 5.7 / 8.4 / 9.x / MariaDB | 项目锁定 **MySQL 8.0** |
+| Redis 6.x / 7.0~7.3 / 7.5+ | 项目锁定 **Redis 7.4** |
+| React 17 / 18.0~18.2 / 19 | 项目锁定 **React 18.3** |
+| Memcached 作为主缓存 | Session/Cache/Queue 统一 Redis |
+| Docker 镜像 `latest` 或未 pin 标签 | 必须 pin 具体版本 |
+
+## 其他运行时（参考，非本次锁定范围）
+
+| 组件 | 当前 |
+|------|------|
+| Node.js | 20 LTS（`.nvmrc`，最低 18） |
+| React Native | 0.76.9 |
+| Vite (frontend) | 5.x |
+| TypeScript (frontend) | ~5.6 |
+| TypeScript (app) | 5.0.4 |
+
+## PHP 基础镜像（自有）
+
+项目使用自封装 PHP 镜像，不直接依赖应用 Dockerfile 中的官方镜像。
+
+| 镜像 | 用途 |
+|------|------|
+| `king-shop/php:8.4.3-cli` | 本地开发 |
+| `king-shop/php:8.4.3-fpm` | 生产环境 |
+
+```bash
+./scripts/build-php-base.sh          # 构建
+./scripts/build-php-base.sh --save   # 离线备份
+REGISTRY=your-registry ./scripts/build-php-base.sh --push  # 推私有仓库
+```
+
+扩展 PHP 扩展：编辑 `docker/php/install-extensions.sh` 后重新构建。  
+详见 `docker/php/README.md`。
+
+## Docker Compose
+
+### 本地开发 — `docker-compose.yml`
+
+**backend + MySQL + Redis**，Node 在宿主机运行。
+
+| 服务 | 镜像（锁定） | 端口 |
+|------|-------------|------|
+| backend | `king-shop-backend:php8.4` | 8000 |
+| mysql | `mysql:8.0.40` | 3306 |
+| redis | `redis:7.4-alpine` | 6379 |
+
+```bash
+./scripts/dev-up.sh
+```
+
+### 单机生产 — `docker-compose.prod.yml`
+
+**Nginx + PHP-FPM + MySQL + Redis**，全部在同一台服务器，MySQL/Redis 仅内网。
+
+| 服务 | 镜像（锁定） | 端口 |
+|------|-------------|------|
+| nginx | `nginx:1.27.4-alpine` | 80（对外） |
+| backend | `king-shop-backend:prod` | 内网 9000 |
+| mysql | `mysql:8.0.40` | 仅内网 |
+| redis | `redis:7.4-alpine` | 仅内网 |
+
+```bash
+./scripts/deploy-prod.sh
+```
+
+详见 `docs/deploy-single-server.md`。
+
+## 本地环境检查
+
+```bash
+docker compose version
+node -v         # 推荐 20（frontend / app）
+docker compose exec backend php -v   # 必须 8.4.x
+```

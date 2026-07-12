@@ -1,0 +1,90 @@
+# king-shop 本地开发环境
+# 锁定版本: PHP 8.4 · MySQL 8.0 · Redis 7.4
+# Node 在宿主机运行（frontend / app）
+# 完整约束见 .cursor/rules/versions.mdc
+
+services:
+  mysql:
+    image: mysql:8.0.40
+    container_name: king-shop-mysql
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: king_shop
+      MYSQL_USER: king_shop
+      MYSQL_PASSWORD: secret
+      TZ: Asia/Shanghai
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --explicit_defaults_for_timestamp=true
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - king-shop
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  redis:
+    image: redis:7.4-alpine
+    container_name: king-shop-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - king-shop
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    image: king-shop-backend:php8.4
+    container_name: king-shop-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/var/www/html
+    environment:
+      APP_ENV: local
+      APP_DEBUG: "true"
+      APP_URL: http://localhost:8000
+      DB_HOST: mysql
+      DB_PORT: "3306"
+      DB_DATABASE: king_shop
+      DB_USERNAME: king_shop
+      DB_PASSWORD: secret
+      REDIS_HOST: redis
+      REDIS_PORT: "6379"
+      CACHE_STORE: redis
+      SESSION_DRIVER: redis
+      QUEUE_CONNECTION: redis
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - king-shop
+
+networks:
+  king-shop:
+    driver: bridge
+
+volumes:
+  mysql_data:
+  redis_data:
