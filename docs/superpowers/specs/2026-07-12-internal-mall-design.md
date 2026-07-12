@@ -451,6 +451,10 @@ flowchart LR
 
 ### M10 — App：订单管理与个人中心
 
+> **Design Spec：** [2026-07-12-M10-app-orders-profile-design.md](./2026-07-12-M10-app-orders-profile-design.md)  
+> **Implementation Plan：** [2026-07-12-M10-app-orders-profile.md](../plans/2026-07-12-M10-app-orders-profile.md)  
+> **执行记录：** [2026-07-12-M10-app-orders-profile.md](../records/2026-07-12-M10-app-orders-profile.md)
+
 **范围：** 订单列表/详情、取消订单、确认取餐、个人中心。
 
 **交付物：**
@@ -665,7 +669,7 @@ Agent 将：
 | M07 | 找人代付 | ✅ 已完成 | 2026-07-12 · [spec](./2026-07-12-M07-proxy-pay-design.md) |
 | M08 | App 登录与商品浏览 | ⬜ 待开始 | |
 | M09 | App 下单与支付 | ⬜ 待开始 | |
-| M10 | App 订单管理与个人中心 | ⬜ 待开始 | |
+| M10 | App 订单管理与个人中心 | ✅ 已完成 | 2026-07-12 · [spec](./2026-07-12-M10-app-orders-profile-design.md) |
 | M11 | 后台员工管理 | ⬜ 待开始 | |
 | M12 | 后台商品管理 | ✅ 已完成 | 2026-07-12 |
 | M13 | 后台订单管理 | ✅ 已完成 | 2026-07-12 |
