@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\CategoryController as AdminCategoryController;
 use App\Http\Controllers\Admin\EmployeeController;
+use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Catalog\CategoryController;
 use App\Http\Controllers\Catalog\ProductController;
@@ -30,6 +31,12 @@ Route::middleware(['auth:sanctum', 'password.changed', 'admin'])->prefix('admin'
     Route::apiResource('employees', EmployeeController::class);
     Route::apiResource('categories', AdminCategoryController::class);
     Route::apiResource('products', AdminProductController::class)->except(['destroy']);
+    Route::get('orders', [OrderController::class, 'index']);
+    Route::get('orders/{order}', [OrderController::class, 'show']);
+    Route::post('orders/{order}/preparing', [OrderController::class, 'preparing']);
+    Route::post('orders/{order}/ready', [OrderController::class, 'ready']);
+    Route::post('orders/{order}/complete', [OrderController::class, 'complete']);
+    Route::post('orders/{order}/cancel', [OrderController::class, 'cancel']);
 });
 
 Route::middleware(['auth:sanctum', 'password.changed'])->group(function (): void {
