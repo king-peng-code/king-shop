@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Button,
   Input,
@@ -39,6 +39,7 @@ export default function EmployeeListPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const fetchList = useCallback(async () => {
     setLoading(true);
@@ -59,9 +60,33 @@ export default function EmployeeListPage() {
     void fetchList();
   }, [fetchList]);
 
+  useEffect(() => {
+    return () => {
+      if (searchDebounceRef.current) {
+        clearTimeout(searchDebounceRef.current);
+      }
+    };
+  }, []);
+
+  const scheduleSearch = (value: string) => {
+    if (searchDebounceRef.current) {
+      clearTimeout(searchDebounceRef.current);
+    }
+    searchDebounceRef.current = setTimeout(() => {
+      handleSearch(value);
+    }, 300);
+  };
+
   const handleSearch = (value: string) => {
-    setKeyword(value);
+    setKeyword(value.trim());
     setPage(1);
+  };
+
+  const canManageRecord = (record: Employee): boolean => {
+    if (currentUser?.role === 'super_admin') {
+      return true;
+    }
+    return record.role === 'employee';
   };
 
   const openCreate = () => {
@@ -141,19 +166,24 @@ export default function EmployeeListPage() {
       key: 'actions',
       render: (_: unknown, record: Employee) => {
         const isSelf = record.id === currentUser?.id;
+        const manageable = canManageRecord(record);
         return (
           <Space>
-            <Button type="link" size="small" onClick={() => openEdit(record)}>
-              编辑
-            </Button>
-            <Popconfirm
-              title="确认重置为默认密码 123456？"
-              onConfirm={() => void handleResetPassword(record)}
-            >
-              <Button type="link" size="small">
-                重置密码
+            {manageable && (
+              <Button type="link" size="small" onClick={() => openEdit(record)}>
+                编辑
               </Button>
-            </Popconfirm>
+            )}
+            {manageable && (
+              <Popconfirm
+                title="确认重置为默认密码 123456？"
+                onConfirm={() => void handleResetPassword(record)}
+              >
+                <Button type="link" size="small">
+                  重置密码
+                </Button>
+              </Popconfirm>
+            )}
             {record.status === 'active' && !isSelf && (
               <Popconfirm
                 title="确认禁用该员工？"
@@ -185,6 +215,7 @@ export default function EmployeeListPage() {
           placeholder="搜索姓名 / 手机号 / 工号"
           allowClear
           onSearch={handleSearch}
+          onChange={(e) => scheduleSearch(e.target.value)}
           style={{ width: 280 }}
         />
         <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>

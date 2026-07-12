@@ -28,9 +28,14 @@ export function clearToken(): void {
 
 type OnUnauthorized = () => void;
 let onUnauthorized: OnUnauthorized | null = null;
+let onMustChangePassword: OnUnauthorized | null = null;
 
 export function setOnUnauthorized(handler: OnUnauthorized): void {
   onUnauthorized = handler;
+}
+
+export function setOnMustChangePassword(handler: OnUnauthorized): void {
+  onMustChangePassword = handler;
 }
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:8000/api/v1';
@@ -71,6 +76,9 @@ export async function request<T>(
   }
 
   if (!response.ok || body.code !== 0) {
+    if (body.code === 40301) {
+      onMustChangePassword?.();
+    }
     const errors = (body as ApiResponse<unknown> & { errors?: Record<string, string[]> }).errors;
     throw new ApiError(
       response.status,

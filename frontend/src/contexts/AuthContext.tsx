@@ -12,6 +12,7 @@ import { authApi } from '../api/auth';
 import {
   clearToken,
   getToken,
+  setOnMustChangePassword,
   setOnUnauthorized,
   setToken,
 } from '../api/client';
@@ -64,6 +65,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setTokenState(null);
       setUser(null);
       navigate('/login');
+    });
+    setOnMustChangePassword(() => {
+      navigate('/change-password');
     });
   }, [navigate]);
 

@@ -18,6 +18,7 @@ export default function LoginPage() {
     if (isAdminRole(user.role)) {
       return <Navigate to="/employees" replace />;
     }
+    return <Navigate to="/" replace />;
   }
 
   const onFinish = async (values: { phone: string; password: string }) => {
@@ -30,6 +31,8 @@ export default function LoginPage() {
         navigate('/change-password');
       } else if (isAdminRole(result.user.role)) {
         navigate('/employees');
+      } else {
+        navigate('/');
       }
     } catch (e) {
       if (e instanceof ApiError) {
