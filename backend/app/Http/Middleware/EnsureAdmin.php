@@ -17,6 +17,10 @@ class EnsureAdmin
             return ApiResponse::error(403, '无权访问', null, 403);
         }
 
+        if ($user->status !== 'active') {
+            return ApiResponse::error(403, '账号已禁用', null, 403);
+        }
+
         return $next($request);
     }
 }

@@ -6,7 +6,9 @@ use App\Application\Identity\DTO\UpdateEmployeeCommand;
 use App\Domain\Identity\Entities\User;
 use App\Domain\Identity\Exceptions\ForbiddenRoleAssignmentException;
 use App\Domain\Identity\Exceptions\SelfModificationForbiddenException;
+use App\Domain\Identity\Exceptions\UserNotFoundException;
 use App\Domain\Identity\Repositories\UserRepositoryInterface;
+use App\Infrastructure\Persistence\Eloquent\Models\UserModel;
 use App\Domain\Identity\ValueObjects\Role;
 use Illuminate\Support\Facades\Hash;
 
@@ -19,7 +21,7 @@ class UpdateEmployeeHandler
     public function handle(UpdateEmployeeCommand $command, int $operatorId, Role $operatorRole): User
     {
         $employee = $this->repository->findById($command->employeeId)
-            ?? throw new \RuntimeException("Employee {$command->employeeId} not found");
+            ?? throw new UserNotFoundException('员工不存在');
 
         if (! $operatorRole->canAssignRole($command->role)) {
             throw new ForbiddenRoleAssignmentException;
@@ -50,6 +52,12 @@ class UpdateEmployeeHandler
             );
         }
 
-        return $this->repository->save($updated);
+        $saved = $this->repository->save($updated);
+
+        if (! $command->status->isActive() && $employee->status->isActive()) {
+            UserModel::query()->find($command->employeeId)?->tokens()->delete();
+        }
+
+        return $saved;
     }
 }

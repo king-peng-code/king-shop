@@ -3,8 +3,10 @@
 namespace App\Application\Identity\DisableEmployee;
 
 use App\Domain\Identity\Exceptions\SelfModificationForbiddenException;
+use App\Domain\Identity\Exceptions\UserNotFoundException;
 use App\Domain\Identity\Repositories\UserRepositoryInterface;
 use App\Domain\Identity\ValueObjects\UserStatus;
+use App\Infrastructure\Persistence\Eloquent\Models\UserModel;
 
 class DisableEmployeeHandler
 {
@@ -19,10 +21,11 @@ class DisableEmployeeHandler
         }
 
         $employee = $this->repository->findById($employeeId)
-            ?? throw new \RuntimeException("Employee {$employeeId} not found");
+            ?? throw new UserNotFoundException('员工不存在');
 
         if ($employee->status->isActive()) {
             $this->repository->save($employee->withStatus(UserStatus::disabled()));
+            UserModel::query()->find($employeeId)?->tokens()->delete();
         }
     }
 }

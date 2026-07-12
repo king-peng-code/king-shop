@@ -3,6 +3,7 @@
 namespace App\Application\Identity\GetEmployee;
 
 use App\Domain\Identity\Entities\User;
+use App\Domain\Identity\Exceptions\UserNotFoundException;
 use App\Domain\Identity\Repositories\UserRepositoryInterface;
 
 class GetEmployeeHandler
@@ -14,6 +15,6 @@ class GetEmployeeHandler
     public function handle(int $employeeId): User
     {
         return $this->repository->findById($employeeId)
-            ?? throw new \RuntimeException("Employee {$employeeId} not found");
+            ?? throw new UserNotFoundException('员工不存在');
     }
 }

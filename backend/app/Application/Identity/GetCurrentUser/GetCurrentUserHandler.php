@@ -3,6 +3,7 @@
 namespace App\Application\Identity\GetCurrentUser;
 
 use App\Domain\Identity\Entities\User;
+use App\Domain\Identity\Exceptions\UserNotFoundException;
 use App\Domain\Identity\Repositories\UserRepositoryInterface;
 
 class GetCurrentUserHandler
@@ -14,6 +15,6 @@ class GetCurrentUserHandler
     public function handle(int $userId): User
     {
         return $this->repository->findById($userId)
-            ?? throw new \RuntimeException("User {$userId} not found");
+            ?? throw new UserNotFoundException;
     }
 }

@@ -137,4 +137,26 @@ class EmployeeApiTest extends TestCase
             ])
             ->assertForbidden();
     }
+
+    #[Test]
+    public function disabled_admin_token_cannot_access_admin_routes(): void
+    {
+        $admin = UserModel::factory()->admin()->create();
+        $token = $admin->createToken('test')->plainTextToken;
+
+        $admin->update(['status' => 'disabled']);
+
+        $this->withToken($token)
+            ->getJson('/api/v1/admin/employees')
+            ->assertForbidden()
+            ->assertJsonPath('message', '账号已禁用');
+    }
+
+    #[Test]
+    public function show_missing_employee_returns_404(): void
+    {
+        $this->withToken($this->adminToken())
+            ->getJson('/api/v1/admin/employees/99999')
+            ->assertNotFound();
+    }
 }
