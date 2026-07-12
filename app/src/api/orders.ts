@@ -2,10 +2,22 @@ import {API_BASE_URL} from '../config/api';
 import type {
   CreateOrderPayload,
   Order,
+  OrderStatus,
   PayChannel,
   PayOrderResult,
   ProxyPayLinkResult,
 } from '../types/order';
+
+export interface ListOrdersParams {
+  status?: OrderStatus;
+  page?: number;
+  per_page?: number;
+}
+
+export interface PaginatedOrders {
+  items: Order[];
+  meta: {total: number; page: number; per_page: number};
+}
 import {apiRequest} from './client';
 
 export async function createOrder(payload: CreateOrderPayload): Promise<Order> {
@@ -17,6 +29,25 @@ export async function createOrder(payload: CreateOrderPayload): Promise<Order> {
 
 export async function getOrder(orderId: number): Promise<Order> {
   return apiRequest<Order>(`/orders/${orderId}`);
+}
+
+export async function listOrders(
+  params: ListOrdersParams = {},
+): Promise<PaginatedOrders> {
+  const search = new URLSearchParams();
+  if (params.status) search.set('status', params.status);
+  if (params.page) search.set('page', String(params.page));
+  if (params.per_page) search.set('per_page', String(params.per_page));
+  const qs = search.toString();
+  return apiRequest<PaginatedOrders>(`/orders${qs ? `?${qs}` : ''}`);
+}
+
+export async function cancelOrder(orderId: number): Promise<Order> {
+  return apiRequest<Order>(`/orders/${orderId}/cancel`, {method: 'POST'});
+}
+
+export async function completeOrder(orderId: number): Promise<Order> {
+  return apiRequest<Order>(`/orders/${orderId}/complete`, {method: 'POST'});
 }
 
 export async function payOrder(

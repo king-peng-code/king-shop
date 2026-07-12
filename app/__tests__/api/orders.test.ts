@@ -1,7 +1,10 @@
 import {
+  cancelOrder,
+  completeOrder,
   createOrder,
   generateProxyPayLink,
   getOrder,
+  listOrders,
   payOrder,
   simulateFakeNotify,
 } from '../../src/api/orders';
@@ -142,6 +145,55 @@ it('simulateFakeNotify posts TRADE_SUCCESS to alipay notify', async () => {
     (fetch as jest.Mock).mock.calls[0][1].body as string,
   );
   expect(body.out_trade_no).toBe('KS202607121430001P001');
+});
+
+it('listOrders passes status query', async () => {
+  (fetch as jest.Mock).mockResolvedValue({
+    ok: true,
+    status: 200,
+    json: async () => ({
+      code: 0,
+      message: 'ok',
+      data: {items: [sampleOrder], meta: {total: 1, page: 1, per_page: 20}},
+    }),
+  });
+
+  const result = await listOrders({status: 'pending_payment'});
+  expect(result.items).toHaveLength(1);
+  expect(fetch).toHaveBeenCalledWith(
+    expect.stringMatching(/status=pending_payment/),
+    expect.any(Object),
+  );
+});
+
+it('cancelOrder posts to cancel endpoint', async () => {
+  (fetch as jest.Mock).mockResolvedValue({
+    ok: true,
+    status: 200,
+    json: async () => ({
+      code: 0,
+      message: 'ok',
+      data: {...sampleOrder, status: 'cancelled'},
+    }),
+  });
+
+  const result = await cancelOrder(10);
+  expect(result.status).toBe('cancelled');
+});
+
+it('completeOrder posts to complete endpoint', async () => {
+  (fetch as jest.Mock).mockResolvedValue({
+    ok: true,
+    status: 200,
+    json: async () => ({
+      code: 0,
+      message: 'ok',
+      data: {...sampleOrder, status: 'completed'},
+    }),
+  });
+
+  const result = await completeOrder(10);
+  expect(result.status).toBe('completed');
 });
 
 it('simulateFakeNotify throws when notify fails', async () => {
