@@ -13,6 +13,12 @@ class ProductCatalogApiTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seedLocalStoragePublicBaseUrl();
+    }
+
     private function employeeToken(): string
     {
         $user = UserModel::factory()->create(['role' => 'employee', 'must_change_password' => false]);

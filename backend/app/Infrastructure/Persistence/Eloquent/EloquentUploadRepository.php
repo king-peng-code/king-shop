@@ -15,6 +15,13 @@ class EloquentUploadRepository implements UploadRepositoryInterface
         return $model ? $this->toEntity($model) : null;
     }
 
+    public function findByMd5(string $md5): ?Upload
+    {
+        $model = UploadModel::query()->where('md5', $md5)->first();
+
+        return $model ? $this->toEntity($model) : null;
+    }
+
     public function save(Upload $upload): Upload
     {
         $model = UploadModel::query()->create([
@@ -23,6 +30,7 @@ class EloquentUploadRepository implements UploadRepositoryInterface
             'disk' => $upload->disk,
             'mime_type' => $upload->mimeType,
             'size' => $upload->size,
+            'md5' => $upload->md5,
             'uploaded_by' => $upload->uploadedBy,
         ]);
 
@@ -38,6 +46,7 @@ class EloquentUploadRepository implements UploadRepositoryInterface
             disk: $model->disk,
             mimeType: $model->mime_type,
             size: $model->size,
+            md5: $model->md5,
             uploadedBy: $model->uploaded_by,
         );
     }

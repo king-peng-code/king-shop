@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Catalog\CategoryController;
 use App\Http\Controllers\Catalog\OrderController as CatalogOrderController;
 use App\Http\Controllers\Catalog\ProductController;
+use App\Http\Controllers\PaymentNotifyController;
 use App\Http\Controllers\Admin\SystemConfigController;
 use App\Http\Controllers\Admin\UploadController;
 use App\Http\Controllers\AuthController;
@@ -14,6 +15,9 @@ use App\Http\Responses\ApiResponse;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/health', fn () => ApiResponse::success(['status' => 'healthy']));
+
+Route::post('/payments/notify/alipay', [PaymentNotifyController::class, 'alipay']);
+Route::post('/payments/notify/wechat', [PaymentNotifyController::class, 'wechat']);
 
 Route::prefix('auth')->group(function (): void {
     Route::post('/login', [AuthController::class, 'login']);
@@ -47,5 +51,6 @@ Route::middleware(['auth:sanctum', 'password.changed'])->group(function (): void
     Route::post('/orders', [CatalogOrderController::class, 'store']);
     Route::get('/orders', [CatalogOrderController::class, 'index']);
     Route::get('/orders/{order}', [CatalogOrderController::class, 'show']);
+    Route::post('/orders/{order}/pay', [CatalogOrderController::class, 'pay']);
     Route::post('/orders/{order}/cancel', [CatalogOrderController::class, 'cancel']);
 });

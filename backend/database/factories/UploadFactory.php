@@ -24,6 +24,7 @@ class UploadFactory extends Factory
             'disk' => 'local',
             'mime_type' => 'image/jpeg',
             'size' => 1024,
+            'md5' => md5(fake()->uuid()),
             'uploaded_by' => UserModel::factory(),
         ];
     }

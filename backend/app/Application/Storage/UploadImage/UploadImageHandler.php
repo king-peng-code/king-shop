@@ -19,6 +19,19 @@ class UploadImageHandler
 
     public function handle(UploadImageCommand $command): UploadResultDto
     {
+        $md5 = md5($command->contents);
+
+        $existing = $this->uploadRepository->findByMd5($md5);
+        if ($existing !== null) {
+            return new UploadResultDto(
+                id: $existing->id,
+                url: $this->urlGenerator->generate($existing->path, $existing->disk),
+                path: $existing->path,
+                filename: basename($existing->path),
+                size: $existing->size,
+            );
+        }
+
         $driver = $this->driverResolver->resolve();
         $stored = $driver->store($command->contents, $command->extension, $command->mimeType);
 
@@ -29,6 +42,7 @@ class UploadImageHandler
             disk: $stored->disk,
             mimeType: $command->mimeType,
             size: $command->size,
+            md5: $md5,
             uploadedBy: $command->uploadedBy,
         ));
 

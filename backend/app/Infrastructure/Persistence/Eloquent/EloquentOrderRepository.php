@@ -51,6 +51,8 @@ class EloquentOrderRepository implements OrderRepositoryInterface
         $model = OrderModel::query()->findOrFail($order->id);
         $model->fill([
             'status' => $order->status->value,
+            'paid_at' => $order->paidAt?->format('Y-m-d H:i:s'),
+            'paid_by_user_id' => $order->paidByUserId,
             'cancelled_at' => $order->cancelledAt?->format('Y-m-d H:i:s'),
             'cancel_reason' => $order->cancelReason,
         ]);

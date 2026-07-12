@@ -33,4 +33,40 @@ class GetSystemConfigsHandlerTest extends TestCase
         $this->assertSame('****', $paymentGroup['items'][0]['value']);
         $this->assertTrue($paymentGroup['items'][0]['is_sensitive']);
     }
+
+    #[Test]
+    public function handle_shows_empty_local_public_base_url_when_unset(): void
+    {
+        $repository = $this->createMock(SystemConfigRepositoryInterface::class);
+        $repository->method('all')->willReturn([
+            new SystemConfig('storage', 'local.public_base_url', '', false, '图片公开访问域名'),
+        ]);
+
+        $handler = new GetSystemConfigsHandler($repository);
+        $result = $handler->handle();
+
+        $storageGroup = collect($result['groups'])->firstWhere('name', 'storage');
+        $item = $storageGroup['items'][0];
+
+        $this->assertSame('', $item['value']);
+        $this->assertFalse($item['is_readonly']);
+    }
+
+    #[Test]
+    public function handle_shows_stored_local_public_base_url_when_set(): void
+    {
+        $repository = $this->createMock(SystemConfigRepositoryInterface::class);
+        $repository->method('all')->willReturn([
+            new SystemConfig('storage', 'local.public_base_url', 'https://api.test.com', false, '图片公开访问域名'),
+        ]);
+
+        $handler = new GetSystemConfigsHandler($repository);
+        $result = $handler->handle();
+
+        $storageGroup = collect($result['groups'])->firstWhere('name', 'storage');
+        $item = $storageGroup['items'][0];
+
+        $this->assertSame('https://api.test.com', $item['value']);
+        $this->assertFalse($item['is_readonly']);
+    }
 }

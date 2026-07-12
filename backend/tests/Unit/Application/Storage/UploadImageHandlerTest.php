@@ -29,10 +29,15 @@ class UploadImageHandlerTest extends TestCase
 
         $repository = $this->createMock(UploadRepositoryInterface::class);
         $repository->expects($this->once())
+            ->method('findByMd5')
+            ->with(md5('binary'))
+            ->willReturn(null);
+        $repository->expects($this->once())
             ->method('save')
             ->with($this->callback(fn (Upload $upload) => $upload->originalName === 'photo.jpg'
                 && $upload->disk === 'local'
-                && $upload->size === 512))
+                && $upload->size === 512
+                && $upload->md5 === md5('binary')))
             ->willReturn(new Upload(
                 id: 1,
                 originalName: 'photo.jpg',
@@ -40,6 +45,7 @@ class UploadImageHandlerTest extends TestCase
                 disk: 'local',
                 mimeType: 'image/jpeg',
                 size: 512,
+                md5: md5('binary'),
                 uploadedBy: 10,
             ));
 
@@ -63,5 +69,51 @@ class UploadImageHandlerTest extends TestCase
         $this->assertSame('abc.jpg', $result->filename);
         $this->assertSame(512, $result->size);
         $this->assertSame('http://localhost:8000/storage/uploads/2026/07/abc.jpg', $result->url);
+    }
+
+    #[Test]
+    public function handle_returns_existing_upload_when_md5_matches(): void
+    {
+        $existing = new Upload(
+            id: 5,
+            originalName: 'old.jpg',
+            path: 'uploads/2026/07/existing.jpg',
+            disk: 'local',
+            mimeType: 'image/jpeg',
+            size: 800,
+            md5: md5('binary'),
+            uploadedBy: 3,
+        );
+
+        $resolver = $this->createMock(StorageDriverResolverInterface::class);
+        $resolver->expects($this->never())->method('resolve');
+
+        $repository = $this->createMock(UploadRepositoryInterface::class);
+        $repository->expects($this->once())
+            ->method('findByMd5')
+            ->with(md5('binary'))
+            ->willReturn($existing);
+        $repository->expects($this->never())->method('save');
+
+        $urlGenerator = $this->createMock(PublicUrlGeneratorInterface::class);
+        $urlGenerator->method('generate')
+            ->with('uploads/2026/07/existing.jpg', 'local')
+            ->willReturn('http://localhost:8000/storage/uploads/2026/07/existing.jpg');
+
+        $handler = new UploadImageHandler($resolver, $repository, $urlGenerator);
+
+        $result = $handler->handle(new UploadImageCommand(
+            originalName: 'photo.jpg',
+            contents: 'binary',
+            extension: 'jpg',
+            mimeType: 'image/jpeg',
+            size: 512,
+            uploadedBy: 10,
+        ));
+
+        $this->assertSame(5, $result->id);
+        $this->assertSame('existing.jpg', $result->filename);
+        $this->assertSame(800, $result->size);
+        $this->assertSame('http://localhost:8000/storage/uploads/2026/07/existing.jpg', $result->url);
     }
 }

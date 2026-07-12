@@ -80,4 +80,28 @@ class UpdateSystemConfigsHandlerTest extends TestCase
             'admin',
         );
     }
+
+    #[Test]
+    public function admin_can_update_local_public_base_url(): void
+    {
+        $repository = $this->createMock(SystemConfigRepositoryInterface::class);
+        $repository->method('findByGroupAndKey')
+            ->with('storage', 'local.public_base_url')
+            ->willReturn(new SystemConfig('storage', 'local.public_base_url', '', false));
+        $repository->expects($this->once())
+            ->method('updateValue')
+            ->with('storage', 'local.public_base_url', 'https://api.test.com');
+
+        $getHandler = $this->createMock(GetSystemConfigsHandler::class);
+        $getHandler->method('handle')->willReturn(['groups' => []]);
+
+        $handler = new UpdateSystemConfigsHandler($repository, $getHandler);
+
+        $result = $handler->handle(
+            [new SystemConfigItemDto('storage', 'local.public_base_url', 'https://api.test.com')],
+            'admin',
+        );
+
+        $this->assertSame(['groups' => []], $result);
+    }
 }

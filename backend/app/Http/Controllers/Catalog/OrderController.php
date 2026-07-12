@@ -9,10 +9,13 @@ use App\Application\Order\DTO\CreateOrderItemCommand;
 use App\Application\Order\DTO\UserOrderListQuery;
 use App\Application\Order\GetMyOrder\GetMyOrderHandler;
 use App\Application\Order\ListMyOrders\ListMyOrdersHandler;
+use App\Application\Payment\InitiatePayment\InitiatePaymentHandler;
 use App\Domain\Order\ValueObjects\PaymentMethod;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Catalog\CreateOrderRequest;
+use App\Http\Requests\Catalog\InitiatePaymentRequest;
 use App\Http\Resources\Catalog\OrderResource;
+use App\Http\Resources\Catalog\PaymentResource;
 use App\Http\Responses\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -77,5 +80,23 @@ class OrderController extends Controller
         return ApiResponse::success(
             new OrderResource($handler->handle($order, $request->user()->id)),
         );
+    }
+
+    public function pay(
+        InitiatePaymentRequest $request,
+        int $order,
+        InitiatePaymentHandler $handler,
+    ): JsonResponse {
+        $validated = $request->validated();
+        $result = $handler->handle(
+            orderId: $order,
+            userId: $request->user()->id,
+            channel: $validated['channel'] ?? null,
+        );
+
+        return ApiResponse::success([
+            'payment' => new PaymentResource($result['payment']),
+            'pay_params' => $result['pay_params'],
+        ]);
     }
 }

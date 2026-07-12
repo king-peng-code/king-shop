@@ -19,7 +19,7 @@ class UpdateSystemConfigsRequest extends FormRequest
             'configs' => ['required', 'array', 'min:1'],
             'configs.*.group' => ['required', 'string', 'in:app,payment,storage,order'],
             'configs.*.key' => ['required', 'string', 'max:100'],
-            'configs.*.value' => ['required', 'string'],
+            'configs.*.value' => ['present', 'string'],
         ];
     }
 

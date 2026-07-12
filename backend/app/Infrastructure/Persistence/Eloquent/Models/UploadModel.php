@@ -20,6 +20,7 @@ class UploadModel extends Model
         'disk',
         'mime_type',
         'size',
+        'md5',
         'uploaded_by',
     ];
 

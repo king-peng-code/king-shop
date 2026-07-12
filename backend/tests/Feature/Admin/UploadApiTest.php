@@ -22,6 +22,7 @@ class UploadApiTest extends TestCase
     {
         parent::setUp();
         Storage::fake('public');
+        $this->seedLocalStoragePublicBaseUrl();
         $this->user = UserModel::factory()->admin()->create();
         $this->token = $this->user->createToken('test')->plainTextToken;
     }
@@ -49,8 +50,6 @@ class UploadApiTest extends TestCase
     #[Test]
     public function upload_returns_id_url_and_persists_record(): void
     {
-        config(['storage.public_base_url' => 'http://localhost:8000']);
-
         $file = UploadedFile::fake()->image('photo.jpg', 200, 200)->size(200);
 
         $response = $this->withToken($this->token)
@@ -71,6 +70,37 @@ class UploadApiTest extends TestCase
         $this->assertStringStartsWith('uploads/', $upload->path);
         $this->assertStringStartsWith('http://localhost:8000/storage/', $response->json('data.url'));
         Storage::disk('public')->assertExists($upload->path);
+    }
+
+    #[Test]
+    public function duplicate_image_upload_returns_existing_record(): void
+    {
+        $file = UploadedFile::fake()->image('photo.jpg', 200, 200);
+        $content = file_get_contents($file->getRealPath());
+
+        $first = $this->withToken($this->token)
+            ->post('/api/v1/admin/upload', ['file' => $file], [
+                'Accept' => 'application/json',
+            ]);
+
+        $first->assertOk()->assertJsonPath('code', 0);
+        $firstId = $first->json('data.id');
+        $firstPath = $first->json('data.path');
+
+        $duplicate = UploadedFile::fake()->createWithContent('other-name.jpg', $content, 'image/jpeg');
+
+        $second = $this->withToken($this->token)
+            ->post('/api/v1/admin/upload', ['file' => $duplicate], [
+                'Accept' => 'application/json',
+            ]);
+
+        $second->assertOk()
+            ->assertJsonPath('code', 0)
+            ->assertJsonPath('data.id', $firstId)
+            ->assertJsonPath('data.path', $firstPath);
+
+        $this->assertSame(1, UploadModel::count());
+        Storage::disk('public')->assertExists($firstPath);
     }
 
     #[Test]

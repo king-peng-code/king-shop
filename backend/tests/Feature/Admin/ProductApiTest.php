@@ -14,6 +14,12 @@ class ProductApiTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seedLocalStoragePublicBaseUrl();
+    }
+
     private function adminToken(): string
     {
         $user = UserModel::factory()->admin()->create();

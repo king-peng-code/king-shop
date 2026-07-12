@@ -25,6 +25,10 @@ class UpdateSystemConfigsHandler
 
             $existing = $this->repository->findByGroupAndKey($item->group, $item->key);
 
+            if ($existing !== null && SystemConfig::isReadonly($item->group, $item->key)) {
+                continue;
+            }
+
             if (
                 $existing !== null
                 && $existing->isSensitive

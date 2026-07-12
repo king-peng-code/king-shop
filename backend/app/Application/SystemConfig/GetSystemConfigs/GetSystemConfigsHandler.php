@@ -3,6 +3,7 @@
 namespace App\Application\SystemConfig\GetSystemConfigs;
 
 use App\Application\SystemConfig\ConfigGroupLabels;
+use App\Domain\SystemConfig\Entities\SystemConfig;
 use App\Domain\SystemConfig\Repositories\SystemConfigRepositoryInterface;
 
 class GetSystemConfigsHandler
@@ -16,10 +17,13 @@ class GetSystemConfigsHandler
         $grouped = [];
 
         foreach ($this->repository->all() as $config) {
+            $value = $config->displayValue();
+
             $grouped[$config->group][] = [
                 'key' => $config->key,
-                'value' => $config->displayValue(),
+                'value' => $value,
                 'is_sensitive' => $config->isSensitive,
+                'is_readonly' => SystemConfig::isReadonly($config->group, $config->key),
                 'description' => $config->description,
             ];
         }

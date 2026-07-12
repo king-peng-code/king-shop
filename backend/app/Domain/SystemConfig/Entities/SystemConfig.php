@@ -6,6 +6,9 @@ final class SystemConfig
 {
     public const MASK_PLACEHOLDER = '****';
 
+    /** @var array<string, list<string>> */
+    public const READONLY_KEYS = [];
+
     public function __construct(
         public readonly string $group,
         public readonly string $key,
@@ -21,5 +24,10 @@ final class SystemConfig
         }
 
         return $this->value;
+    }
+
+    public static function isReadonly(string $group, string $key): bool
+    {
+        return in_array($key, self::READONLY_KEYS[$group] ?? [], true);
     }
 }
