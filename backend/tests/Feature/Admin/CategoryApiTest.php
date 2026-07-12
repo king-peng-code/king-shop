@@ -91,4 +91,29 @@ class CategoryApiTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.items.0.name', '热饮');
     }
+
+    #[Test]
+    public function category_list_refreshes_stale_cache_when_database_ids_change(): void
+    {
+        Cache::flush();
+
+        app(CategoryListCache::class)->put([
+            'items' => [
+                new \App\Domain\Catalog\Entities\Category(
+                    id: 12,
+                    name: '热饮',
+                    sort: 0,
+                    status: \App\Domain\Catalog\ValueObjects\CategoryStatus::active(),
+                ),
+            ],
+        ]);
+
+        $category = CategoryModel::factory()->create(['name' => '饮品']);
+
+        $this->withToken($this->adminToken())
+            ->getJson('/api/v1/admin/categories')
+            ->assertOk()
+            ->assertJsonPath('data.items.0.id', $category->id)
+            ->assertJsonPath('data.items.0.name', '饮品');
+    }
 }

@@ -2,13 +2,7 @@ export type PaymentMethod = 'self' | 'proxy';
 
 export type PayChannel = 'fake' | 'alipay_sandbox' | 'wechat';
 
-export type OrderStatus =
-  | 'pending_payment'
-  | 'paid'
-  | 'preparing'
-  | 'ready'
-  | 'completed'
-  | 'cancelled';
+export type OrderStatus = 'pending_payment' | 'paid' | 'cancelled';
 
 export interface OrderItem {
   id: number;

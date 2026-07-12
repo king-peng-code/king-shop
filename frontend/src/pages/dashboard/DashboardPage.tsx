@@ -32,9 +32,6 @@ import { fenToYuan } from '../../utils/price';
 const STATUS_COLORS: Record<OrderStatus, string> = {
   pending_payment: '#fa8c16',
   paid: '#1677ff',
-  preparing: '#722ed1',
-  ready: '#52c41a',
-  completed: '#8c8c8c',
   cancelled: '#ff4d4f',
 };
 

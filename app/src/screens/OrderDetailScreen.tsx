@@ -19,7 +19,7 @@ import type {CompositeNavigationProp} from '@react-navigation/native';
 import type {BottomTabNavigationProp} from '@react-navigation/bottom-tabs';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import type {RouteProp} from '@react-navigation/native';
-import {cancelOrder, completeOrder, getOrder} from '../api/orders';
+import {cancelOrder, getOrder} from '../api/orders';
 import {ApiError} from '../api/client';
 import LoadingView from '../components/LoadingView';
 import PaymentChannelPicker from '../components/PaymentChannelPicker';
@@ -142,28 +142,6 @@ export default function OrderDetailScreen() {
     ]);
   };
 
-  const handleComplete = () => {
-    Alert.alert('确认取餐', '确认已取到餐品？', [
-      {text: '取消', style: 'cancel'},
-      {
-        text: '确认',
-        onPress: () => {
-          void (async () => {
-            setIsActionLoading(true);
-            try {
-              const updated = await completeOrder(orderId);
-              setOrder(updated);
-            } catch (e) {
-              await handleApiError(e);
-            } finally {
-              setIsActionLoading(false);
-            }
-          })();
-        },
-      },
-    ]);
-  };
-
   const handlePayConfirm = () => {
     setShowPayModal(false);
     navigation.getParent()?.navigate('ShopTab', {
@@ -193,11 +171,10 @@ export default function OrderDetailScreen() {
   }
 
   const statusColor = getOrderStatusColor(order.status);
-  const statusLabel = getOrderStatusLabel(order.status);
+  const statusLabel = getOrderStatusLabel(order.status, order.cancel_reason);
   const showPendingActions = order.status === 'pending_payment';
   const showSelfPayButton =
     showPendingActions && order.payment_method === 'self';
-  const showCompleteAction = order.status === 'ready';
 
   return (
     <View style={styles.container}>
@@ -280,46 +257,30 @@ export default function OrderDetailScreen() {
         {error ? <Text style={styles.inlineError}>{error}</Text> : null}
       </ScrollView>
 
-      {showPendingActions || showCompleteAction ? (
+      {showPendingActions ? (
         <View style={styles.footer}>
-          {showPendingActions ? (
-            <>
-              {showSelfPayButton ? (
-                <Pressable
-                  style={[styles.primaryButton, isActionLoading && styles.disabled]}
-                  onPress={() => setShowPayModal(true)}
-                  disabled={isActionLoading}>
-                  {isActionLoading ? (
-                    <ActivityIndicator color="#fff" />
-                  ) : (
-                    <Text style={styles.primaryButtonText}>去支付</Text>
-                  )}
-                </Pressable>
-              ) : (
-                <Text style={styles.proxyHint}>
-                  代付订单请通过代付链接完成支付
-                </Text>
-              )}
-              <Pressable
-                style={[styles.secondaryButton, isActionLoading && styles.disabled]}
-                onPress={handleCancel}
-                disabled={isActionLoading}>
-                <Text style={styles.secondaryButtonText}>取消订单</Text>
-              </Pressable>
-            </>
-          ) : null}
-          {showCompleteAction ? (
+          {showSelfPayButton ? (
             <Pressable
               style={[styles.primaryButton, isActionLoading && styles.disabled]}
-              onPress={handleComplete}
+              onPress={() => setShowPayModal(true)}
               disabled={isActionLoading}>
               {isActionLoading ? (
                 <ActivityIndicator color="#fff" />
               ) : (
-                <Text style={styles.primaryButtonText}>确认取餐</Text>
+                <Text style={styles.primaryButtonText}>去支付</Text>
               )}
             </Pressable>
-          ) : null}
+          ) : (
+            <Text style={styles.proxyHint}>
+              代付订单请通过代付链接完成支付
+            </Text>
+          )}
+          <Pressable
+            style={[styles.secondaryButton, isActionLoading && styles.disabled]}
+            onPress={handleCancel}
+            disabled={isActionLoading}>
+            <Text style={styles.secondaryButtonText}>取消订单</Text>
+          </Pressable>
         </View>
       ) : null}
 

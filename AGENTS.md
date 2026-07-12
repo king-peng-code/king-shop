@@ -205,6 +205,23 @@ Superpowers `test-driven-development` 技能在 DDD 开发时**默认启用**，
 4. 只修改与任务相关的文件，保持最小改动
 5. frontend 和 app 不直连数据库，统一通过 backend API 通信
 
+## 本地开发数据库（禁止清空）
+
+Docker 开发环境的 **MySQL `king_shop` 是共享持久化库**（`mysql_data` volume），存放手动 seed、后台录入的演示数据。
+
+| 禁止 | 原因 |
+|------|------|
+| `migrate:fresh` / `migrate:refresh` / `migrate:reset` / `db:wipe` 对 MySQL | 会删除全部业务数据 |
+| `docker compose exec backend php artisan test`（未先 config:clear） | **config:cache 会让测试连 MySQL**，`RefreshDatabase` 会清空 `king_shop` |
+| 测试连接 Docker MySQL | 测试必须用 sqlite `:memory:`（`phpunit.xml` 已配置） |
+
+**正确做法：**
+- 跑测试：**只用** `./scripts/docker-test.sh`（脚本内会先 `config:clear`）
+- 补基础数据：`docker compose exec backend php artisan db:seed --class=SuperAdminSeeder --force`
+- 补演示订单：`docker compose exec backend php artisan db:seed --class=OrderSeeder --force`
+
+`APP_ENV=local` + `DB_CONNECTION=mysql` 时，上述破坏性命令已在代码层拦截。
+
 ## 目录约定
 
 ```

@@ -18,34 +18,17 @@ import OrderDetailDrawer from '../../components/OrderDetailDrawer';
 import type { Employee } from '../../types/employee';
 import type { Order, OrderListParams, OrderStatus } from '../../types/order';
 import { fenToYuan } from '../../utils/price';
+import {
+  formatOrderStatusLabel,
+  getOrderStatusColor,
+} from '../../utils/orderStatus';
 
 const STATUS_OPTIONS: { value: OrderStatus | ''; label: string }[] = [
   { value: '', label: '全部状态' },
   { value: 'pending_payment', label: '待支付' },
   { value: 'paid', label: '已支付' },
-  { value: 'preparing', label: '备餐中' },
-  { value: 'ready', label: '可取餐' },
-  { value: 'completed', label: '已完成' },
   { value: 'cancelled', label: '已取消' },
 ];
-
-const STATUS_LABELS: Record<OrderStatus, string> = {
-  pending_payment: '待支付',
-  paid: '已支付',
-  preparing: '备餐中',
-  ready: '可取餐',
-  completed: '已完成',
-  cancelled: '已取消',
-};
-
-const STATUS_COLORS: Record<OrderStatus, string> = {
-  pending_payment: 'orange',
-  paid: 'blue',
-  preparing: 'purple',
-  ready: 'green',
-  completed: 'default',
-  cancelled: 'red',
-};
 
 export default function OrderListPage() {
   const [items, setItems] = useState<Order[]>([]);
@@ -185,8 +168,10 @@ export default function OrderListPage() {
           {
             title: '状态',
             dataIndex: 'status',
-            render: (s: OrderStatus) => (
-              <Tag color={STATUS_COLORS[s]}>{STATUS_LABELS[s]}</Tag>
+            render: (s: OrderStatus, record: Order) => (
+              <Tag color={getOrderStatusColor(s)}>
+                {formatOrderStatusLabel(s, record.cancel_reason)}
+              </Tag>
             ),
           },
           {

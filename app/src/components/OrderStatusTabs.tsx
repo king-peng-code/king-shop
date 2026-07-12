@@ -4,9 +4,8 @@ import {Pressable, ScrollView, StyleSheet, Text} from 'react-native';
 export type OrderStatusTabKey =
   | 'all'
   | 'pending_payment'
-  | 'in_progress'
-  | 'ready'
-  | 'completed';
+  | 'paid'
+  | 'cancelled';
 
 interface OrderStatusTabsProps {
   selectedTab: OrderStatusTabKey;
@@ -16,9 +15,8 @@ interface OrderStatusTabsProps {
 const TABS: {key: OrderStatusTabKey; label: string}[] = [
   {key: 'all', label: '全部'},
   {key: 'pending_payment', label: '待支付'},
-  {key: 'in_progress', label: '进行中'},
-  {key: 'ready', label: '可取餐'},
-  {key: 'completed', label: '已完成'},
+  {key: 'paid', label: '已支付'},
+  {key: 'cancelled', label: '已取消'},
 ];
 
 export default function OrderStatusTabs({

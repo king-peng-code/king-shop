@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Catalog;
 
 use App\Application\Order\CancelMyOrder\CancelMyOrderHandler;
-use App\Application\Order\CompleteMyOrder\CompleteMyOrderHandler;
 use App\Application\Order\CreateOrder\CreateOrderHandler;
 use App\Application\Order\DTO\CreateOrderCommand;
 use App\Application\Order\DTO\CreateOrderItemCommand;
@@ -79,16 +78,6 @@ class OrderController extends Controller
 
     public function cancel(Request $request, int $order, CancelMyOrderHandler $handler): JsonResponse
     {
-        return ApiResponse::success(
-            new OrderResource($handler->handle($order, $request->user()->id)),
-        );
-    }
-
-    public function complete(
-        Request $request,
-        int $order,
-        CompleteMyOrderHandler $handler,
-    ): JsonResponse {
         return ApiResponse::success(
             new OrderResource($handler->handle($order, $request->user()->id)),
         );

@@ -46,10 +46,6 @@ export async function cancelOrder(orderId: number): Promise<Order> {
   return apiRequest<Order>(`/orders/${orderId}/cancel`, {method: 'POST'});
 }
 
-export async function completeOrder(orderId: number): Promise<Order> {
-  return apiRequest<Order>(`/orders/${orderId}/complete`, {method: 'POST'});
-}
-
 export async function payOrder(
   orderId: number,
   channel: PayChannel,

@@ -8,12 +8,6 @@ final class OrderStatus
 
     public const PAID = 'paid';
 
-    public const PREPARING = 'preparing';
-
-    public const READY = 'ready';
-
-    public const COMPLETED = 'completed';
-
     public const CANCELLED = 'cancelled';
 
     private function __construct(public readonly string $value) {}
@@ -23,9 +17,6 @@ final class OrderStatus
         $allowed = [
             self::PENDING_PAYMENT,
             self::PAID,
-            self::PREPARING,
-            self::READY,
-            self::COMPLETED,
             self::CANCELLED,
         ];
 

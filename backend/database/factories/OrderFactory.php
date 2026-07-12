@@ -40,30 +40,6 @@ class OrderFactory extends Factory
         ]);
     }
 
-    public function preparing(): static
-    {
-        return $this->state(fn () => [
-            'status' => 'preparing',
-            'paid_at' => now()->subMinutes(10),
-        ]);
-    }
-
-    public function ready(): static
-    {
-        return $this->state(fn () => [
-            'status' => 'ready',
-            'paid_at' => now()->subMinutes(20),
-        ]);
-    }
-
-    public function completed(): static
-    {
-        return $this->state(fn () => [
-            'status' => 'completed',
-            'paid_at' => now()->subHour(),
-        ]);
-    }
-
     public function cancelled(): static
     {
         return $this->state(fn () => [

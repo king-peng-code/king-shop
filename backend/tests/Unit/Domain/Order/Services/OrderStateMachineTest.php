@@ -11,18 +11,18 @@ use Tests\TestCase;
 class OrderStateMachineTest extends TestCase
 {
     #[Test]
-    public function paid_can_transition_to_preparing(): void
+    public function pending_payment_can_transition_to_paid(): void
     {
         $machine = new OrderStateMachine();
         $result = $machine->transition(
+            OrderStatus::fromString('pending_payment'),
             OrderStatus::fromString('paid'),
-            OrderStatus::fromString('preparing'),
         );
-        $this->assertSame('preparing', $result->value);
+        $this->assertSame('paid', $result->value);
     }
 
     #[Test]
-    public function paid_cannot_transition_to_cancelled(): void
+    public function paid_is_terminal(): void
     {
         $machine = new OrderStateMachine();
         $this->expectException(InvalidOrderTransitionException::class);

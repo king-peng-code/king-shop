@@ -27,24 +27,6 @@ async function fetchOrdersForTab(
   tab: TabKey,
   page: number,
 ): Promise<PaginatedOrders> {
-  if (tab === 'in_progress') {
-    const [paid, preparing] = await Promise.all([
-      listOrders({status: 'paid', page, per_page: 20}),
-      listOrders({status: 'preparing', page, per_page: 20}),
-    ]);
-    const items = [...paid.items, ...preparing.items].sort(
-      (a, b) =>
-        new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-    );
-    return {
-      items,
-      meta: {
-        total: paid.meta.total + preparing.meta.total,
-        page,
-        per_page: 20,
-      },
-    };
-  }
   const status = tab === 'all' ? undefined : tab;
   return listOrders({status, page, per_page: 20});
 }

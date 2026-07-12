@@ -27,7 +27,7 @@ export default function OrderListItem({order, onPress}: OrderListItemProps) {
       ? order.items[0].product_name
       : '订单商品';
   const statusColor = getOrderStatusColor(order.status);
-  const statusLabel = getOrderStatusLabel(order.status);
+  const statusLabel = getOrderStatusLabel(order.status, order.cancel_reason);
 
   return (
     <Pressable style={styles.container} onPress={onPress}>

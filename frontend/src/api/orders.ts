@@ -24,18 +24,6 @@ export const ordersApi = {
     return request<Order>(`/admin/orders/${id}`);
   },
 
-  markPreparing(id: number): Promise<Order> {
-    return request<Order>(`/admin/orders/${id}/preparing`, { method: 'POST' });
-  },
-
-  markReady(id: number): Promise<Order> {
-    return request<Order>(`/admin/orders/${id}/ready`, { method: 'POST' });
-  },
-
-  complete(id: number): Promise<Order> {
-    return request<Order>(`/admin/orders/${id}/complete`, { method: 'POST' });
-  },
-
   cancel(id: number, cancelReason?: string): Promise<Order> {
     return request<Order>(`/admin/orders/${id}/cancel`, {
       method: 'POST',

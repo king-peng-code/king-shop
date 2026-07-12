@@ -9,10 +9,7 @@ class OrderStateMachine
 {
     private const TRANSITIONS = [
         OrderStatus::PENDING_PAYMENT => [OrderStatus::PAID, OrderStatus::CANCELLED],
-        OrderStatus::PAID => [OrderStatus::PREPARING],
-        OrderStatus::PREPARING => [OrderStatus::READY],
-        OrderStatus::READY => [OrderStatus::COMPLETED],
-        OrderStatus::COMPLETED => [],
+        OrderStatus::PAID => [],
         OrderStatus::CANCELLED => [],
     ];
 

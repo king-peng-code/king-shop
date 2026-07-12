@@ -35,6 +35,7 @@ until php -r "
 done
 
 php artisan migrate --force
+php artisan tinker --execute="app(\\App\\Infrastructure\\Cache\\CategoryListCache::class)->forget();" 2>/dev/null || true
 php artisan config:cache
 php artisan route:cache
 php artisan db:seed --class=SuperAdminSeeder --force

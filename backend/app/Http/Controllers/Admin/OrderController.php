@@ -3,12 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Application\Order\CancelOrder\CancelOrderHandler;
-use App\Application\Order\CompleteOrder\CompleteOrderHandler;
 use App\Application\Order\DTO\AdminOrderListQuery;
 use App\Application\Order\GetAdminOrder\GetAdminOrderHandler;
 use App\Application\Order\ListAdminOrders\ListAdminOrdersHandler;
-use App\Application\Order\MarkOrderPreparing\MarkOrderPreparingHandler;
-use App\Application\Order\MarkOrderReady\MarkOrderReadyHandler;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\CancelOrderRequest;
 use App\Http\Resources\Admin\OrderResource;
@@ -49,21 +46,6 @@ class OrderController extends Controller
     }
 
     public function show(int $order, GetAdminOrderHandler $handler): JsonResponse
-    {
-        return ApiResponse::success(new OrderResource($handler->handle($order)));
-    }
-
-    public function preparing(int $order, MarkOrderPreparingHandler $handler): JsonResponse
-    {
-        return ApiResponse::success(new OrderResource($handler->handle($order)));
-    }
-
-    public function ready(int $order, MarkOrderReadyHandler $handler): JsonResponse
-    {
-        return ApiResponse::success(new OrderResource($handler->handle($order)));
-    }
-
-    public function complete(int $order, CompleteOrderHandler $handler): JsonResponse
     {
         return ApiResponse::success(new OrderResource($handler->handle($order)));
     }

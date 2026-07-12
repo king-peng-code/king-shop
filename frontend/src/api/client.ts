@@ -79,7 +79,13 @@ export async function request<T>(
     if (body.code === 40301) {
       onMustChangePassword?.();
     }
-    const errors = (body as ApiResponse<unknown> & { errors?: Record<string, string[]> }).errors;
+    const dataErrors =
+      body.data && typeof body.data === 'object' && 'errors' in body.data
+        ? (body.data as { errors?: Record<string, string[]> }).errors
+        : undefined;
+    const errors =
+      (body as ApiResponse<unknown> & { errors?: Record<string, string[]> }).errors
+      ?? dataErrors;
     throw new ApiError(
       response.status,
       body.code,

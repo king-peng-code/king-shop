@@ -66,6 +66,20 @@ class EloquentCategoryRepository implements CategoryRepositoryInterface
         return ['items' => $items];
     }
 
+    public function countAll(): int
+    {
+        return CategoryModel::query()->count();
+    }
+
+    public function existsAllIds(array $ids): bool
+    {
+        if ($ids === []) {
+            return true;
+        }
+
+        return CategoryModel::query()->whereIn('id', $ids)->count() === count($ids);
+    }
+
     public function countProducts(int $categoryId): int
     {
         return ProductModel::query()

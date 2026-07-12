@@ -12,47 +12,57 @@ class OrderSeeder extends Seeder
 {
     public function run(): void
     {
-        $user = UserModel::factory()->create(['name' => '张三', 'phone' => '13800000001']);
-        $payer = UserModel::factory()->create(['name' => '李四', 'phone' => '13800000002']);
-        $product = ProductModel::factory()->onSale()->create([
-            'name' => '拿铁',
-            'price' => 1500,
-        ]);
+        if (OrderModel::query()->exists()) {
+            $this->command?->info('Orders already exist, skipping seed.');
 
-        $statuses = [
-            'pending_payment' => null,
-            'paid' => 'paid',
-            'preparing' => 'preparing',
-            'ready' => 'ready',
-            'completed' => 'completed',
-            'cancelled' => 'cancelled',
-        ];
-
-        foreach ($statuses as $status => $factoryState) {
-            $factory = OrderModel::factory()->for($user, 'user');
-
-            if ($factoryState !== null) {
-                $factory = $factory->{$factoryState}();
-            }
-
-            if ($status === 'cancelled') {
-                $factory = $factory->cancelled();
-            }
-
-            $order = $factory->create([
-                'order_no' => 'KS20260712'.str_pad((string) array_search($status, array_keys($statuses), true), 6, '0', STR_PAD_LEFT),
-                'total_amount' => 3000,
-            ]);
-
-            OrderItemModel::factory()->for($order, 'order')->create([
-                'product_id' => $product->id,
-                'product_name' => $product->name,
-                'product_image' => $product->image_path,
-                'price' => $product->price,
-                'quantity' => 2,
-                'subtotal' => $product->price * 2,
-            ]);
+            return;
         }
+
+        $user = UserModel::query()->where('phone', '13800000001')->first()
+            ?? UserModel::factory()->create(['name' => '张三', 'phone' => '13800000001']);
+        $payer = UserModel::query()->where('phone', '13800000002')->first()
+            ?? UserModel::factory()->create(['name' => '李四', 'phone' => '13800000002']);
+        $product = ProductModel::query()->where('name', '拿铁')->first()
+            ?? ProductModel::factory()->onSale()->create([
+                'name' => '拿铁',
+                'price' => 1500,
+            ]);
+
+        $this->seedOrder(
+            user: $user,
+            payer: $payer,
+            product: $product,
+            orderNo: 'KS20260712000001',
+            status: 'pending_payment',
+            paidByUserId: null,
+            paidAt: null,
+            cancelledAt: null,
+            cancelReason: null,
+        );
+
+        $this->seedOrder(
+            user: $user,
+            payer: $payer,
+            product: $product,
+            orderNo: 'KS20260712000002',
+            status: 'paid',
+            paidByUserId: null,
+            paidAt: now(),
+            cancelledAt: null,
+            cancelReason: null,
+        );
+
+        $this->seedOrder(
+            user: $user,
+            payer: $payer,
+            product: $product,
+            orderNo: 'KS20260712000003',
+            status: 'cancelled',
+            paidByUserId: null,
+            paidAt: null,
+            cancelledAt: now(),
+            cancelReason: '超时未支付自动取消',
+        );
 
         $proxyOrder = OrderModel::factory()
             ->for($user, 'user')
@@ -64,13 +74,51 @@ class OrderSeeder extends Seeder
                 'total_amount' => 4500,
             ]);
 
-        OrderItemModel::factory()->for($proxyOrder)->create([
+        OrderItemModel::factory()->for($proxyOrder, 'order')->create([
             'product_id' => $product->id,
             'product_name' => $product->name,
             'product_image' => $product->image_path,
             'price' => $product->price,
             'quantity' => 3,
             'subtotal' => $product->price * 3,
+        ]);
+    }
+
+    private function seedOrder(
+        UserModel $user,
+        UserModel $payer,
+        ProductModel $product,
+        string $orderNo,
+        string $status,
+        ?int $paidByUserId,
+        $paidAt,
+        $cancelledAt,
+        ?string $cancelReason,
+    ): void {
+        $factory = OrderModel::factory()->for($user, 'user');
+
+        if ($status === 'paid') {
+            $factory = $factory->paid();
+        } elseif ($status === 'cancelled') {
+            $factory = $factory->cancelled();
+        }
+
+        $order = $factory->create([
+            'order_no' => $orderNo,
+            'total_amount' => 3000,
+            'paid_by_user_id' => $paidByUserId,
+            'paid_at' => $paidAt,
+            'cancelled_at' => $cancelledAt,
+            'cancel_reason' => $cancelReason,
+        ]);
+
+        OrderItemModel::factory()->for($order, 'order')->create([
+            'product_id' => $product->id,
+            'product_name' => $product->name,
+            'product_image' => $product->image_path,
+            'price' => $product->price,
+            'quantity' => 2,
+            'subtotal' => $product->price * 2,
         ]);
     }
 }

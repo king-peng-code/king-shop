@@ -6,9 +6,7 @@ use App\Application\Order\CancelOrder\CancelOrderHandler;
 use App\Application\Order\DTO\AdminOrderListQuery;
 use App\Application\Order\GetAdminOrder\GetAdminOrderHandler;
 use App\Application\Order\ListAdminOrders\ListAdminOrdersHandler;
-use App\Application\Order\MarkOrderPreparing\MarkOrderPreparingHandler;
 use App\Domain\Order\Entities\Order;
-use App\Domain\Order\Exceptions\InvalidOrderTransitionException;
 use App\Domain\Order\Exceptions\OrderNotFoundException;
 use App\Domain\Order\Repositories\OrderRepositoryInterface;
 use App\Domain\Order\ValueObjects\OrderStatus;
@@ -52,15 +50,6 @@ class OrderHandlersTest extends TestCase
         $this->assertSame('cancelled', $updated->status->value);
         $this->assertNotNull($updated->cancelledAt);
         $this->assertSame('员工要求取消', $updated->cancelReason);
-    }
-
-    #[Test]
-    public function mark_preparing_rejects_invalid_transition(): void
-    {
-        $order = OrderModel::factory()->create(['status' => 'pending_payment']);
-
-        $this->expectException(InvalidOrderTransitionException::class);
-        app(MarkOrderPreparingHandler::class)->handle($order->id);
     }
 
     #[Test]

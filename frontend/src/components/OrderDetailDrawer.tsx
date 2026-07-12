@@ -15,27 +15,13 @@ import {
 import dayjs from 'dayjs';
 import { ordersApi } from '../api/orders';
 import { ApiError } from '../api/client';
-import type { Order, OrderStatus } from '../types/order';
+import type { Order } from '../types/order';
 import { fenToYuan } from '../utils/price';
 import { resolveMediaUrl } from '../utils/mediaUrl';
-
-const STATUS_LABELS: Record<OrderStatus, string> = {
-  pending_payment: '待支付',
-  paid: '已支付',
-  preparing: '备餐中',
-  ready: '可取餐',
-  completed: '已完成',
-  cancelled: '已取消',
-};
-
-const STATUS_COLORS: Record<OrderStatus, string> = {
-  pending_payment: 'orange',
-  paid: 'blue',
-  preparing: 'purple',
-  ready: 'green',
-  completed: 'default',
-  cancelled: 'red',
-};
+import {
+  formatOrderStatusLabel,
+  getOrderStatusColor,
+} from '../utils/orderStatus';
 
 interface OrderDetailDrawerProps {
   open: boolean;
@@ -95,67 +81,22 @@ export default function OrderDetailDrawer({
   };
 
   const renderActions = () => {
-    if (!order) return null;
-
-    switch (order.status) {
-      case 'pending_payment':
-        return (
-          <Popconfirm
-            title="确认取消该订单？"
-            onConfirm={() =>
-              void runAction(() => ordersApi.cancel(order.id), '订单已取消')
-            }
-          >
-            <Button danger loading={actionLoading}>
-              取消订单
-            </Button>
-          </Popconfirm>
-        );
-      case 'paid':
-        return (
-          <Popconfirm
-            title="确认开始备餐？"
-            onConfirm={() =>
-              void runAction(
-                () => ordersApi.markPreparing(order.id),
-                '已开始备餐',
-              )
-            }
-          >
-            <Button type="primary" loading={actionLoading}>
-              开始备餐
-            </Button>
-          </Popconfirm>
-        );
-      case 'preparing':
-        return (
-          <Popconfirm
-            title="确认标记为可取餐？"
-            onConfirm={() =>
-              void runAction(() => ordersApi.markReady(order.id), '已标记可取餐')
-            }
-          >
-            <Button type="primary" loading={actionLoading}>
-              标记可取餐
-            </Button>
-          </Popconfirm>
-        );
-      case 'ready':
-        return (
-          <Popconfirm
-            title="确认完成订单？"
-            onConfirm={() =>
-              void runAction(() => ordersApi.complete(order.id), '订单已完成')
-            }
-          >
-            <Button type="primary" loading={actionLoading}>
-              完成订单
-            </Button>
-          </Popconfirm>
-        );
-      default:
-        return null;
+    if (!order || order.status !== 'pending_payment') {
+      return null;
     }
+
+    return (
+      <Popconfirm
+        title="确认取消该订单？"
+        onConfirm={() =>
+          void runAction(() => ordersApi.cancel(order.id), '订单已取消')
+        }
+      >
+        <Button danger loading={actionLoading}>
+          取消订单
+        </Button>
+      </Popconfirm>
+    );
   };
 
   return (
@@ -174,8 +115,8 @@ export default function OrderDetailDrawer({
         <Space direction="vertical" size="large" style={{ width: '100%' }}>
           <Descriptions column={1} size="small" title="基本信息">
             <Descriptions.Item label="状态">
-              <Tag color={STATUS_COLORS[order.status]}>
-                {STATUS_LABELS[order.status]}
+              <Tag color={getOrderStatusColor(order.status)}>
+                {formatOrderStatusLabel(order.status, order.cancel_reason)}
               </Tag>
             </Descriptions.Item>
             <Descriptions.Item label="下单时间">

@@ -22,5 +22,12 @@ interface CategoryRepositoryInterface
      */
     public function listActive(): array;
 
+    public function countAll(): int;
+
+    /**
+     * @param list<int> $ids
+     */
+    public function existsAllIds(array $ids): bool;
+
     public function countProducts(int $categoryId): int;
 }

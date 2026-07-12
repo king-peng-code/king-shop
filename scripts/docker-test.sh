@@ -37,6 +37,10 @@ fi
 log "PHP 版本:"
 docker compose exec -T backend php -v | head -1
 
+log "清除配置缓存（避免测试误连 MySQL 清空 king_shop）..."
+docker compose exec -T backend php artisan config:clear >/dev/null
+docker compose exec -T backend php artisan route:clear >/dev/null
+
 log "运行测试..."
 if [ -n "$FILTER" ]; then
     docker compose exec -T backend php artisan test --filter="$FILTER" "$@"

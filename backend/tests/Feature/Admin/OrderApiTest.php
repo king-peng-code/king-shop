@@ -32,14 +32,21 @@ class OrderApiTest extends TestCase
     }
 
     #[Test]
-    public function admin_can_mark_paid_order_preparing(): void
+    public function admin_fulfillment_routes_are_removed(): void
     {
         $order = OrderModel::factory()->paid()->create();
 
         $this->withToken($this->adminToken())
             ->postJson("/api/v1/admin/orders/{$order->id}/preparing")
-            ->assertOk()
-            ->assertJsonPath('data.status', 'preparing');
+            ->assertNotFound();
+
+        $this->withToken($this->adminToken())
+            ->postJson("/api/v1/admin/orders/{$order->id}/ready")
+            ->assertNotFound();
+
+        $this->withToken($this->adminToken())
+            ->postJson("/api/v1/admin/orders/{$order->id}/complete")
+            ->assertNotFound();
     }
 
     #[Test]

@@ -43,9 +43,6 @@ Route::middleware(['auth:sanctum', 'password.changed', 'admin'])->prefix('admin'
     Route::get('dashboard/stats', [DashboardController::class, 'stats']);
     Route::get('orders', [AdminOrderController::class, 'index']);
     Route::get('orders/{order}', [AdminOrderController::class, 'show']);
-    Route::post('orders/{order}/preparing', [AdminOrderController::class, 'preparing']);
-    Route::post('orders/{order}/ready', [AdminOrderController::class, 'ready']);
-    Route::post('orders/{order}/complete', [AdminOrderController::class, 'complete']);
     Route::post('orders/{order}/cancel', [AdminOrderController::class, 'cancel']);
 });
 
@@ -59,6 +56,5 @@ Route::middleware(['auth:sanctum', 'password.changed'])->group(function (): void
     Route::post('/orders/{order}/pay', [CatalogOrderController::class, 'pay']);
     Route::post('/orders/{order}/proxy-pay-link', [CatalogOrderController::class, 'proxyPayLink']);
     Route::post('/orders/{order}/cancel', [CatalogOrderController::class, 'cancel']);
-    Route::post('/orders/{order}/complete', [CatalogOrderController::class, 'complete']);
     Route::post('/proxy-pay/{token}/pay', [ProxyPayController::class, 'pay']);
 });

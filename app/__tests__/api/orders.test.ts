@@ -1,6 +1,5 @@
 import {
   cancelOrder,
-  completeOrder,
   createOrder,
   generateProxyPayLink,
   getOrder,
@@ -179,21 +178,6 @@ it('cancelOrder posts to cancel endpoint', async () => {
 
   const result = await cancelOrder(10);
   expect(result.status).toBe('cancelled');
-});
-
-it('completeOrder posts to complete endpoint', async () => {
-  (fetch as jest.Mock).mockResolvedValue({
-    ok: true,
-    status: 200,
-    json: async () => ({
-      code: 0,
-      message: 'ok',
-      data: {...sampleOrder, status: 'completed'},
-    }),
-  });
-
-  const result = await completeOrder(10);
-  expect(result.status).toBe('completed');
 });
 
 it('simulateFakeNotify throws when notify fails', async () => {

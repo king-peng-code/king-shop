@@ -167,6 +167,29 @@ docker compose up -d backend
 | `GD extension is not installed` | 基础镜像未含 gd | 重建 PHP 基础镜像（§6） |
 | backend 容器 Exited | migrate/composer 失败 | `docker compose logs backend` |
 | 测试连不上 MySQL | 测试误用 mysql 连接 | 检查 phpunit.xml 用 sqlite |
+| seed / 演示数据丢失 | 对 MySQL 执行了 `migrate:fresh` 等 | **禁止**对开发库清空；用 `db:seed` 补数据 |
+
+### 4.3 禁止清空开发 MySQL
+
+本地 `king_shop` 库由 Docker volume 持久化，**不是**测试专用库。
+
+```bash
+# ❌ 禁止 — 会清空所有 seed / 后台录入数据
+docker compose exec backend php artisan migrate:fresh
+docker compose exec backend php artisan db:wipe
+
+# ❌ 禁止 — config:cache 存在时，测试会连 MySQL 并 migrate:fresh 清空 king_shop
+docker compose exec backend php artisan test
+
+# ✅ 唯一推荐入口（先 config:clear，再用 sqlite 跑测试）
+./scripts/docker-test.sh
+
+# ✅ 仅补缺失的基础数据
+docker compose exec backend php artisan db:seed --class=SuperAdminSeeder --force
+docker compose exec backend php artisan db:seed --class=OrderSeeder --force
+```
+
+`APP_ENV=local` 且连接 MySQL 时，`migrate:fresh` / `db:wipe` 等命令会被应用层拦截。
 
 ---
 

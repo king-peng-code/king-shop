@@ -14,14 +14,11 @@ class EloquentDashboardStatsRepository implements DashboardStatsRepositoryInterf
      * Boundaries use Asia/Shanghai wall-clock Carbon values to match how orders
      * persist paid_at / created_at in this codebase (local datetime strings).
      */
-    private const PAID_STATUSES = ['paid', 'preparing', 'ready', 'completed'];
+    private const PAID_STATUSES = ['paid'];
 
     private const STATUS_LABELS = [
         'pending_payment' => '待支付',
         'paid' => '已支付',
-        'preparing' => '备餐中',
-        'ready' => '可取餐',
-        'completed' => '已完成',
         'cancelled' => '已取消',
     ];
 

@@ -1,10 +1,4 @@
-export type OrderStatus =
-  | 'pending_payment'
-  | 'paid'
-  | 'preparing'
-  | 'ready'
-  | 'completed'
-  | 'cancelled';
+export type OrderStatus = 'pending_payment' | 'paid' | 'cancelled';
 
 export type PaymentMethod = 'self' | 'proxy';
 
