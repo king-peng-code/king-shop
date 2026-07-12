@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Catalog;
 
+use App\Infrastructure\Payment\PaymentChannelPolicy;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class InitiateProxyPaymentRequest extends FormRequest
 {
@@ -18,7 +20,7 @@ class InitiateProxyPaymentRequest extends FormRequest
     {
         return [
             'openid' => ['nullable', 'string', 'max:128'],
-            'channel' => ['nullable', 'in:wechat,fake'],
+            'channel' => ['nullable', Rule::in(PaymentChannelPolicy::proxyPayChannels())],
         ];
     }
 }

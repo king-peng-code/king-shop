@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests\Catalog;
 
+use App\Infrastructure\Payment\PaymentChannelPolicy;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class InitiatePaymentRequest extends FormRequest
 {
@@ -17,7 +19,7 @@ class InitiatePaymentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'channel' => ['nullable', 'in:alipay_sandbox,wechat,fake'],
+            'channel' => ['nullable', Rule::in(PaymentChannelPolicy::selfPayChannels())],
         ];
     }
 }

@@ -10,12 +10,6 @@ class SystemConfigSeeder extends Seeder
 {
     public function run(): void
     {
-        if (SystemConfigModel::query()->exists()) {
-            $this->command?->info('System configs already exist, skipping seed.');
-
-            return;
-        }
-
         $encryption = new LaravelConfigEncryption;
 
         $configs = [
