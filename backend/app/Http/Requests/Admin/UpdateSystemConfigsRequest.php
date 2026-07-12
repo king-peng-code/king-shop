@@ -17,7 +17,7 @@ class UpdateSystemConfigsRequest extends FormRequest
     {
         return [
             'configs' => ['required', 'array', 'min:1'],
-            'configs.*.group' => ['required', 'string', 'in:app,payment,storage,order'],
+            'configs.*.group' => ['required', 'string', 'in:app,payment,storage,order,external_user'],
             'configs.*.key' => ['required', 'string', 'max:100'],
             'configs.*.value' => ['present', 'string'],
         ];

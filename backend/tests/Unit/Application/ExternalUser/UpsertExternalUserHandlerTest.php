@@ -22,6 +22,7 @@ class UpsertExternalUserHandlerTest extends TestCase
             externalId: 'uuid-1',
             name: '测试代付人',
             phone: null,
+            tags: [],
             createdAt: new \DateTimeImmutable,
             updatedAt: new \DateTimeImmutable,
         ));
@@ -46,6 +47,7 @@ class UpsertExternalUserHandlerTest extends TestCase
             externalId: 'oABC',
             name: null,
             phone: null,
+            tags: [],
             createdAt: new \DateTimeImmutable,
             updatedAt: new \DateTimeImmutable,
         );

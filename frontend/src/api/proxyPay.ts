@@ -1,10 +1,11 @@
 import { request } from './client';
 
 export interface ProxyPayPreview {
-  order_no: string;
   total_amount: number;
   status: string;
   buyer_name: string | null;
+  brand_name: string;
+  items_summary: string;
   expires_at: string;
   payable: boolean;
 }
@@ -13,6 +14,9 @@ export interface ProxyPayLink {
   url: string;
   token: string;
   expires_at: string;
+  share_title: string;
+  share_message: string;
+  share_copy_text: string;
 }
 
 export interface ProxyPayInitResult {

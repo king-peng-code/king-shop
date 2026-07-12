@@ -23,6 +23,7 @@ class ExternalUserFactory extends Factory
             'external_id' => 'fake-'.Str::random(16),
             'name' => fake()->name(),
             'phone' => null,
+            'tags' => [],
         ];
     }
 }

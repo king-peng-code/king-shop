@@ -40,6 +40,9 @@ export default function ProxyShareScreen() {
 
   const [order, setOrder] = useState<Order | null>(null);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [shareTitle, setShareTitle] = useState('帮我付一下');
+  const [shareMessage, setShareMessage] = useState<string | null>(null);
+  const [shareCopyText, setShareCopyText] = useState<string | null>(null);
   const [expiresAt, setExpiresAt] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -79,6 +82,9 @@ export default function ProxyShareScreen() {
         if (!cancelled) {
           setOrder(orderData);
           setShareUrl(linkData.url);
+          setShareTitle(linkData.share_title);
+          setShareMessage(linkData.share_message);
+          setShareCopyText(linkData.share_copy_text);
           setExpiresAt(linkData.expires_at);
         }
       } catch (e) {
@@ -101,9 +107,12 @@ export default function ProxyShareScreen() {
     }
 
     try {
+      const title = shareTitle;
+      const message = shareMessage ?? shareUrl;
+
       await Share.share({
-        title: '帮我付一下',
-        message: `请帮我支付订单 ${order.order_no}：${shareUrl}`,
+        title,
+        message,
         url: shareUrl,
       });
     } catch {
@@ -115,7 +124,8 @@ export default function ProxyShareScreen() {
     if (!shareUrl) {
       return;
     }
-    Clipboard.setString(shareUrl);
+    const copyText = shareCopyText ?? shareUrl;
+    Clipboard.setString(copyText);
     setCopyHint('链接已复制');
     setTimeout(() => setCopyHint(null), 2000);
   };
@@ -144,11 +154,6 @@ export default function ProxyShareScreen() {
         ) : null}
         {expiresAt ? (
           <Text style={styles.expires}>链接有效期至 {formatExpiresAt(expiresAt)}</Text>
-        ) : null}
-        {shareUrl ? (
-          <Text style={styles.url} selectable>
-            {shareUrl}
-          </Text>
         ) : null}
         {error ? <Text style={styles.inlineError}>{error}</Text> : null}
         {copyHint ? <Text style={styles.copyHint}>{copyHint}</Text> : null}

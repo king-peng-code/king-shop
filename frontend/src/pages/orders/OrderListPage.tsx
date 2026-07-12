@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Button,
   DatePicker,
@@ -13,10 +14,12 @@ import {
 import dayjs from 'dayjs';
 import { employeesApi } from '../../api/employees';
 import { ordersApi } from '../../api/orders';
+import { statisticsApi } from '../../api/statistics';
 import { ApiError } from '../../api/client';
 import OrderDetailDrawer from '../../components/OrderDetailDrawer';
 import type { Employee } from '../../types/employee';
 import type { Order, OrderListParams, OrderStatus } from '../../types/order';
+import type { ProxyPayerStatsItem } from '../../types/statistics';
 import { fenToYuan } from '../../utils/price';
 import {
   formatOrderStatusLabel,
@@ -31,14 +34,17 @@ const STATUS_OPTIONS: { value: OrderStatus | ''; label: string }[] = [
 ];
 
 export default function OrderListPage() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+
   const [items, setItems] = useState<Order[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [proxyPayers, setProxyPayers] = useState<ProxyPayerStatsItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<OrderStatus | ''>('');
   const [userId, setUserId] = useState<number | undefined>();
-  const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(
-    null,
-  );
+  const [paidByExternalUserId, setPaidByExternalUserId] = useState<number | undefined>();
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
   const [keyword, setKeyword] = useState('');
   const [page, setPage] = useState(1);
   const [perPage] = useState(20);
@@ -46,20 +52,32 @@ export default function OrderListPage() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const paramsApplied = useRef(false);
+
+  // Read URL params on mount
+  useEffect(() => {
+    const urlUserId = searchParams.get('user_id');
+    const urlPayerId = searchParams.get('paid_by_external_user_id');
+    if (urlUserId) setUserId(Number(urlUserId));
+    if (urlPayerId) setPaidByExternalUserId(Number(urlPayerId));
+    paramsApplied.current = true;
+  }, [searchParams]);
 
   useEffect(() => {
     void employeesApi.list({ per_page: 100 }).then((res) => setEmployees(res.items));
+    void statisticsApi.getProxyPayerStats().then((res) => setProxyPayers(res));
   }, []);
 
   const listParams = useCallback((): OrderListParams => {
     const params: OrderListParams = { page, per_page: perPage };
     if (status) params.status = status;
     if (userId) params.user_id = userId;
+    if (paidByExternalUserId) params.paid_by_external_user_id = paidByExternalUserId;
     if (dateRange?.[0]) params.date_from = dateRange[0].format('YYYY-MM-DD');
     if (dateRange?.[1]) params.date_to = dateRange[1].format('YYYY-MM-DD');
     if (keyword) params.keyword = keyword;
     return params;
-  }, [status, userId, dateRange, keyword, page, perPage]);
+  }, [status, userId, paidByExternalUserId, dateRange, keyword, page, perPage]);
 
   const fetchList = useCallback(async () => {
     setLoading(true);
@@ -77,8 +95,10 @@ export default function OrderListPage() {
   }, [listParams]);
 
   useEffect(() => {
+    // Wait for URL params to be applied before first fetch
+    if (!paramsApplied.current) return;
     void fetchList();
-  }, [fetchList]);
+  }, [fetchList, paramsApplied.current]);
 
   useEffect(() => {
     return () => {
@@ -106,6 +126,22 @@ export default function OrderListPage() {
   const handleTableChange = (pagination: TablePaginationConfig) => {
     setPage(pagination.current ?? 1);
   };
+
+  // Clear all filters and URL params
+  const handleClearFilters = () => {
+    setStatus('');
+    setUserId(undefined);
+    setPaidByExternalUserId(undefined);
+    setDateRange(null);
+    setKeyword('');
+    setPage(1);
+    navigate('/orders', { replace: true });
+  };
+
+  const proxyPayerOptions = proxyPayers.map((p) => ({
+    value: p.external_user_id,
+    label: p.name ?? `代付人 #${p.external_user_id}`,
+  }));
 
   return (
     <div>
@@ -139,6 +175,19 @@ export default function OrderListPage() {
             setPage(1);
           }}
         />
+        <Select
+          allowClear
+          showSearch
+          placeholder="选择代付人"
+          style={{ width: 180 }}
+          optionFilterProp="label"
+          value={paidByExternalUserId}
+          options={proxyPayerOptions}
+          onChange={(v) => {
+            setPaidByExternalUserId(v);
+            setPage(1);
+          }}
+        />
         <Input.Search
           placeholder="订单号 / 姓名 / 手机号"
           allowClear
@@ -149,13 +198,16 @@ export default function OrderListPage() {
             setPage(1);
           }}
         />
+        {(status || userId || paidByExternalUserId || dateRange || keyword) && (
+          <Button onClick={handleClearFilters}>清除筛选</Button>
+        )}
       </Space>
 
       <Table
         rowKey="id"
         loading={loading}
         dataSource={items}
-        pagination={{ current: page, pageSize: perPage, total }}
+        pagination={{ current: page, pageSize: perPage, total, showSizeChanger: false }}
         onChange={handleTableChange}
         columns={[
           { title: '订单号', dataIndex: 'order_no' },

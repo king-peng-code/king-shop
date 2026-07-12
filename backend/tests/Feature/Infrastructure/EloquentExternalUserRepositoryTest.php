@@ -42,6 +42,7 @@ class EloquentExternalUserRepositoryTest extends TestCase
             externalId: 'fake-001',
             name: '测试用户',
             phone: '13800000001',
+            tags: [],
             createdAt: $now,
             updatedAt: $now,
         );

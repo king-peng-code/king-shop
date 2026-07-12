@@ -8,19 +8,21 @@ use App\Domain\Statistics\Repositories\StatsRepositoryInterface;
 use App\Infrastructure\Persistence\Eloquent\Models\ExternalUserModel;
 use App\Infrastructure\Persistence\Eloquent\Models\OrderModel;
 use App\Infrastructure\Persistence\Eloquent\Models\UserModel;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 
 class EloquentStatsRepository implements StatsRepositoryInterface
 {
     private const int MAX_RESULTS = 200;
 
-    private const array EXCLUDED_STATUSES = ['cancelled'];
+    private const array PAID_STATUSES = ['paid'];
 
-    public function getEmployeeStats(): array
+    public function getEmployeeStats(?string $keyword = null): array
     {
         $subQuery = OrderModel::query()
             ->select('user_id', DB::raw('COUNT(*) as order_count'), DB::raw('SUM(total_amount) as total_amount'))
-            ->whereNotIn('status', self::EXCLUDED_STATUSES)
+            ->whereIn('status', self::PAID_STATUSES)
+            ->whereNotNull('paid_at')
             ->groupBy('user_id');
 
         return UserModel::query()
@@ -28,6 +30,10 @@ class EloquentStatsRepository implements StatsRepositoryInterface
             ->joinSub($subQuery, 'order_stats', function ($join): void {
                 $join->on('users.id', '=', 'order_stats.user_id');
             })
+            ->when($keyword !== null && $keyword !== '', fn (Builder $q) => $q->where(function (Builder $sub) use ($keyword): void {
+                $sub->where('users.name', 'like', "%{$keyword}%")
+                    ->orWhere('users.phone', 'like', "%{$keyword}%");
+            }))
             ->orderByDesc('order_stats.order_count')
             ->limit(self::MAX_RESULTS)
             ->get()
@@ -41,7 +47,7 @@ class EloquentStatsRepository implements StatsRepositoryInterface
             ->all();
     }
 
-    public function getProxyPayerStats(): array
+    public function getProxyPayerStats(?string $keyword = null): array
     {
         $subQuery = OrderModel::query()
             ->select(
@@ -50,13 +56,18 @@ class EloquentStatsRepository implements StatsRepositoryInterface
                 DB::raw('SUM(total_amount) as total_amount'),
             )
             ->whereNotNull('paid_by_external_user_id')
-            ->whereNotIn('status', self::EXCLUDED_STATUSES)
+            ->whereIn('status', self::PAID_STATUSES)
+            ->whereNotNull('paid_at')
             ->groupBy('paid_by_external_user_id');
 
         return ExternalUserModel::query()
             ->joinSub($subQuery, 'order_stats', function ($join): void {
                 $join->on('external_users.id', '=', 'order_stats.paid_by_external_user_id');
             })
+            ->when($keyword !== null && $keyword !== '', fn (Builder $q) => $q->where(function (Builder $sub) use ($keyword): void {
+                $sub->where('external_users.name', 'like', "%{$keyword}%")
+                    ->orWhere('external_users.phone', 'like', "%{$keyword}%");
+            }))
             ->orderByDesc('order_stats.order_count')
             ->limit(self::MAX_RESULTS)
             ->get()

@@ -8,9 +8,9 @@ buildscript {
         kotlinVersion = "1.9.25"
     }
     repositories {
-        // Tencent mirror proxies both Maven Central and Google Maven
-        maven { url 'https://mirrors.tencent.com/nexus/repository/maven-public/' }
-        // Gradle Plugin Portal (not covered by Tencent)
+        mavenLocal()
+        maven { url 'https://maven.aliyun.com/repository/public' }
+        maven { url 'https://maven.aliyun.com/repository/google' }
         maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
     }
     dependencies {
@@ -22,7 +22,18 @@ buildscript {
 
 allprojects {
     repositories {
-        maven { url 'https://mirrors.tencent.com/nexus/repository/maven-public/' }
+        mavenLocal()
+        maven { url 'https://maven.aliyun.com/repository/public' }
+        maven { url 'https://maven.aliyun.com/repository/google' }
+    }
+}
+
+subprojects { subproject ->
+    subproject.afterEvaluate {
+        if (subproject.plugins.hasPlugin('com.android.application') ||
+            subproject.plugins.hasPlugin('com.android.library')) {
+            // No forced dependencies needed when using Aliyun mirror
+        }
     }
 }
 

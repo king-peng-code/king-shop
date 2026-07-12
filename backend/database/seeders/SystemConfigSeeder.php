@@ -10,12 +10,6 @@ class SystemConfigSeeder extends Seeder
 {
     public function run(): void
     {
-        if (SystemConfigModel::query()->exists()) {
-            $this->command?->info('System configs already exist, skipping seed.');
-
-            return;
-        }
-
         $encryption = new LaravelConfigEncryption;
 
         $configs = [
@@ -36,6 +30,10 @@ class SystemConfigSeeder extends Seeder
             ['group' => 'storage', 'key' => 'oss.public_base_url', 'value' => '', 'is_sensitive' => false, 'description' => '图片公开访问域名'],
             ['group' => 'storage', 'key' => 'oss.access_key', 'value' => '', 'is_sensitive' => true, 'description' => 'OSS Access Key'],
             ['group' => 'storage', 'key' => 'oss.secret_key', 'value' => '', 'is_sensitive' => true, 'description' => 'OSS Secret Key'],
+            ['group' => 'external_user', 'key' => 'tag_presets', 'value' => 'VIP,企业,个人,已失效', 'is_sensitive' => false, 'description' => '代付人预设标签（英文逗号分隔）'],
+            ['group' => 'order', 'key' => 'share_title', 'value' => '帮我付一下', 'is_sensitive' => false, 'description' => '代付分享标题'],
+            ['group' => 'order', 'key' => 'share_message', 'value' => "Hi，来{brand_name}就差{amount}元～\n\n{share_url}", 'is_sensitive' => false, 'description' => '代付分享内容模板。可用占位符：{brand_name} {amount} {order_no} {expires_at} {share_url}'],
+            ['group' => 'order', 'key' => 'share_copy_text', 'value' => '{share_url}', 'is_sensitive' => false, 'description' => '复制链接文案模板。可用占位符：{brand_name} {order_no} {amount} {expires_at} {share_url}'],
         ];
 
         foreach ($configs as $config) {

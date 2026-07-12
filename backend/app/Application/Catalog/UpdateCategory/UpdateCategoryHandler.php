@@ -6,13 +6,15 @@ use App\Application\Catalog\DTO\UpdateCategoryCommand;
 use App\Domain\Catalog\Entities\Category;
 use App\Domain\Catalog\Exceptions\CategoryNotFoundException;
 use App\Domain\Catalog\Repositories\CategoryRepositoryInterface;
+use App\Infrastructure\Cache\CatalogCategoryListCache;
 use App\Infrastructure\Cache\CategoryListCache;
 
 class UpdateCategoryHandler
 {
     public function __construct(
         private readonly CategoryRepositoryInterface $repository,
-        private readonly CategoryListCache $cache,
+        private readonly CategoryListCache $adminCategoryCache,
+        private readonly CatalogCategoryListCache $catalogCategoryCache,
     ) {}
 
     public function handle(UpdateCategoryCommand $command): Category
@@ -28,7 +30,8 @@ class UpdateCategoryHandler
         );
 
         $updated = $this->repository->save($category);
-        $this->cache->forget();
+        $this->adminCategoryCache->forget();
+        $this->catalogCategoryCache->invalidate();
 
         return $updated;
     }

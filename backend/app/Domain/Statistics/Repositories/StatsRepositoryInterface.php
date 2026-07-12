@@ -15,7 +15,7 @@ interface StatsRepositoryInterface
      *   total_amount: int
      * }>
      */
-    public function getEmployeeStats(): array;
+    public function getEmployeeStats(?string $keyword = null): array;
 
     /**
      * @return list<array{
@@ -27,5 +27,5 @@ interface StatsRepositoryInterface
      *   total_amount: int
      * }>
      */
-    public function getProxyPayerStats(): array;
+    public function getProxyPayerStats(?string $keyword = null): array;
 }

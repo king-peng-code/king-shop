@@ -13,8 +13,8 @@ class GetProxyPayerStatsHandler
         private readonly StatsRepositoryInterface $repository,
     ) {}
 
-    public function handle(): ProxyPayerStatsDto
+    public function handle(?string $keyword = null): ProxyPayerStatsDto
     {
-        return new ProxyPayerStatsDto($this->repository->getProxyPayerStats());
+        return new ProxyPayerStatsDto($this->repository->getProxyPayerStats($keyword));
     }
 }

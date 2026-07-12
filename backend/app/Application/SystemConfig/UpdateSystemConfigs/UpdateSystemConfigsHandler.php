@@ -7,12 +7,14 @@ use App\Application\SystemConfig\GetSystemConfigs\GetSystemConfigsHandler;
 use App\Domain\SystemConfig\Entities\SystemConfig;
 use App\Domain\SystemConfig\Exceptions\SensitiveConfigForbiddenException;
 use App\Domain\SystemConfig\Repositories\SystemConfigRepositoryInterface;
+use App\Infrastructure\Cache\SystemConfigListCache;
 
 class UpdateSystemConfigsHandler
 {
     public function __construct(
         private readonly SystemConfigRepositoryInterface $repository,
         private readonly GetSystemConfigsHandler $getHandler,
+        private readonly SystemConfigListCache $configCache,
     ) {}
 
     /** @param SystemConfigItemDto[] $items */
@@ -39,6 +41,8 @@ class UpdateSystemConfigsHandler
 
             $this->repository->updateValue($item->group, $item->key, $item->value);
         }
+
+        $this->configCache->invalidate();
 
         return $this->getHandler->handle();
     }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Application\Order\CancelOrder\CancelOrderHandler;
@@ -20,6 +22,7 @@ class OrderController extends Controller
         $page = max(1, (int) $request->query('page', 1));
         $perPage = max(1, min(100, (int) $request->query('per_page', 20)));
         $userId = $request->query('user_id');
+        $paidByExternalUserId = $request->query('paid_by_external_user_id');
 
         $result = $handler->handle(
             new AdminOrderListQuery(
@@ -36,6 +39,9 @@ class OrderController extends Controller
                 keyword: (string) $request->query('keyword', ''),
                 page: $page,
                 perPage: $perPage,
+                paidByExternalUserId: $paidByExternalUserId !== null && $paidByExternalUserId !== ''
+                    ? (int) $paidByExternalUserId
+                    : null,
             ),
         );
 

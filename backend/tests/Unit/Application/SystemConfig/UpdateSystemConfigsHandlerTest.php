@@ -8,11 +8,22 @@ use App\Application\SystemConfig\UpdateSystemConfigs\UpdateSystemConfigsHandler;
 use App\Domain\SystemConfig\Entities\SystemConfig;
 use App\Domain\SystemConfig\Exceptions\SensitiveConfigForbiddenException;
 use App\Domain\SystemConfig\Repositories\SystemConfigRepositoryInterface;
+use App\Infrastructure\Cache\SystemConfigListCache;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class UpdateSystemConfigsHandlerTest extends TestCase
 {
+    private function createHandler(
+        SystemConfigRepositoryInterface $repository,
+        GetSystemConfigsHandler $getHandler,
+    ): UpdateSystemConfigsHandler {
+        $configCache = $this->createMock(SystemConfigListCache::class);
+        $configCache->method('invalidate');
+
+        return new UpdateSystemConfigsHandler($repository, $getHandler, $configCache);
+    }
+
     #[Test]
     public function handle_updates_values_and_skips_mask_placeholder(): void
     {
@@ -24,7 +35,7 @@ class UpdateSystemConfigsHandlerTest extends TestCase
         $getHandler = $this->createMock(GetSystemConfigsHandler::class);
         $getHandler->method('handle')->willReturn(['groups' => []]);
 
-        $handler = new UpdateSystemConfigsHandler($repository, $getHandler);
+        $handler = $this->createHandler($repository, $getHandler);
 
         $result = $handler->handle(
             [
@@ -52,7 +63,7 @@ class UpdateSystemConfigsHandlerTest extends TestCase
         $getHandler = $this->createMock(GetSystemConfigsHandler::class);
         $getHandler->method('handle')->willReturn(['groups' => []]);
 
-        $handler = new UpdateSystemConfigsHandler($repository, $getHandler);
+        $handler = $this->createHandler($repository, $getHandler);
 
         $result = $handler->handle(
             [new SystemConfigItemDto('payment', 'wechat.mch_id', 'new-value')],
@@ -71,7 +82,7 @@ class UpdateSystemConfigsHandlerTest extends TestCase
             ->willReturn(new SystemConfig('payment', 'wechat.mch_id', 'old', true, '微信商户号'));
 
         $getHandler = $this->createMock(GetSystemConfigsHandler::class);
-        $handler = new UpdateSystemConfigsHandler($repository, $getHandler);
+        $handler = $this->createHandler($repository, $getHandler);
 
         $this->expectException(SensitiveConfigForbiddenException::class);
 
@@ -95,7 +106,7 @@ class UpdateSystemConfigsHandlerTest extends TestCase
         $getHandler = $this->createMock(GetSystemConfigsHandler::class);
         $getHandler->method('handle')->willReturn(['groups' => []]);
 
-        $handler = new UpdateSystemConfigsHandler($repository, $getHandler);
+        $handler = $this->createHandler($repository, $getHandler);
 
         $result = $handler->handle(
             [new SystemConfigItemDto('storage', 'local.public_base_url', 'https://api.test.com')],

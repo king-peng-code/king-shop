@@ -7,12 +7,14 @@ use App\Domain\Catalog\Entities\Product;
 use App\Domain\Catalog\Exceptions\UploadNotFoundException;
 use App\Domain\Catalog\Repositories\ProductRepositoryInterface;
 use App\Domain\Storage\Repositories\UploadRepositoryInterface;
+use App\Infrastructure\Cache\ProductListCache;
 
 class CreateProductHandler
 {
     public function __construct(
         private readonly ProductRepositoryInterface $productRepository,
         private readonly UploadRepositoryInterface $uploadRepository,
+        private readonly ProductListCache $productCache,
     ) {}
 
     public function handle(CreateProductCommand $command): Product
@@ -37,6 +39,9 @@ class CreateProductHandler
             sort: $command->sort,
         );
 
-        return $this->productRepository->save($product);
+        $created = $this->productRepository->save($product);
+        $this->productCache->invalidateAll();
+
+        return $created;
     }
 }

@@ -3,11 +3,13 @@
 namespace App\Application\Catalog\ListVisibleCategories;
 
 use App\Domain\Catalog\Repositories\CategoryRepositoryInterface;
+use App\Infrastructure\Cache\CatalogCategoryListCache;
 
 class ListVisibleCategoriesHandler
 {
     public function __construct(
         private readonly CategoryRepositoryInterface $repository,
+        private readonly CatalogCategoryListCache $cache,
     ) {}
 
     /**
@@ -15,6 +17,8 @@ class ListVisibleCategoriesHandler
      */
     public function handle(): array
     {
-        return $this->repository->listActive();
+        return $this->cache->getOrSet(
+            fn (): array => $this->repository->listActive(),
+        );
     }
 }

@@ -3,20 +3,23 @@ import {
   Button,
   Image,
   Input,
+  Modal,
   Popconfirm,
   Select,
   Space,
   Table,
   Tag,
+  Typography,
   message,
   type TablePaginationConfig,
 } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { AppstoreOutlined, PlusOutlined, SettingOutlined } from '@ant-design/icons';
 import { categoriesApi } from '../../api/categories';
 import { productsApi } from '../../api/products';
 import { ApiError } from '../../api/client';
+import CategoryFormModal from '../../components/CategoryFormModal';
 import ProductFormModal from '../../components/ProductFormModal';
-import type { Category } from '../../types/category';
+import type { Category, CategoryStatus } from '../../types/category';
 import type { Product, ProductStatus } from '../../types/product';
 import { fenToYuan } from '../../utils/price';
 import { resolveMediaUrl } from '../../utils/mediaUrl';
@@ -35,9 +38,41 @@ export default function ProductListPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Category management inside product page
+  const [catManagerOpen, setCatManagerOpen] = useState(false);
+  const [catItems, setCatItems] = useState<Category[]>([]);
+  const [catLoading, setCatLoading] = useState(false);
+  const [catFormOpen, setCatFormOpen] = useState(false);
+  const [catFormMode, setCatFormMode] = useState<'create' | 'edit'>('create');
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+
+  const fetchCategories = useCallback(async () => {
+    setCatLoading(true);
+    try {
+      const result = await categoriesApi.list();
+      setCatItems(result.items);
+    } catch (e) {
+      if (e instanceof ApiError) message.error(e.message);
+    } finally {
+      setCatLoading(false);
+    }
+  }, []);
+
+  const openCatManager = () => {
+    void fetchCategories();
+    setCatManagerOpen(true);
+  };
+
   useEffect(() => {
     void categoriesApi.list().then((res) => setCategories(res.items));
   }, []);
+
+  // Refresh category options when manager modal closes
+  useEffect(() => {
+    if (!catManagerOpen) {
+      void categoriesApi.list().then((res) => setCategories(res.items));
+    }
+  }, [catManagerOpen]);
 
   const fetchList = useCallback(async () => {
     setLoading(true);
@@ -111,6 +146,101 @@ export default function ProductListPage() {
       }
     }
   };
+
+  // Category operations
+  const openCatCreate = () => {
+    setCatFormMode('create');
+    setEditingCategory(null);
+    setCatFormOpen(true);
+  };
+
+  const openCatEdit = (record: Category) => {
+    setCatFormMode('edit');
+    setEditingCategory(record);
+    setCatFormOpen(true);
+  };
+
+  const toggleCatStatus = async (record: Category, newStatus: CategoryStatus) => {
+    try {
+      await categoriesApi.update(record.id, {
+        name: record.name,
+        sort: record.sort,
+        status: newStatus,
+      });
+      message.success(newStatus === 'active' ? '已启用' : '已禁用');
+      void fetchCategories();
+    } catch (e) {
+      if (e instanceof ApiError) message.error(e.message);
+    }
+  };
+
+  const handleCatDelete = async (record: Category) => {
+    try {
+      await categoriesApi.delete(record.id);
+      message.success('删除成功');
+      void fetchCategories();
+    } catch (e) {
+      if (e instanceof ApiError) message.error(e.message);
+    }
+  };
+
+  const catColumns = [
+    { title: 'ID', dataIndex: 'id', key: 'id', width: 80 },
+    { title: '名称', dataIndex: 'name', key: 'name' },
+    { title: '排序', dataIndex: 'sort', key: 'sort', width: 100 },
+    {
+      title: '状态',
+      dataIndex: 'status',
+      key: 'status',
+      width: 100,
+      render: (status: string) => (
+        <Tag color={status === 'active' ? 'green' : 'default'}>
+          {status === 'active' ? '启用' : '禁用'}
+        </Tag>
+      ),
+    },
+    {
+      title: '操作',
+      key: 'actions',
+      width: 240,
+      render: (_: unknown, record: Category) => (
+        <Space>
+          <Button type="link" size="small" onClick={() => openCatEdit(record)}>
+            编辑
+          </Button>
+          {record.status === 'active' ? (
+            <Popconfirm
+              title="确认禁用该分类？"
+              description="禁用后 App 端该分类及下属商品不可见"
+              onConfirm={() => void toggleCatStatus(record, 'disabled')}
+            >
+              <Button type="link" size="small" danger>
+                禁用
+              </Button>
+            </Popconfirm>
+          ) : (
+            <Popconfirm
+              title="确认启用该分类？"
+              onConfirm={() => void toggleCatStatus(record, 'active')}
+            >
+              <Button type="link" size="small">
+                启用
+              </Button>
+            </Popconfirm>
+          )}
+          <Popconfirm
+            title="确认删除该分类？"
+            description="仅无商品的分类可删除"
+            onConfirm={() => void handleCatDelete(record)}
+          >
+            <Button type="link" size="small" danger>
+              删除
+            </Button>
+          </Popconfirm>
+        </Space>
+      ),
+    },
+  ];
 
   const columns = [
     {
@@ -215,9 +345,14 @@ export default function ProductListPage() {
             style={{ width: 220 }}
           />
         </Space>
-        <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
-          新增商品
-        </Button>
+        <Space>
+          <Button icon={<SettingOutlined />} onClick={openCatManager}>
+            分类管理
+          </Button>
+          <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
+            新增商品
+          </Button>
+        </Space>
       </Space>
       <Table
         rowKey="id"
@@ -233,6 +368,40 @@ export default function ProductListPage() {
         onClose={() => setModalOpen(false)}
         onSuccess={() => void fetchList()}
       />
+
+      <Modal
+        title={
+          <Space>
+            <AppstoreOutlined />
+            <span>分类管理</span>
+          </Space>
+        }
+        open={catManagerOpen}
+        onCancel={() => setCatManagerOpen(false)}
+        footer={null}
+        destroyOnClose
+        width={680}
+      >
+        <Space style={{ marginBottom: 16, width: '100%', justifyContent: 'flex-end' }}>
+          <Button type="primary" icon={<PlusOutlined />} onClick={openCatCreate}>
+            新增分类
+          </Button>
+        </Space>
+        <Table
+          rowKey="id"
+          columns={catColumns}
+          dataSource={catItems}
+          loading={catLoading}
+          pagination={false}
+        />
+        <CategoryFormModal
+          open={catFormOpen}
+          mode={catFormMode}
+          category={editingCategory}
+          onClose={() => setCatFormOpen(false)}
+          onSuccess={() => void fetchCategories()}
+        />
+      </Modal>
     </>
   );
 }

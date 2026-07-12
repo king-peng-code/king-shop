@@ -77,10 +77,10 @@ export default function ProxyPayPage() {
   }
 
   return (
-    <Card title="帮人代付" style={{ maxWidth: 480, margin: '40px auto' }}>
+    <Card title={preview.brand_name ? `帮人代付 - ${preview.brand_name}` : '帮人代付'} style={{ maxWidth: 480, margin: '40px auto' }}>
       <Descriptions column={1} size="small">
-        <Descriptions.Item label="订单号">{preview.order_no}</Descriptions.Item>
         <Descriptions.Item label="下单人">{preview.buyer_name ?? '-'}</Descriptions.Item>
+        <Descriptions.Item label="商品">{preview.items_summary || '-'}</Descriptions.Item>
         <Descriptions.Item label="金额">¥{fenToYuan(preview.total_amount)}</Descriptions.Item>
         <Descriptions.Item label="状态">{preview.status}</Descriptions.Item>
         <Descriptions.Item label="有效期">{new Date(preview.expires_at).toLocaleString()}</Descriptions.Item>

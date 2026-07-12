@@ -10,6 +10,7 @@ use App\Http\Controllers\Catalog\OrderController as CatalogOrderController;
 use App\Http\Controllers\Catalog\ProductController;
 use App\Http\Controllers\Catalog\ProxyPayController;
 use App\Http\Controllers\PaymentNotifyController;
+use App\Http\Controllers\Admin\ExternalUserController;
 use App\Http\Controllers\Admin\StatsController;
 use App\Http\Controllers\Admin\SystemConfigController;
 use App\Http\Controllers\Admin\UploadController;
@@ -40,6 +41,7 @@ Route::middleware(['auth:sanctum', 'password.changed', 'admin'])->prefix('admin'
     Route::put('/configs', [SystemConfigController::class, 'update']);
     Route::post('/upload', [UploadController::class, 'store']);
     Route::apiResource('employees', EmployeeController::class);
+    Route::apiResource('external-users', ExternalUserController::class)->except(['store', 'show', 'destroy']);
     Route::apiResource('categories', AdminCategoryController::class);
     Route::apiResource('products', AdminProductController::class)->except(['destroy']);
     Route::get('dashboard/stats', [DashboardController::class, 'stats']);

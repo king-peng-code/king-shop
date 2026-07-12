@@ -19,7 +19,7 @@ final class SystemConfig
 
     public function displayValue(): string
     {
-        if ($this->isSensitive && $this->value !== '') {
+        if ($this->isSensitive) {
             return self::MASK_PLACEHOLDER;
         }
 

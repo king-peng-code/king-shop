@@ -5,11 +5,22 @@ namespace Tests\Unit\Application\SystemConfig;
 use App\Application\SystemConfig\GetSystemConfigs\GetSystemConfigsHandler;
 use App\Domain\SystemConfig\Entities\SystemConfig;
 use App\Domain\SystemConfig\Repositories\SystemConfigRepositoryInterface;
+use App\Infrastructure\Cache\SystemConfigListCache;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
 
 class GetSystemConfigsHandlerTest extends TestCase
 {
+    private function createHandler(SystemConfigRepositoryInterface $repository): GetSystemConfigsHandler
+    {
+        $cache = $this->createMock(SystemConfigListCache::class);
+        $cache->method('getOrSet')->willReturnCallback(
+            fn (callable $fallback) => $fallback(),
+        );
+
+        return new GetSystemConfigsHandler($repository, $cache);
+    }
+
     #[Test]
     public function handle_groups_configs_and_masks_sensitive_values(): void
     {
@@ -19,7 +30,7 @@ class GetSystemConfigsHandlerTest extends TestCase
             new SystemConfig('payment', 'wechat.mch_id', '1234567890', true, '微信商户号'),
         ]);
 
-        $handler = new GetSystemConfigsHandler($repository);
+        $handler = $this->createHandler($repository);
         $result = $handler->handle();
 
         $this->assertArrayHasKey('groups', $result);
@@ -42,7 +53,7 @@ class GetSystemConfigsHandlerTest extends TestCase
             new SystemConfig('storage', 'local.public_base_url', '', false, '图片公开访问域名'),
         ]);
 
-        $handler = new GetSystemConfigsHandler($repository);
+        $handler = $this->createHandler($repository);
         $result = $handler->handle();
 
         $storageGroup = collect($result['groups'])->firstWhere('name', 'storage');
@@ -60,7 +71,7 @@ class GetSystemConfigsHandlerTest extends TestCase
             new SystemConfig('storage', 'local.public_base_url', 'https://api.test.com', false, '图片公开访问域名'),
         ]);
 
-        $handler = new GetSystemConfigsHandler($repository);
+        $handler = $this->createHandler($repository);
         $result = $handler->handle();
 
         $storageGroup = collect($result['groups'])->firstWhere('name', 'storage');

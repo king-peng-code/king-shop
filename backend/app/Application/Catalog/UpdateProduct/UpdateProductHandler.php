@@ -8,12 +8,14 @@ use App\Domain\Catalog\Exceptions\ProductNotFoundException;
 use App\Domain\Catalog\Exceptions\UploadNotFoundException;
 use App\Domain\Catalog\Repositories\ProductRepositoryInterface;
 use App\Domain\Storage\Repositories\UploadRepositoryInterface;
+use App\Infrastructure\Cache\ProductListCache;
 
 class UpdateProductHandler
 {
     public function __construct(
         private readonly ProductRepositoryInterface $productRepository,
         private readonly UploadRepositoryInterface $uploadRepository,
+        private readonly ProductListCache $productCache,
     ) {}
 
     public function handle(UpdateProductCommand $command): Product
@@ -52,6 +54,9 @@ class UpdateProductHandler
             sort: $command->sort,
         );
 
-        return $this->productRepository->save($product);
+        $updated = $this->productRepository->save($product);
+        $this->productCache->invalidateAll();
+
+        return $updated;
     }
 }

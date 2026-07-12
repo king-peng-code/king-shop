@@ -22,7 +22,7 @@ class StatsApiTest extends TestCase
     public function admin_can_get_employee_stats(): void
     {
         $employee = UserModel::factory()->create(['role' => 'employee']);
-        OrderModel::factory()->count(3)->create(['user_id' => $employee->id]);
+        OrderModel::factory()->paid()->count(3)->create(['user_id' => $employee->id]);
 
         $this->withToken($this->adminToken())
             ->getJson('/api/v1/admin/stats/employees')
@@ -34,11 +34,12 @@ class StatsApiTest extends TestCase
     }
 
     #[Test]
-    public function employee_stats_excludes_cancelled_orders(): void
+    public function employee_stats_only_counts_paid_orders(): void
     {
         $employee = UserModel::factory()->create(['role' => 'employee']);
-        OrderModel::factory()->count(2)->create(['user_id' => $employee->id, 'status' => 'paid']);
+        OrderModel::factory()->paid()->count(2)->create(['user_id' => $employee->id]);
         OrderModel::factory()->cancelled()->create(['user_id' => $employee->id]);
+        OrderModel::factory()->create(['user_id' => $employee->id]); // pending_payment
 
         $this->withToken($this->adminToken())
             ->getJson('/api/v1/admin/stats/employees')
@@ -51,8 +52,8 @@ class StatsApiTest extends TestCase
     {
         $employee = UserModel::factory()->create(['role' => 'employee']);
         $admin = UserModel::factory()->admin()->create();
-        OrderModel::factory()->count(2)->create(['user_id' => $employee->id]);
-        OrderModel::factory()->create(['user_id' => $admin->id]);
+        OrderModel::factory()->paid()->count(2)->create(['user_id' => $employee->id]);
+        OrderModel::factory()->paid()->create(['user_id' => $admin->id]);
 
         $response = $this->withToken($this->adminToken())
             ->getJson('/api/v1/admin/stats/employees');
@@ -80,7 +81,7 @@ class StatsApiTest extends TestCase
     }
 
     #[Test]
-    public function proxy_payer_stats_excludes_cancelled_orders(): void
+    public function proxy_payer_stats_only_counts_paid_orders(): void
     {
         $payer = ExternalUserModel::factory()->create();
         OrderModel::factory()->paid()->count(2)->create([

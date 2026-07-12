@@ -9,5 +9,6 @@ final class ConfigGroupLabels
         'payment' => '支付配置',
         'storage' => '存储配置',
         'order' => '订单配置',
+        'external_user' => '代付人配置',
     ];
 }

@@ -37,7 +37,7 @@ class EloquentStatsRepositoryTest extends TestCase
     public function employee_stats_aggregates_correctly(): void
     {
         $employee = UserModel::factory()->create(['role' => 'employee']);
-        OrderModel::factory()->count(3)->create(['user_id' => $employee->id, 'total_amount' => 1000]);
+        OrderModel::factory()->paid()->count(3)->create(['user_id' => $employee->id, 'total_amount' => 1000]);
 
         $result = $this->repository->getEmployeeStats();
 
@@ -53,8 +53,8 @@ class EloquentStatsRepositoryTest extends TestCase
     {
         $emp1 = UserModel::factory()->create(['role' => 'employee', 'name' => 'A']);
         $emp2 = UserModel::factory()->create(['role' => 'employee', 'name' => 'B']);
-        OrderModel::factory()->count(5)->create(['user_id' => $emp1->id]);
-        OrderModel::factory()->count(3)->create(['user_id' => $emp2->id]);
+        OrderModel::factory()->paid()->count(5)->create(['user_id' => $emp1->id]);
+        OrderModel::factory()->paid()->count(3)->create(['user_id' => $emp2->id]);
 
         $result = $this->repository->getEmployeeStats();
 
@@ -66,10 +66,10 @@ class EloquentStatsRepositoryTest extends TestCase
     }
 
     #[Test]
-    public function employee_stats_excludes_cancelled_orders(): void
+    public function employee_stats_only_counts_paid_orders(): void
     {
         $employee = UserModel::factory()->create(['role' => 'employee']);
-        OrderModel::factory()->count(2)->create(['user_id' => $employee->id, 'status' => 'paid']);
+        OrderModel::factory()->paid()->count(2)->create(['user_id' => $employee->id]);
         OrderModel::factory()->cancelled()->create(['user_id' => $employee->id]);
 
         $result = $this->repository->getEmployeeStats();
@@ -79,17 +79,42 @@ class EloquentStatsRepositoryTest extends TestCase
     }
 
     #[Test]
+    public function employee_stats_excludes_pending_orders(): void
+    {
+        $employee = UserModel::factory()->create(['role' => 'employee']);
+        OrderModel::factory()->paid()->count(2)->create(['user_id' => $employee->id, 'total_amount' => 1000]);
+        OrderModel::factory()->count(3)->create(['user_id' => $employee->id, 'total_amount' => 500]); // pending_payment
+
+        $result = $this->repository->getEmployeeStats();
+
+        $this->assertCount(1, $result);
+        $this->assertSame(2, $result[0]['order_count']);
+        $this->assertSame(2000, $result[0]['total_amount']);
+    }
+
+    #[Test]
     public function employee_stats_excludes_non_employee_users(): void
     {
         $employee = UserModel::factory()->create(['role' => 'employee']);
         UserModel::factory()->admin()->create();
         UserModel::factory()->superAdmin()->create();
-        OrderModel::factory()->create(['user_id' => $employee->id]);
+        OrderModel::factory()->paid()->create(['user_id' => $employee->id]);
 
         $result = $this->repository->getEmployeeStats();
 
         $this->assertCount(1, $result);
         $this->assertSame($employee->id, $result[0]['user_id']);
+    }
+
+    #[Test]
+    public function employee_stats_returns_empty_when_no_paid_orders(): void
+    {
+        $employee = UserModel::factory()->create(['role' => 'employee']);
+        OrderModel::factory()->count(2)->create(['user_id' => $employee->id]); // pending_payment
+
+        $result = $this->repository->getEmployeeStats();
+
+        $this->assertSame([], $result);
     }
 
     #[Test]
@@ -122,7 +147,7 @@ class EloquentStatsRepositoryTest extends TestCase
     }
 
     #[Test]
-    public function proxy_payer_stats_excludes_cancelled_orders(): void
+    public function proxy_payer_stats_only_counts_paid_orders(): void
     {
         $payer = ExternalUserModel::factory()->create();
         OrderModel::factory()->paid()->create([

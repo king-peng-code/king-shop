@@ -5,14 +5,23 @@ namespace App\Application\SystemConfig\GetSystemConfigs;
 use App\Application\SystemConfig\ConfigGroupLabels;
 use App\Domain\SystemConfig\Entities\SystemConfig;
 use App\Domain\SystemConfig\Repositories\SystemConfigRepositoryInterface;
+use App\Infrastructure\Cache\SystemConfigListCache;
 
 class GetSystemConfigsHandler
 {
     public function __construct(
         private readonly SystemConfigRepositoryInterface $repository,
+        private readonly SystemConfigListCache $cache,
     ) {}
 
     public function handle(): array
+    {
+        return $this->cache->getOrSet(function (): array {
+            return $this->buildGrouped();
+        });
+    }
+
+    private function buildGrouped(): array
     {
         $grouped = [];
 

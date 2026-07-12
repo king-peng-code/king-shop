@@ -44,6 +44,7 @@ export interface Order {
 export interface OrderListParams {
   status?: OrderStatus;
   user_id?: number;
+  paid_by_external_user_id?: number;
   date_from?: string;
   date_to?: string;
   keyword?: string;

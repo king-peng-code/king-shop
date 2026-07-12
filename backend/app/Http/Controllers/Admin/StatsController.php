@@ -9,16 +9,21 @@ use App\Application\Statistics\GetProxyPayerStats\GetProxyPayerStatsHandler;
 use App\Http\Controllers\Controller;
 use App\Http\Responses\ApiResponse;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class StatsController extends Controller
 {
-    public function employeeStats(GetEmployeeStatsHandler $handler): JsonResponse
+    public function employeeStats(Request $request, GetEmployeeStatsHandler $handler): JsonResponse
     {
-        return ApiResponse::success($handler->handle()->toArray());
+        $keyword = $request->query('keyword');
+
+        return ApiResponse::success($handler->handle($keyword !== null && $keyword !== '' ? (string) $keyword : null)->toArray());
     }
 
-    public function proxyPayerStats(GetProxyPayerStatsHandler $handler): JsonResponse
+    public function proxyPayerStats(Request $request, GetProxyPayerStatsHandler $handler): JsonResponse
     {
-        return ApiResponse::success($handler->handle()->toArray());
+        $keyword = $request->query('keyword');
+
+        return ApiResponse::success($handler->handle($keyword !== null && $keyword !== '' ? (string) $keyword : null)->toArray());
     }
 }

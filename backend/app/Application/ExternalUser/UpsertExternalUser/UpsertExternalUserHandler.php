@@ -29,6 +29,7 @@ class UpsertExternalUserHandler
                 externalId: $externalId,
                 name: $name,
                 phone: $phone,
+                tags: [],
                 createdAt: $now,
                 updatedAt: $now,
             ));
@@ -40,6 +41,7 @@ class UpsertExternalUserHandler
             externalId: $existing->externalId,
             name: $name ?? $existing->name,
             phone: $phone ?? $existing->phone,
+            tags: $existing->tags,
             createdAt: $existing->createdAt,
             updatedAt: new \DateTimeImmutable,
         ));

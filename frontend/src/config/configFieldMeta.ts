@@ -29,9 +29,13 @@ const META_OVERRIDES: Record<string, FieldMeta> = {
     min: 1,
     max: 1440,
   },
+  'order.share_title': { type: 'input' },
+  'order.share_message': { type: 'textarea', rows: 5 },
+  'order.share_copy_text': { type: 'textarea', rows: 3 },
   'payment.wechat.cert': { type: 'textarea', rows: 4 },
   'payment.alipay.private_key': { type: 'textarea', rows: 4 },
   'payment.alipay.public_key': { type: 'textarea', rows: 4 },
+  'external_user.tag_presets': { type: 'textarea', rows: 3 },
 };
 
 export function fieldKey(group: string, key: string): string {
@@ -105,6 +109,12 @@ export function isFieldVisible(
 }
 
 const GROUP_FIELD_ORDER: Record<string, string[]> = {
+  order: [
+    'auto_cancel_minutes',
+    'share_title',
+    'share_message',
+    'share_copy_text',
+  ],
   payment: [
     'provider',
     'alipay.app_id',

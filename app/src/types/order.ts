@@ -72,6 +72,9 @@ export interface ProxyPayLinkResult {
   url: string;
   token: string;
   expires_at: string;
+  share_title: string;
+  share_message: string;
+  share_copy_text: string;
 }
 
 export type PaymentOutcome = 'success' | 'failed' | 'pending';

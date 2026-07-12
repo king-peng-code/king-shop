@@ -37,7 +37,7 @@ class SystemConfigTest extends TestCase
     }
 
     #[Test]
-    public function sensitive_config_with_empty_value_returns_empty_string(): void
+    public function sensitive_config_with_empty_value_is_masked(): void
     {
         $config = new SystemConfig(
             group: 'payment',
@@ -47,6 +47,6 @@ class SystemConfigTest extends TestCase
             description: '微信商户号',
         );
 
-        $this->assertSame('', $config->displayValue());
+        $this->assertSame('****', $config->displayValue());
     }
 }

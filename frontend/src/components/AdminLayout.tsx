@@ -4,7 +4,7 @@ import { Layout, Menu, Button, Space, Tag, Typography } from 'antd';
 import {
   DashboardOutlined,
   TeamOutlined,
-  AppstoreOutlined,
+  UserOutlined,
   ShoppingOutlined,
   SettingOutlined,
   FileTextOutlined,
@@ -50,13 +50,13 @@ export default function AdminLayout() {
         ? 'orders'
       : location.pathname.startsWith('/products')
         ? 'products'
-        : location.pathname.startsWith('/categories')
-          ? 'categories'
-          : location.pathname.startsWith('/settings')
+        : location.pathname.startsWith('/settings')
             ? 'settings'
             : location.pathname.startsWith('/employees')
               ? 'employees'
-              : '';
+              : location.pathname.startsWith('/external-users')
+                ? 'external-users'
+                : '';
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -84,22 +84,16 @@ export default function AdminLayout() {
               onClick: () => navigate('/dashboard'),
             },
             {
-              key: 'statistics',
-              icon: <BarChartOutlined />,
-              label: '统计报表',
-              onClick: () => navigate('/statistics'),
-            },
-            {
               key: 'employees',
               icon: <TeamOutlined />,
               label: '员工管理',
               onClick: () => navigate('/employees'),
             },
             {
-              key: 'categories',
-              icon: <AppstoreOutlined />,
-              label: '分类管理',
-              onClick: () => navigate('/categories'),
+              key: 'external-users',
+              icon: <UserOutlined />,
+              label: '代付人管理',
+              onClick: () => navigate('/external-users'),
             },
             {
               key: 'products',
@@ -112,6 +106,12 @@ export default function AdminLayout() {
               icon: <FileTextOutlined />,
               label: '订单管理',
               onClick: () => navigate('/orders'),
+            },
+            {
+              key: 'statistics',
+              icon: <BarChartOutlined />,
+              label: '统计报表',
+              onClick: () => navigate('/statistics'),
             },
             {
               key: 'settings',

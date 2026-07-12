@@ -15,11 +15,15 @@ class FakePaymentGateway implements PaymentGatewayInterface
 {
     public function channel(): string
     {
+        $this->assertNotProduction();
+
         return PaymentChannel::FAKE;
     }
 
     public function createPayment(Payment $payment, Order $order, array $options = []): PaymentCreateResult
     {
+        $this->assertNotProduction();
+
         $tradeType = $options['trade_type'] ?? 'JSAPI';
 
         return new PaymentCreateResult(
@@ -36,11 +40,15 @@ class FakePaymentGateway implements PaymentGatewayInterface
 
     public function queryPayment(string $outTradeNo): PaymentQueryResult
     {
+        $this->assertNotProduction();
+
         return PaymentQueryResult::success('FAKE_'.$outTradeNo);
     }
 
     public function verifyNotify(Request $request): NotifyVerifyResult
     {
+        $this->assertNotProduction();
+
         if ($request->input('trade_status') !== 'TRADE_SUCCESS') {
             return NotifyVerifyResult::failure();
         }
@@ -49,5 +57,12 @@ class FakePaymentGateway implements PaymentGatewayInterface
         $tradeNo = (string) ($request->input('trade_no') ?: 'FAKE_'.$outTradeNo);
 
         return NotifyVerifyResult::success($outTradeNo, $tradeNo, $request->all());
+    }
+
+    private function assertNotProduction(): void
+    {
+        if (app()->environment('production')) {
+            throw new \RuntimeException('Fake payment gateway is not allowed in production');
+        }
     }
 }

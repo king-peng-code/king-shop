@@ -33,6 +33,10 @@ app/node_modules/
 app/.env
 app/android/build/
 app/android/.gradle/
+app/android/app/libs/
+app/android/app/src/main/prefab/
+app/android/app/src/main/java/com/facebook/
+app/android/stubs/
 app/ios/build/
 app/ios/Pods/
 app/.expo/

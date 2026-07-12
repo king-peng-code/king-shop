@@ -6,6 +6,7 @@ function toQuery(params: OrderListParams): string {
   const q = new URLSearchParams();
   if (params.status) q.set('status', params.status);
   if (params.user_id) q.set('user_id', String(params.user_id));
+  if (params.paid_by_external_user_id) q.set('paid_by_external_user_id', String(params.paid_by_external_user_id));
   if (params.date_from) q.set('date_from', params.date_from);
   if (params.date_to) q.set('date_to', params.date_to);
   if (params.keyword) q.set('keyword', params.keyword);

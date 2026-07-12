@@ -57,6 +57,9 @@ class ProxyPayApiTest extends TestCase
             ->assertOk();
 
         $this->assertStringContainsString('/proxy-pay/', $response->json('data.url'));
+        $this->assertArrayHasKey('share_title', $response->json('data'));
+        $this->assertArrayHasKey('share_message', $response->json('data'));
+        $this->assertArrayHasKey('share_copy_text', $response->json('data'));
     }
 
     #[Test]
@@ -78,10 +81,14 @@ class ProxyPayApiTest extends TestCase
         $order = OrderModel::factory()->for($user, 'user')->proxy()->create(['status' => 'pending_payment']);
         $token = ProxyPayTokenModel::factory()->for($order, 'order')->create();
 
-        $this->getJson("/api/v1/proxy-pay/{$token->token}")
+        $response = $this->getJson("/api/v1/proxy-pay/{$token->token}")
             ->assertOk()
-            ->assertJsonPath('data.buyer_name', '张三')
+            ->assertJsonPath('data.buyer_name', '张*')
             ->assertJsonPath('data.payable', true);
+
+        $this->assertArrayNotHasKey('order_no', $response->json('data'));
+        $this->assertArrayHasKey('items_summary', $response->json('data'));
+        $this->assertArrayHasKey('brand_name', $response->json('data'));
     }
 
     #[Test]

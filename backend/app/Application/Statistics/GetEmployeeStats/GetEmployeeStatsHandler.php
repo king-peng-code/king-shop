@@ -13,8 +13,8 @@ class GetEmployeeStatsHandler
         private readonly StatsRepositoryInterface $repository,
     ) {}
 
-    public function handle(): EmployeeStatsDto
+    public function handle(?string $keyword = null): EmployeeStatsDto
     {
-        return new EmployeeStatsDto($this->repository->getEmployeeStats());
+        return new EmployeeStatsDto($this->repository->getEmployeeStats($keyword));
     }
 }

@@ -42,7 +42,9 @@ export function SettingsPage() {
     return null;
   }
 
-  const tabItems = groups.map((group) => ({
+  const visibleGroups = groups.filter((g) => g.name !== 'external_user');
+
+  const tabItems = visibleGroups.map((group) => ({
     key: group.name,
     label: group.label,
     children: (

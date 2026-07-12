@@ -138,6 +138,10 @@ class EloquentOrderRepository implements OrderRepositoryInterface
             $query->where('orders.user_id', $filters->userId);
         }
 
+        if ($filters->paidByExternalUserId !== null) {
+            $query->where('orders.paid_by_external_user_id', $filters->paidByExternalUserId);
+        }
+
         if ($filters->dateFrom !== null && $filters->dateFrom !== '') {
             $query->whereDate('orders.created_at', '>=', $filters->dateFrom);
         }
@@ -152,6 +156,10 @@ class EloquentOrderRepository implements OrderRepositoryInterface
                 $q->where('orders.order_no', 'like', "%{$keyword}%")
                     ->orWhereHas('user', function (Builder $userQuery) use ($keyword): void {
                         $userQuery->where('name', 'like', "%{$keyword}%")
+                            ->orWhere('phone', 'like', "%{$keyword}%");
+                    })
+                    ->orWhereHas('paidByExternalUser', function (Builder $payerQuery) use ($keyword): void {
+                        $payerQuery->where('name', 'like', "%{$keyword}%")
                             ->orWhere('phone', 'like', "%{$keyword}%");
                     });
             });

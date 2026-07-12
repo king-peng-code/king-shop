@@ -12,5 +12,6 @@ final class AdminOrderListQuery
         public readonly string $keyword,
         public readonly int $page,
         public readonly int $perPage,
+        public readonly ?int $paidByExternalUserId = null,
     ) {}
 }
