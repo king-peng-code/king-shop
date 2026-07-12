@@ -14,6 +14,7 @@ class OrderSeeder extends Seeder
     public function run(): void
     {
         if (OrderModel::query()->exists()) {
+            $this->backfillProxyPayers();
             $this->command?->info('Orders already exist, skipping seed.');
 
             return;
@@ -85,6 +86,23 @@ class OrderSeeder extends Seeder
             'quantity' => 3,
             'subtotal' => $product->price * 3,
         ]);
+    }
+
+    private function backfillProxyPayers(): void
+    {
+        $payer = ExternalUserModel::query()->firstOrCreate(
+            ['provider' => 'fake', 'external_id' => 'seed-proxy-payer'],
+            ['name' => '李四', 'phone' => '13800000002'],
+        );
+
+        $updated = OrderModel::query()
+            ->where('payment_method', 'proxy')
+            ->whereNull('paid_by_external_user_id')
+            ->update(['paid_by_external_user_id' => $payer->id]);
+
+        if ($updated > 0) {
+            $this->command?->info("Backfilled paid_by_external_user_id on {$updated} proxy order(s).");
+        }
     }
 
     private function seedOrder(
