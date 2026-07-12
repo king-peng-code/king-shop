@@ -68,6 +68,7 @@ export default function OrdersScreen() {
   const loadingMoreRef = useRef(false);
   const refreshingRef = useRef(false);
   const hasFocusedRef = useRef(false);
+  const loadRequestIdRef = useRef(0);
 
   useEffect(() => {
     ordersLengthRef.current = orders.length;
@@ -92,6 +93,8 @@ export default function OrdersScreen() {
 
   const loadOrders = useCallback(
     async (reset: boolean, tab: TabKey) => {
+      const requestId = ++loadRequestIdRef.current;
+
       if (!reset) {
         if (loadingMoreRef.current || refreshingRef.current) {
           return;
@@ -118,6 +121,10 @@ export default function OrdersScreen() {
         setError(null);
         const result = await fetchOrdersForTab(tab, nextPage);
 
+        if (requestId !== loadRequestIdRef.current) {
+          return;
+        }
+
         setOrders(prev =>
           reset ? result.items : [...prev, ...result.items],
         );
@@ -125,8 +132,14 @@ export default function OrdersScreen() {
         totalRef.current = result.meta.total;
         setTotal(result.meta.total);
       } catch (e) {
+        if (requestId !== loadRequestIdRef.current) {
+          return;
+        }
         await handleApiError(e);
       } finally {
+        if (requestId !== loadRequestIdRef.current) {
+          return;
+        }
         if (reset) {
           refreshingRef.current = false;
           setIsRefreshing(false);
