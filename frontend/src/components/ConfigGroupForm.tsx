@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { Button, Form, Input, InputNumber, Select, message } from 'antd';
 import { configsApi } from '../api/configs';
 import { ApiError } from '../api/client';
-import { getFieldMeta, isFieldVisible } from '../config/configFieldMeta';
+import { getFieldMeta, getFieldExtra, isFieldVisible, sortConfigItems } from '../config/configFieldMeta';
 import type { ConfigGroup } from '../types/config';
 import type { Role } from '../types/employee';
 
@@ -38,15 +38,31 @@ export function ConfigGroupForm({
     return ctx;
   }, [group.name, initialValues, watchedValues]);
 
-  const visibleItems = group.items.filter((item) =>
-    isFieldVisible(group.name, item.key, visibilityContext),
-  );
+  const visibleItems = useMemo(() => {
+    const filtered = group.items.filter((item) =>
+      isFieldVisible(group.name, item.key, visibilityContext),
+    );
+    return sortConfigItems(group.name, filtered);
+  }, [group.items, group.name, visibilityContext]);
 
   const handleSubmit = async (values: Record<string, unknown>) => {
-    const configs = group.items.map((item) => ({
+    const editableItems = visibleItems.filter((item) => {
+      if (item.is_readonly) {
+        return false;
+      }
+      if (item.is_sensitive && userRole !== 'super_admin') {
+        return false;
+      }
+      return true;
+    });
+
+    const configs = editableItems.map((item) => ({
       group: group.name,
       key: item.key,
-      value: String(values[item.key] ?? item.value),
+      value:
+        item.key in values
+          ? String(values[item.key] ?? '')
+          : String(item.value ?? ''),
     }));
 
     try {
@@ -79,11 +95,12 @@ export function ConfigGroupForm({
     const meta = getFieldMeta(group.name, item.key, item.is_sensitive);
     const readOnlySensitive =
       item.is_sensitive && userRole !== 'super_admin';
+    const readOnly = item.is_readonly === true || readOnlySensitive;
 
     const label = item.description ?? item.key;
 
-    if (readOnlySensitive) {
-      return <Input disabled value="****" />;
+    if (readOnly) {
+      return <Input disabled value={item.is_sensitive ? '****' : item.value} />;
     }
 
     switch (meta.type) {
@@ -123,7 +140,13 @@ export function ConfigGroupForm({
           key={item.key}
           name={item.key}
           label={item.description ?? item.key}
-          rules={[{ required: !item.is_sensitive, message: '此项不能为空' }]}
+          extra={getFieldExtra(group.name, item.key)}
+          rules={[
+            {
+              required: !item.is_sensitive && !item.is_readonly,
+              message: '此项不能为空',
+            },
+          ]}
         >
           {renderField(item)}
         </Form.Item>

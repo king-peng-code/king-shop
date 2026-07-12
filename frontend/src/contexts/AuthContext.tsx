@@ -16,6 +16,10 @@ import {
   setOnUnauthorized,
   setToken,
 } from '../api/client';
+import {
+  setUploadOnMustChangePassword,
+  setUploadOnUnauthorized,
+} from '../api/upload';
 import type { AuthUser } from '../types/employee';
 
 interface AuthContextValue {
@@ -67,6 +71,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       navigate('/login');
     });
     setOnMustChangePassword(() => {
+      navigate('/change-password');
+    });
+    setUploadOnUnauthorized(() => {
+      setTokenState(null);
+      setUser(null);
+      navigate('/login');
+    });
+    setUploadOnMustChangePassword(() => {
       navigate('/change-password');
     });
   }, [navigate]);

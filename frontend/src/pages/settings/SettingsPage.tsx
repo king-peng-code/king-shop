@@ -4,6 +4,7 @@ import { configsApi } from '../../api/configs';
 import { ConfigGroupForm } from '../../components/ConfigGroupForm';
 import { useAuth } from '../../contexts/AuthContext';
 import type { ConfigGroup } from '../../types/config';
+import { applyMediaConfigFromGroups } from '../../utils/mediaUrl';
 
 export function SettingsPage() {
   const { user } = useAuth();
@@ -17,6 +18,7 @@ export function SettingsPage() {
     try {
       const result = await configsApi.get();
       setGroups(result.groups);
+      applyMediaConfigFromGroups(result.groups);
     } catch {
       setError('加载配置失败，请重试');
     } finally {
@@ -47,7 +49,10 @@ export function SettingsPage() {
       <ConfigGroupForm
         group={group}
         userRole={user.role}
-        onSaved={(updatedGroups) => setGroups(updatedGroups)}
+        onSaved={(updatedGroups) => {
+          setGroups(updatedGroups);
+          applyMediaConfigFromGroups(updatedGroups);
+        }}
       />
     ),
   }));

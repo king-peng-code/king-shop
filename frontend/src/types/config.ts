@@ -2,6 +2,7 @@ export interface ConfigItem {
   key: string;
   value: string;
   is_sensitive: boolean;
+  is_readonly?: boolean;
   description: string | null;
 }
 
