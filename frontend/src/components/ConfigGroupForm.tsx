@@ -42,11 +42,11 @@ export function ConfigGroupForm({
     isFieldVisible(group.name, item.key, visibilityContext),
   );
 
-  const handleSubmit = async (values: Record<string, string>) => {
+  const handleSubmit = async (values: Record<string, unknown>) => {
     const configs = group.items.map((item) => ({
       group: group.name,
       key: item.key,
-      value: values[item.key] ?? item.value,
+      value: String(values[item.key] ?? item.value),
     }));
 
     try {
