@@ -7,6 +7,7 @@ import LoginPage from './pages/LoginPage';
 import ChangePasswordPage from './pages/ChangePasswordPage';
 import AdminLayout from './components/AdminLayout';
 import EmployeeListPage from './pages/employees/EmployeeListPage';
+import { SettingsPage } from './pages/settings/SettingsPage';
 
 export default function App() {
   return (
@@ -33,6 +34,7 @@ export default function App() {
             >
               <Route index element={<Navigate to="/employees" replace />} />
               <Route path="employees" element={<EmployeeListPage />} />
+              <Route path="settings" element={<SettingsPage />} />
             </Route>
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>

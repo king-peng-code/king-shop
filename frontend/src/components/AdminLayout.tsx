@@ -1,7 +1,13 @@
 import { useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Layout, Menu, Button, Space, Tag, Typography } from 'antd';
-import { TeamOutlined, LogoutOutlined, MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
+import {
+  TeamOutlined,
+  SettingOutlined,
+  LogoutOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+} from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
 
 const { Header, Sider, Content } = Layout;
@@ -24,7 +30,11 @@ export default function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const selectedKey = location.pathname.startsWith('/employees') ? 'employees' : '';
+  const selectedKey = location.pathname.startsWith('/settings')
+    ? 'settings'
+    : location.pathname.startsWith('/employees')
+      ? 'employees'
+      : '';
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -50,6 +60,12 @@ export default function AdminLayout() {
               icon: <TeamOutlined />,
               label: '员工管理',
               onClick: () => navigate('/employees'),
+            },
+            {
+              key: 'settings',
+              icon: <SettingOutlined />,
+              label: '系统配置',
+              onClick: () => navigate('/settings'),
             },
           ]}
         />
