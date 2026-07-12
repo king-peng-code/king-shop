@@ -29,7 +29,6 @@
 ## 验收
 
 ```bash
-cd app && npm run android   # fake 通道全链路
-# 配置 WECHAT_APP_ID 后测试微信 SDK
-# 配置 M01 支付宝沙箱后测试 WebView
+./scripts/test-m09-acceptance.sh   # App Jest + Backend Order/Payment
+cd app && npm run test:m09         # 仅 App 单元测试
 ```

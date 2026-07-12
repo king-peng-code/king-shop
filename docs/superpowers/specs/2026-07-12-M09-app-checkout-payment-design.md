@@ -314,16 +314,16 @@ async function pollOrderStatus(
 
 ## 8. 测试策略
 
-M09 为 App 端，**不强制 Jest 集成测试**；验收以手动 + fake 通道为主。
+| 类型 | 文件 | 覆盖 |
+|------|------|------|
+| App Jest | `__tests__/api/orders.test.ts` | 订单 API 封装 |
+| App Jest | `__tests__/utils/pollOrderStatus.test.ts` | 支付后轮询 |
+| App Jest | `__tests__/services/paymentLauncher.test.ts` | 支付 channel 分发 |
+| Feature | `OrderApiTest` + `PaymentApiTest` | 后端契约（M09 回归） |
 
-| 场景 | 验收方式 |
-|---|---|
-| 自付 fake 全链路 | Android 模拟器 / 真机，`channel=fake` |
-| 自付支付宝 | 配置 M01 沙箱凭证，WebView 完成沙箱支付 |
-| 自付微信 | 配置微信 App 商户号，SDK 调起（可 staging 环境） |
-| 代付分享 | 下单 proxy → Share 面板弹出 → 链接在浏览器可打开 M07 H5 |
-| 支付取消 | 微信 SDK 返回取消 → failed 结果页 |
-| 后端回归 | `./scripts/docker-test.sh --filter=OrderApiTest` 与 `PaymentApiTest` 保持全绿（无 backend 改动预期） |
+**一键验收：** `./scripts/test-m09-acceptance.sh`（App Jest + Backend Feature）
+
+M09 为 App 端，**不强制 Detox E2E**；支付宝/微信真机仍需手工验收（见 record）。
 
 ---
 
