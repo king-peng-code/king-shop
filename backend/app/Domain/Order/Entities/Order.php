@@ -30,4 +30,52 @@ final class Order
         public readonly ?string $userDepartment = null,
         public readonly ?string $paidByUserName = null,
     ) {}
+
+    public function withStatus(OrderStatus $status): self
+    {
+        return new self(
+            id: $this->id,
+            orderNo: $this->orderNo,
+            userId: $this->userId,
+            totalAmount: $this->totalAmount,
+            status: $status,
+            paymentMethod: $this->paymentMethod,
+            paidByUserId: $this->paidByUserId,
+            paidAt: $this->paidAt,
+            remark: $this->remark,
+            cancelledAt: $this->cancelledAt,
+            cancelReason: $this->cancelReason,
+            createdAt: $this->createdAt,
+            updatedAt: $this->updatedAt,
+            items: $this->items,
+            userName: $this->userName,
+            userPhone: $this->userPhone,
+            userDepartment: $this->userDepartment,
+            paidByUserName: $this->paidByUserName,
+        );
+    }
+
+    public function withCancelled(\DateTimeImmutable $cancelledAt, ?string $cancelReason): self
+    {
+        return new self(
+            id: $this->id,
+            orderNo: $this->orderNo,
+            userId: $this->userId,
+            totalAmount: $this->totalAmount,
+            status: $this->status,
+            paymentMethod: $this->paymentMethod,
+            paidByUserId: $this->paidByUserId,
+            paidAt: $this->paidAt,
+            remark: $this->remark,
+            cancelledAt: $cancelledAt,
+            cancelReason: $cancelReason,
+            createdAt: $this->createdAt,
+            updatedAt: $this->updatedAt,
+            items: $this->items,
+            userName: $this->userName,
+            userPhone: $this->userPhone,
+            userDepartment: $this->userDepartment,
+            paidByUserName: $this->paidByUserName,
+        );
+    }
 }
