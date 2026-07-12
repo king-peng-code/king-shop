@@ -23,11 +23,14 @@ fi
 # 构建自有 PHP 基础镜像（若不存在）
 if ! docker image inspect king-shop/php:8.4.3-cli >/dev/null 2>&1; then
     log "构建自有 PHP 基础镜像..."
-    "$ROOT/scripts/build-php-base.sh"
+    docker compose --profile base build php-base-cli
 fi
 
+log "构建 backend 应用镜像..."
+docker compose build backend
+
 log "启动服务 (mysql + redis + backend)..."
-docker compose up -d --build
+docker compose up -d mysql redis backend
 
 log "等待服务就绪..."
 MAX_WAIT=120

@@ -22,7 +22,7 @@ class UploadApiTest extends TestCase
     {
         parent::setUp();
         Storage::fake('public');
-        $this->user = UserModel::factory()->create();
+        $this->user = UserModel::factory()->admin()->create();
         $this->token = $this->user->createToken('test')->plainTextToken;
     }
 
@@ -71,5 +71,17 @@ class UploadApiTest extends TestCase
         $this->assertStringStartsWith('uploads/', $upload->path);
         $this->assertStringStartsWith('http://localhost:8000/storage/', $response->json('data.url'));
         Storage::disk('public')->assertExists($upload->path);
+    }
+
+    #[Test]
+    public function employee_token_cannot_upload(): void
+    {
+        $user = UserModel::factory()->create(['role' => 'employee']);
+        $token = $user->createToken('test')->plainTextToken;
+        $file = UploadedFile::fake()->image('photo.jpg', 100, 100)->size(100);
+
+        $this->withToken($token)
+            ->postJson('/api/v1/admin/upload', ['file' => $file])
+            ->assertForbidden();
     }
 }

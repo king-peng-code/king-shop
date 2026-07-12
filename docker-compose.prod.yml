@@ -44,6 +44,17 @@ services:
       timeout: 5s
       retries: 5
 
+  # ── 自有 PHP 基础镜像（构建用，不常驻运行）──
+  php-base-fpm:
+    image: king-shop/php:8.4.3-fpm
+    build:
+      context: ./docker/php
+      dockerfile: Dockerfile.fpm
+      args:
+        PHP_VERSION: "8.4.3"
+        COMPOSER_VERSION: "2.8.5"
+    profiles: ["base"]
+
   backend:
     build:
       context: ./backend

@@ -2,6 +2,23 @@
 
 namespace App\Providers;
 
+use App\Domain\Identity\Repositories\UserRepositoryInterface;
+use App\Domain\Storage\Repositories\UploadRepositoryInterface;
+use App\Domain\Storage\Services\PublicUrlGeneratorInterface;
+use App\Domain\Storage\Services\StorageDriverResolverInterface;
+use App\Domain\SystemConfig\Repositories\SystemConfigRepositoryInterface;
+use App\Domain\SystemConfig\Services\ConfigEncryptionInterface;
+use App\Infrastructure\Encryption\LaravelConfigEncryption;
+use App\Infrastructure\Persistence\Eloquent\EloquentSystemConfigRepository;
+use App\Infrastructure\Persistence\Eloquent\EloquentUploadRepository;
+use App\Infrastructure\Persistence\Eloquent\EloquentUserRepository;
+use App\Infrastructure\Storage\ConfigPublicUrlGenerator;
+use App\Infrastructure\Storage\Drivers\LocalStorageDriver;
+use App\Infrastructure\Storage\Drivers\OssStorageDriver;
+use App\Infrastructure\Storage\Resolvers\HardcodedStorageDriverResolver;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -11,7 +28,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(ConfigEncryptionInterface::class, LaravelConfigEncryption::class);
+        $this->app->bind(SystemConfigRepositoryInterface::class, EloquentSystemConfigRepository::class);
+        $this->app->bind(UserRepositoryInterface::class, EloquentUserRepository::class);
+
+        $this->app->singleton(LocalStorageDriver::class);
+        $this->app->singleton(OssStorageDriver::class);
+        $this->app->bind(PublicUrlGeneratorInterface::class, ConfigPublicUrlGenerator::class);
+        $this->app->bind(UploadRepositoryInterface::class, EloquentUploadRepository::class);
+        $this->app->bind(StorageDriverResolverInterface::class, HardcodedStorageDriverResolver::class);
     }
 
     /**
@@ -19,6 +44,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        RateLimiter::for('api', function (Request $request) {
+            return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+        });
     }
 }

@@ -189,7 +189,9 @@ EOF
 | TDD | 先写失败测试，再实现，保持测试绿色 |
 | Unit 测试 | 覆盖实体、值对象、领域服务、用例 |
 | Feature 测试 | 覆盖 API 端点与完整请求链路 |
-| 完成门槛 | `docker compose exec backend php artisan test` 全部通过 |
+| 完成门槛 | `./scripts/docker-test.sh` 或 `docker compose exec backend php artisan test` 全部通过 |
+
+**Docker 测试规范（所有 Mxx 模块统一）：** [docs/superpowers/docker-testing.md](docs/superpowers/docker-testing.md)
 
 **没有测试的领域代码不得合并，测试失败不得声明任务完成。**
 
@@ -223,7 +225,7 @@ app/        → React Native 移动端
 
 **锁定版本：** PHP 8.4 · Laravel 12 · MySQL 8.0 · Redis 7.4 · React 18.3 · Node 20 · RN 0.76.9
 
-**本地基础设施：** 根目录 `docker compose up -d` 启动 MySQL + Redis。
+**本地基础设施：** `./scripts/dev-up.sh` 启动 PHP 8.4 backend + MySQL + Redis。
 
 ## 当前阶段
 

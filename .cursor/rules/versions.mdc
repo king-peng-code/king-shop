@@ -66,7 +66,7 @@ REGISTRY=your-registry ./scripts/build-php-base.sh --push  # 推私有仓库
 
 | 服务 | 镜像（锁定） | 端口 |
 |------|-------------|------|
-| backend | `king-shop-backend:php8.4` | 8000 |
+| backend | `king-shop-backend:dev`（基于 `king-shop/php:8.4.3-cli`） | 8000 |
 | mysql | `mysql:8.0.40` | 3306 |
 | redis | `redis:7.4-alpine` | 6379 |
 
@@ -81,7 +81,7 @@ REGISTRY=your-registry ./scripts/build-php-base.sh --push  # 推私有仓库
 | 服务 | 镜像（锁定） | 端口 |
 |------|-------------|------|
 | nginx | `nginx:1.27.4-alpine` | 80（对外） |
-| backend | `king-shop-backend:prod` | 内网 9000 |
+| backend | `king-shop-backend:prod`（基于 `king-shop/php:8.4.3-fpm`） | 内网 9000 |
 | mysql | `mysql:8.0.40` | 仅内网 |
 | redis | `redis:7.4-alpine` | 仅内网 |
 
@@ -98,3 +98,15 @@ docker compose version
 node -v         # 推荐 20（frontend / app）
 docker compose exec backend php -v   # 必须 8.4.x
 ```
+
+## 后端测试（Docker）
+
+**宿主机无需安装 PHP。** 所有 backend 测试在 Docker 内执行：
+
+```bash
+./scripts/dev-up.sh                              # 启动环境
+./scripts/docker-test.sh                         # 全量测试
+./scripts/docker-test.sh --filter=HealthCheckTest # 单测
+```
+
+完整规范见 **`docs/superpowers/docker-testing.md`**。

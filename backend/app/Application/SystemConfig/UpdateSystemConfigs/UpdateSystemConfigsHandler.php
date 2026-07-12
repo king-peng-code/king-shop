@@ -1,0 +1,30 @@
+<?php
+
+namespace App\Application\SystemConfig\UpdateSystemConfigs;
+
+use App\Application\SystemConfig\DTO\SystemConfigItemDto;
+use App\Application\SystemConfig\GetSystemConfigs\GetSystemConfigsHandler;
+use App\Domain\SystemConfig\Entities\SystemConfig;
+use App\Domain\SystemConfig\Repositories\SystemConfigRepositoryInterface;
+
+class UpdateSystemConfigsHandler
+{
+    public function __construct(
+        private readonly SystemConfigRepositoryInterface $repository,
+        private readonly GetSystemConfigsHandler $getHandler,
+    ) {}
+
+    /** @param SystemConfigItemDto[] $items */
+    public function handle(array $items): array
+    {
+        foreach ($items as $item) {
+            if ($item->value === SystemConfig::MASK_PLACEHOLDER) {
+                continue;
+            }
+
+            $this->repository->updateValue($item->group, $item->key, $item->value);
+        }
+
+        return $this->getHandler->handle();
+    }
+}

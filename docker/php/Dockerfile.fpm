@@ -13,8 +13,8 @@ COPY install-extensions.sh /tmp/install-extensions.sh
 RUN chmod +x /tmp/install-extensions.sh && /tmp/install-extensions.sh && rm /tmp/install-extensions.sh
 
 ARG COMPOSER_VERSION=2.8.5
-COPY --from=composer:${COMPOSER_VERSION} /usr/bin/composer /usr/bin/composer
+COPY --from=composer:2.8.5 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
-RUN php -v && php -m | grep -E 'pdo_mysql|redis|zip|mbstring'
+RUN php -v && php -m | grep -E 'pdo_mysql|redis|zip|mbstring|gd'

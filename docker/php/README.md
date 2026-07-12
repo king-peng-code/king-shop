@@ -12,7 +12,7 @@
 
 ## 预装扩展
 
-- pdo_mysql, redis, zip, mbstring, xml, bcmath, pcntl
+- pdo_mysql, redis, zip, mbstring, xml, bcmath, pcntl, **gd**
 - Composer 2.8.5
 - git, unzip
 

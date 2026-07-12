@@ -22,7 +22,7 @@ class SystemConfigApiTest extends TestCase
     {
         parent::setUp();
         $this->seed(SystemConfigSeeder::class);
-        $this->user = UserModel::factory()->create();
+        $this->user = UserModel::factory()->admin()->create();
         $this->token = $this->user->createToken('test')->plainTextToken;
     }
 
@@ -116,7 +116,7 @@ class SystemConfigApiTest extends TestCase
     }
 
     #[Test]
-    public function config_values_are_stored_encrypted_in_database(): void
+    public function non_sensitive_config_values_are_stored_as_plaintext_in_database(): void
     {
         $this->withToken($this->token)
             ->putJson('/api/v1/admin/configs', [
@@ -129,6 +129,34 @@ class SystemConfigApiTest extends TestCase
             ->where('key', 'name')
             ->value('value');
 
-        $this->assertNotSame('明文测试', $raw);
+        $this->assertSame('明文测试', $raw);
+    }
+
+    #[Test]
+    public function sensitive_config_values_are_stored_encrypted_in_database(): void
+    {
+        $this->withToken($this->token)
+            ->putJson('/api/v1/admin/configs', [
+                'configs' => [
+                    ['group' => 'payment', 'key' => 'wechat.mch_id', 'value' => '1234567890'],
+                ],
+            ]);
+
+        $raw = SystemConfigModel::where('group', 'payment')
+            ->where('key', 'wechat.mch_id')
+            ->value('value');
+
+        $this->assertNotSame('1234567890', $raw);
+    }
+
+    #[Test]
+    public function employee_token_cannot_access_configs(): void
+    {
+        $user = UserModel::factory()->create(['role' => 'employee']);
+        $token = $user->createToken('test')->plainTextToken;
+
+        $this->withToken($token)
+            ->getJson('/api/v1/admin/configs')
+            ->assertForbidden();
     }
 }

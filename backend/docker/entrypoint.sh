@@ -35,6 +35,8 @@ until php -r "
 done
 
 php artisan migrate --force
+php artisan db:seed --class=SystemConfigSeeder --force
+php artisan storage:link --force 2>/dev/null || true
 
 echo "Laravel backend ready at http://localhost:8000"
 exec php artisan serve --host=0.0.0.0 --port=8000

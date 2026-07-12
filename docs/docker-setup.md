@@ -44,7 +44,8 @@ redis (healthcheck) ──┘
 2. `composer install`（若无 vendor）
 3. 等待 MySQL 可连接
 4. `php artisan migrate --force`
-5. `php artisan serve --host=0.0.0.0 --port=8000`
+5. `php artisan db:seed --class=SystemConfigSeeder --force`（仅当 `system_configs` 为空时写入 13 项默认配置）
+6. `php artisan serve --host=0.0.0.0 --port=8000`
 
 ## 环境变量（容器内）
 

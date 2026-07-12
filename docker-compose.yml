@@ -9,7 +9,7 @@ services:
     container_name: king-shop-mysql
     restart: unless-stopped
     ports:
-      - "3306:3306"
+      - "3307:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: king_shop
@@ -36,7 +36,7 @@ services:
     container_name: king-shop-redis
     restart: unless-stopped
     ports:
-      - "6379:6379"
+      - "6380:6379"
     command: redis-server --appendonly yes
     volumes:
       - redis_data:/data
@@ -48,11 +48,22 @@ services:
       timeout: 5s
       retries: 5
 
+  # ── 自有 PHP 基础镜像（构建用，不常驻运行）──
+  php-base-cli:
+    image: king-shop/php:8.4.3-cli
+    build:
+      context: ./docker/php
+      dockerfile: Dockerfile.cli
+      args:
+        PHP_VERSION: "8.4.3"
+        COMPOSER_VERSION: "2.8.5"
+    profiles: ["base"]
+
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    image: king-shop-backend:php8.4
+    image: king-shop-backend:dev
     container_name: king-shop-backend
     restart: unless-stopped
     ports:

@@ -36,8 +36,11 @@ set +a
 # 构建自有 PHP 基础镜像（若不存在）
 if ! docker image inspect king-shop/php:8.4.3-fpm >/dev/null 2>&1; then
     log "构建自有 PHP 基础镜像..."
-    "$ROOT/scripts/build-php-base.sh"
+    docker compose -f docker-compose.prod.yml --profile base build php-base-fpm
 fi
+
+log "构建 backend 生产镜像..."
+docker compose -f docker-compose.prod.yml --env-file .env.prod build backend
 
 log "构建前端..."
 cd frontend
@@ -45,8 +48,8 @@ npm ci
 npm run build
 cd "$ROOT"
 
-log "启动生产环境 (mysql + backend + nginx)..."
-docker compose -f docker-compose.prod.yml --env-file .env.prod up -d --build
+log "启动生产环境 (mysql + redis + backend + nginx)..."
+docker compose -f docker-compose.prod.yml --env-file .env.prod up -d mysql redis backend nginx
 
 log "等待服务就绪..."
 sleep 10

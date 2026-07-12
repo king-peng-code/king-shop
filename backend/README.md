@@ -28,7 +28,10 @@ API 健康检查：`GET http://localhost:8000/api/v1/health`
 # artisan（无需本机 PHP）
 docker compose exec backend php artisan migrate
 docker compose exec backend php artisan make:controller XxxController
-docker compose exec backend php artisan test
+
+# 测试（推荐快捷脚本）
+./scripts/docker-test.sh
+./scripts/docker-test.sh --filter=HealthCheckTest
 
 # composer
 docker compose exec backend composer require 包名
@@ -36,6 +39,9 @@ docker compose exec backend composer require 包名
 # 查看日志
 docker compose logs -f backend
 ```
+
+**测试规范：** 见 [docs/superpowers/docker-testing.md](../docs/superpowers/docker-testing.md)  
+宿主机无需安装 PHP；PHPUnit 使用 sqlite `:memory:`，不依赖 MySQL 容器。
 
 ## 目录说明
 

@@ -38,7 +38,7 @@ alwaysApply: true
 2. 复用现有约定：命名、目录、API 风格保持一致
 3. 先读再写：修改前阅读同目录已有代码
 4. **DDD 业务开发必须配套自动化测试**（见 `.cursor/rules/ddd-development.mdc`）
-5. 任务完成前必须跑通测试：`docker compose exec backend php artisan test`
+5. **任务完成前必须跑通 Docker 测试**（见 `docs/superpowers/docker-testing.md`）
 
 ## API 约定
 

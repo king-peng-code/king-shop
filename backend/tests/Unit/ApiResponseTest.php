@@ -24,7 +24,7 @@ class ApiResponseTest extends TestCase
     #[Test]
     public function error_response_has_standard_shape(): void
     {
-        $response = ApiResponse::error(1001, 'Resource not found');
+        $response = ApiResponse::error(1001, 'Resource not found', null, 404);
 
         $payload = $response->getData(true);
 

@@ -48,7 +48,7 @@ public function test_success_response_has_standard_shape(): void
 
 - [ ] **Step 2: Run test to verify it fails**
 
-Run: `cd backend && php artisan test --filter=ApiResponseTest`
+Run: `./scripts/docker-test.sh --filter=ApiResponseTest`
 Expected: FAIL — class not found
 
 - [ ] **Step 3: Write minimal implementation**
@@ -129,7 +129,7 @@ Expected: PASS
 **Files:**
 - Create: `docs/superpowers/records/2026-07-12-M00-api-foundation.md`
 
-- [ ] `php artisan test` 全部通过
+- [ ] `./scripts/docker-test.sh` 全部通过
 - [ ] 更新 spec 模块状态表 M00 → ✅
 - [ ] 填写执行/验收记录文档
 
@@ -146,3 +146,5 @@ Expected: PASS
 | health Feature Test | Task 3 |
 | 422 格式统一 | Task 2 |
 | php artisan test 通过 | Task 6 |
+
+> 测试命令统一使用 Docker，见 [docker-testing.md](../docker-testing.md)
