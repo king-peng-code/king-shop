@@ -51,6 +51,31 @@ class EloquentProductRepositoryTest extends TestCase
     }
 
     #[Test]
+    public function find_visible_by_id_returns_null_for_disabled_category(): void
+    {
+        $category = CategoryModel::factory()->disabled()->create();
+        $product = ProductModel::factory()->onSale()->create(['category_id' => $category->id]);
+
+        $result = app(ProductRepositoryInterface::class)->findVisibleById($product->id);
+
+        $this->assertNull($result);
+    }
+
+    #[Test]
+    public function search_visible_filters_by_category_id(): void
+    {
+        $categoryA = CategoryModel::factory()->create(['name' => '分类A']);
+        $categoryB = CategoryModel::factory()->create(['name' => '分类B']);
+        ProductModel::factory()->onSale()->create(['category_id' => $categoryA->id, 'name' => '商品A']);
+        ProductModel::factory()->onSale()->create(['category_id' => $categoryB->id, 'name' => '商品B']);
+
+        $result = app(ProductRepositoryInterface::class)->searchVisible($categoryA->id, 1, 20);
+
+        $this->assertSame(1, $result['total']);
+        $this->assertSame('商品A', $result['items'][0]->name);
+    }
+
+    #[Test]
     public function search_admin_filters_by_keyword(): void
     {
         $category = CategoryModel::factory()->create();

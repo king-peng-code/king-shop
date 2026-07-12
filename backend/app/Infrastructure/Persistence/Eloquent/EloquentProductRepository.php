@@ -47,8 +47,8 @@ class EloquentProductRepository implements ProductRepositoryInterface
         $query = ProductModel::query()
             ->join('categories', 'categories.id', '=', 'products.category_id')
             ->select('products.*', 'categories.name as category_name')
-            ->orderByDesc('products.sort')
-            ->orderByDesc('products.id');
+            ->orderBy('products.sort')
+            ->orderBy('products.id');
 
         $this->applyAdminFilters($query, $categoryId, $status, $keyword);
 
@@ -71,8 +71,8 @@ class EloquentProductRepository implements ProductRepositoryInterface
         }
 
         $paginator = $query
-            ->orderByDesc('products.sort')
-            ->orderByDesc('products.id')
+            ->orderBy('products.sort')
+            ->orderBy('products.id')
             ->paginate($perPage, ['products.*', 'categories.name as category_name'], 'page', $page);
 
         return [

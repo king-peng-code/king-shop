@@ -44,8 +44,8 @@ class EloquentCategoryRepository implements CategoryRepositoryInterface
     public function listAll(): array
     {
         $items = CategoryModel::query()
-            ->orderByDesc('sort')
-            ->orderByDesc('id')
+            ->orderBy('sort')
+            ->orderBy('id')
             ->get()
             ->map(fn (CategoryModel $model) => $this->toDomain($model))
             ->all();
@@ -57,8 +57,8 @@ class EloquentCategoryRepository implements CategoryRepositoryInterface
     {
         $items = CategoryModel::query()
             ->where('status', CategoryStatus::ACTIVE)
-            ->orderByDesc('sort')
-            ->orderByDesc('id')
+            ->orderBy('sort')
+            ->orderBy('id')
             ->get()
             ->map(fn (CategoryModel $model) => $this->toDomain($model))
             ->all();
