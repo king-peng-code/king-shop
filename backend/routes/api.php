@@ -59,5 +59,6 @@ Route::middleware(['auth:sanctum', 'password.changed'])->group(function (): void
     Route::post('/orders/{order}/pay', [CatalogOrderController::class, 'pay']);
     Route::post('/orders/{order}/proxy-pay-link', [CatalogOrderController::class, 'proxyPayLink']);
     Route::post('/orders/{order}/cancel', [CatalogOrderController::class, 'cancel']);
+    Route::post('/orders/{order}/complete', [CatalogOrderController::class, 'complete']);
     Route::post('/proxy-pay/{token}/pay', [ProxyPayController::class, 'pay']);
 });

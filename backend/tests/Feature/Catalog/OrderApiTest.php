@@ -108,4 +108,40 @@ class OrderApiTest extends TestCase
             'items' => [['product_id' => 1, 'quantity' => 1]],
         ])->assertUnauthorized();
     }
+
+    #[Test]
+    public function employee_can_complete_ready_order(): void
+    {
+        $user = UserModel::factory()->create(['role' => 'employee', 'must_change_password' => false]);
+        $order = OrderModel::factory()->for($user, 'user')->create(['status' => 'ready']);
+
+        $this->withToken($this->employeeToken($user))
+            ->postJson("/api/v1/orders/{$order->id}/complete")
+            ->assertOk()
+            ->assertJsonPath('data.status', 'completed');
+    }
+
+    #[Test]
+    public function employee_cannot_complete_non_ready_order(): void
+    {
+        $user = UserModel::factory()->create(['role' => 'employee', 'must_change_password' => false]);
+        $order = OrderModel::factory()->for($user, 'user')->paid()->create();
+
+        $this->withToken($this->employeeToken($user))
+            ->postJson("/api/v1/orders/{$order->id}/complete")
+            ->assertStatus(422)
+            ->assertJsonPath('code', 42201);
+    }
+
+    #[Test]
+    public function employee_cannot_complete_other_users_order(): void
+    {
+        $user = UserModel::factory()->create(['role' => 'employee', 'must_change_password' => false]);
+        $other = UserModel::factory()->create();
+        $order = OrderModel::factory()->for($other, 'user')->create(['status' => 'ready']);
+
+        $this->withToken($this->employeeToken($user))
+            ->postJson("/api/v1/orders/{$order->id}/complete")
+            ->assertForbidden();
+    }
 }
