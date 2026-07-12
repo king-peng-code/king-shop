@@ -80,11 +80,25 @@ export default function PaymentResultScreen() {
           <Text style={styles.amount}>{formatPrice(order.total_amount)}</Text>
         </View>
       ) : null}
-      <Pressable
-        style={styles.button}
-        onPress={() => navigation.popToTop()}>
-        <Text style={styles.buttonText}>返回首页</Text>
-      </Pressable>
+      <View style={styles.actions}>
+        {outcome === 'success' || outcome === 'pending' ? (
+          <Pressable
+            style={styles.primaryButton}
+            onPress={() =>
+              navigation.getParent()?.navigate('OrdersTab', {
+                screen: 'OrderDetail',
+                params: {orderId},
+              })
+            }>
+            <Text style={styles.primaryButtonText}>查看订单</Text>
+          </Pressable>
+        ) : null}
+        <Pressable
+          style={styles.secondaryButton}
+          onPress={() => navigation.popToTop()}>
+          <Text style={styles.secondaryButtonText}>返回首页</Text>
+        </Pressable>
+      </View>
     </View>
   );
 }
@@ -131,15 +145,32 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#e53935',
   },
-  button: {
+  actions: {
     marginTop: 32,
+    width: '100%',
+    gap: 10,
+  },
+  primaryButton: {
     backgroundColor: '#1976d2',
     borderRadius: 8,
     paddingVertical: 14,
-    paddingHorizontal: 32,
+    alignItems: 'center',
   },
-  buttonText: {
+  secondaryButton: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    paddingVertical: 14,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  primaryButtonText: {
     color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  secondaryButtonText: {
+    color: '#666',
     fontSize: 16,
     fontWeight: '600',
   },
