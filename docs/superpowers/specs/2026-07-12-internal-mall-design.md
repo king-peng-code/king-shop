@@ -361,6 +361,9 @@ flowchart LR
 
 ### M06 — 支付对接
 
+> **Design Spec：** [2026-07-12-M06-payment-integration-design.md](./2026-07-12-M06-payment-integration-design.md)  
+> **Implementation Plan：** [2026-07-12-M06-payment-integration.md](../plans/2026-07-12-M06-payment-integration.md)
+
 **范围：** 支付网关抽象、支付宝沙箱实现、微信支付实现、回调 + 主动查询。
 
 **交付物：**
@@ -383,6 +386,10 @@ flowchart LR
 ---
 
 ### M07 — 找人代付
+
+> **Design Spec：** [2026-07-12-M07-proxy-pay-design.md](./2026-07-12-M07-proxy-pay-design.md)  
+> **Implementation Plan：** [2026-07-12-M07-proxy-pay.md](../plans/2026-07-12-M07-proxy-pay.md)  
+> **执行记录：** [2026-07-12-M07-proxy-pay.md](../records/2026-07-12-M07-proxy-pay.md)
 
 **范围：** 代付链接生成、JSAPI 支付、付款人记录。
 
@@ -654,8 +661,8 @@ Agent 将：
 | M03 | 用户认证与员工模型 | ⬜ 待开始 | |
 | M04 | 商品管理 | ✅ 完成 | 2026-07-12 |
 | M05 | 订单系统 | ✅ 已完成（App API + 超时取消；无库存扣减，见 M04） | 2026-07-12 |
-| M06 | 支付对接 | ✅ 已完成 | 2026-07-12 |
-| M07 | 找人代付 | ✅ 已完成 | |
+| M06 | 支付对接 | ✅ 已完成 | 2026-07-12 · [spec](./2026-07-12-M06-payment-integration-design.md) |
+| M07 | 找人代付 | ✅ 已完成 | 2026-07-12 · [spec](./2026-07-12-M07-proxy-pay-design.md) |
 | M08 | App 登录与商品浏览 | ⬜ 待开始 | |
 | M09 | App 下单与支付 | ⬜ 待开始 | |
 | M10 | App 订单管理与个人中心 | ⬜ 待开始 | |
