@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Catalog;
 
-use App\Application\ProxyPay\InitiateProxyPayment\InitiateProxyPaymentHandler;
 use App\Infrastructure\Persistence\Eloquent\Models\ExternalUserModel;
 use App\Infrastructure\Persistence\Eloquent\Models\OrderModel;
 use App\Infrastructure\Persistence\Eloquent\Models\ProxyPayTokenModel;
@@ -103,18 +102,16 @@ class ProxyPayApiTest extends TestCase
     public function payer_can_initiate_proxy_payment_and_complete_via_notify(): void
     {
         $buyer = UserModel::factory()->create(['name' => '张三']);
-        $payer = ExternalUserModel::factory()->create(['name' => '李四']);
         $order = OrderModel::factory()->for($buyer, 'user')->proxy()->create(['status' => 'pending_payment']);
         $token = ProxyPayTokenModel::factory()->for($order, 'order')->create();
 
-        // Handler direct call until Task 4 updates ProxyPayController to upsert external payer
-        $result = app(InitiateProxyPaymentHandler::class)->handle(
-            token: $token->token,
-            payerExternalUserId: $payer->id,
-            channel: 'fake',
-        );
+        $response = $this->postJson("/api/v1/proxy-pay/{$token->token}/pay", [
+            'channel' => 'fake',
+            'provider' => 'fake',
+            'payer_name' => '外部代付人',
+        ])->assertOk();
 
-        $outTradeNo = $result['payment']->outTradeNo;
+        $outTradeNo = $response->json('data.payment.out_trade_no');
 
         $this->postJson('/api/v1/payments/notify/wechat', [
             'trade_status' => 'TRADE_SUCCESS',
@@ -124,6 +121,11 @@ class ProxyPayApiTest extends TestCase
 
         $order->refresh();
         $this->assertSame('paid', $order->status);
-        $this->assertSame($payer->id, $order->paid_by_external_user_id);
+        $this->assertNotNull($order->paid_by_external_user_id);
+
+        $externalUser = ExternalUserModel::query()->find($order->paid_by_external_user_id);
+        $this->assertNotNull($externalUser);
+        $this->assertSame('fake', $externalUser->provider);
+        $this->assertSame('外部代付人', $externalUser->name);
     }
 }

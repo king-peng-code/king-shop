@@ -19,8 +19,11 @@ class InitiateProxyPaymentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'openid' => ['nullable', 'string', 'max:128'],
             'channel' => ['nullable', Rule::in(PaymentChannelPolicy::proxyPayChannels())],
+            'provider' => ['required', Rule::in(['wechat', 'alipay', 'fake'])],
+            'external_id' => ['nullable', 'string', 'max:128'],
+            'payer_name' => ['nullable', 'string', 'max:100'],
+            'openid' => ['nullable', 'string', 'max:128'],
         ];
     }
 }
