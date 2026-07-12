@@ -7,6 +7,22 @@ beforeEach(() => {
   setTokenGetter(() => 'tok');
 });
 
+it('fetchCategories unwraps items from response', async () => {
+  const categories = [{id: 1, name: '数码', sort: 1}];
+  (fetch as jest.Mock).mockResolvedValue({
+    ok: true,
+    status: 200,
+    json: async () => ({
+      code: 0,
+      message: 'ok',
+      data: {items: categories},
+    }),
+  });
+
+  const result = await fetchCategories();
+  expect(result).toEqual(categories);
+});
+
 it('fetchProducts appends category_id query', async () => {
   (fetch as jest.Mock).mockResolvedValue({
     ok: true,

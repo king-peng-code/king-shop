@@ -1,8 +1,9 @@
 import {apiRequest} from './client';
 import type {Category, PaginatedProducts, Product} from '../types/api';
 
-export function fetchCategories(): Promise<Category[]> {
-  return apiRequest<Category[]>('/categories');
+export async function fetchCategories(): Promise<Category[]> {
+  const data = await apiRequest<{items: Category[]}>('/categories');
+  return data.items;
 }
 
 export function fetchProducts(params: {

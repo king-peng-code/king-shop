@@ -70,3 +70,55 @@ it('sends Authorization header when restoring session on cold start', async () =
 
   expect(tree!.toJSON()).toBe('authenticated');
 });
+
+it('clears token and user when restore gets 401', async () => {
+  await AsyncStorage.setItem(TOKEN_KEY, 'expired-token');
+
+  (fetch as jest.Mock).mockResolvedValue({
+    ok: false,
+    status: 401,
+    json: async () => ({code: 401, message: 'Unauthenticated', data: null}),
+  });
+
+  let tree: renderer.ReactTestRenderer;
+  await act(async () => {
+    tree = renderer.create(
+      <AuthProvider>
+        <TestConsumer />
+      </AuthProvider>,
+    );
+  });
+
+  await act(async () => {
+    await Promise.resolve();
+  });
+
+  expect(await AsyncStorage.getItem(TOKEN_KEY)).toBeNull();
+  expect(tree!.toJSON()).toBe('guest');
+});
+
+it('clears token on non-401 ApiError during restore', async () => {
+  await AsyncStorage.setItem(TOKEN_KEY, 'stored-token');
+
+  (fetch as jest.Mock).mockResolvedValue({
+    ok: true,
+    status: 500,
+    json: async () => ({code: 500, message: 'Server error', data: null}),
+  });
+
+  let tree: renderer.ReactTestRenderer;
+  await act(async () => {
+    tree = renderer.create(
+      <AuthProvider>
+        <TestConsumer />
+      </AuthProvider>,
+    );
+  });
+
+  await act(async () => {
+    await Promise.resolve();
+  });
+
+  expect(await AsyncStorage.getItem(TOKEN_KEY)).toBeNull();
+  expect(tree!.toJSON()).toBe('guest');
+});

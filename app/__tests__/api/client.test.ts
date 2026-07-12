@@ -1,10 +1,11 @@
-import {apiRequest, ApiError, setTokenGetter} from '../../src/api/client';
+import {apiRequest, ApiError, setOnUnauthorized, setTokenGetter} from '../../src/api/client';
 
 global.fetch = jest.fn();
 
 beforeEach(() => {
   (fetch as jest.Mock).mockReset();
   setTokenGetter(() => null);
+  setOnUnauthorized(null);
 });
 
 it('returns data when code is 0', async () => {
@@ -39,6 +40,20 @@ it('throws ApiError with code 401 on HTTP 401', async () => {
   });
 
   await expect(apiRequest('/auth/me')).rejects.toMatchObject({code: 401});
+});
+
+it('calls onUnauthorized when code is 401', async () => {
+  const onUnauthorized = jest.fn();
+  setOnUnauthorized(onUnauthorized);
+
+  (fetch as jest.Mock).mockResolvedValue({
+    ok: false,
+    status: 401,
+    json: async () => ({code: 401, message: 'Unauthenticated', data: null}),
+  });
+
+  await expect(apiRequest('/auth/me')).rejects.toMatchObject({code: 401});
+  expect(onUnauthorized).toHaveBeenCalledTimes(1);
 });
 
 it('sends Authorization header when token exists', async () => {

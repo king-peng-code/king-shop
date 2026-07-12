@@ -12,9 +12,20 @@ export class ApiError extends Error {
 }
 
 let tokenGetter: () => string | null = () => null;
+let onUnauthorized: (() => void) | null = null;
 
 export function setTokenGetter(fn: () => string | null): void {
   tokenGetter = fn;
+}
+
+export function setOnUnauthorized(fn: (() => void) | null): void {
+  onUnauthorized = fn;
+}
+
+function notifyUnauthorized(code: number, status: number): void {
+  if (code === 401 || status === 401) {
+    onUnauthorized?.();
+  }
 }
 
 export async function apiRequest<T>(
@@ -44,10 +55,12 @@ export async function apiRequest<T>(
   }
 
   if (!response.ok && body.code === undefined) {
+    notifyUnauthorized(body.code ?? response.status, response.status);
     throw new ApiError(response.status, body.message ?? '请求失败');
   }
 
   if (body.code !== 0) {
+    notifyUnauthorized(body.code, response.status);
     throw new ApiError(body.code, body.message);
   }
 

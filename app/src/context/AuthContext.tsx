@@ -8,7 +8,7 @@ import React, {
   useState,
 } from 'react';
 import * as authApi from '../api/auth';
-import {setTokenGetter} from '../api/client';
+import {setOnUnauthorized, setTokenGetter} from '../api/client';
 import {clearToken, getToken, setToken} from '../api/tokenStorage';
 import {ApiError} from '../api/client';
 import type {User} from '../types/api';
@@ -38,9 +38,22 @@ export function AuthProvider({children}: {children: React.ReactNode}) {
     setTokenState(next);
   }, []);
 
+  const clearSession = useCallback(async () => {
+    await clearToken();
+    updateToken(null);
+    setUser(null);
+  }, [updateToken]);
+
   useEffect(() => {
     setTokenGetter(() => tokenRef.current);
   }, []);
+
+  useEffect(() => {
+    setOnUnauthorized(() => {
+      void clearSession();
+    });
+    return () => setOnUnauthorized(null);
+  }, [clearSession]);
 
   const refreshUser = useCallback(async () => {
     const me = await authApi.getMe();
@@ -58,16 +71,14 @@ export function AuthProvider({children}: {children: React.ReactNode}) {
         const me = await authApi.getMe();
         setUser(me);
       } catch (e) {
-        if (e instanceof ApiError && e.code === 401) {
-          await clearToken();
-          updateToken(null);
-          setUser(null);
+        if (e instanceof ApiError) {
+          await clearSession();
         }
       } finally {
         setIsLoading(false);
       }
     })();
-  }, [updateToken]);
+  }, [updateToken, clearSession]);
 
   const login = useCallback(async (phone: string, password: string) => {
     const result = await authApi.login(phone, password);
@@ -80,11 +91,9 @@ export function AuthProvider({children}: {children: React.ReactNode}) {
     try {
       await authApi.logout();
     } finally {
-      await clearToken();
-      updateToken(null);
-      setUser(null);
+      await clearSession();
     }
-  }, [updateToken]);
+  }, [clearSession]);
 
   const changePassword = useCallback(
     async (current: string, newPassword: string) => {
