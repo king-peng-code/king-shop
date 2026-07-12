@@ -1,5 +1,7 @@
 # M07 — 找人代付 Design Spec
 
+> **⚠️ 付款人记录已 superseded：** M07 原设计将代付人写入 `orders.paid_by_user_id`（员工 `users` 表），已由 [代付三方用户（External Payer）Design Spec](./2026-07-12-external-payer-design.md) 替换为 `external_users` + `paid_by_external_user_id`。M07 其余流程（token、预览、自付拦截、H5 路由）仍有效。
+
 > **文档版本：** v1.0.0  
 > **日期：** 2026-07-12  
 > **状态：** ✅ 已实现  
