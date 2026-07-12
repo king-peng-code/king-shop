@@ -29,7 +29,6 @@ class GetAdminOrderHandlerTest extends TestCase
             cancelledAt: null,
             cancelReason: null,
             createdAt: new \DateTimeImmutable('2026-07-12 15:00:00'),
-            updatedAt: null,
         );
 
         $repository = $this->createMock(OrderRepositoryInterface::class);

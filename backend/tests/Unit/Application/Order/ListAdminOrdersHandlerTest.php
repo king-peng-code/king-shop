@@ -29,7 +29,6 @@ class ListAdminOrdersHandlerTest extends TestCase
             cancelledAt: null,
             cancelReason: null,
             createdAt: new \DateTimeImmutable('2026-07-12 14:30:00'),
-            updatedAt: null,
         );
 
         $query = new AdminOrderListQuery(
