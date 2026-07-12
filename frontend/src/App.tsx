@@ -10,6 +10,7 @@ import EmployeeListPage from './pages/employees/EmployeeListPage';
 import CategoryListPage from './pages/categories/CategoryListPage';
 import ProductListPage from './pages/products/ProductListPage';
 import OrderListPage from './pages/orders/OrderListPage';
+import DashboardPage from './pages/dashboard/DashboardPage';
 import ProxyPayPage from './pages/proxy-pay/ProxyPayPage';
 import { SettingsPage } from './pages/settings/SettingsPage';
 
@@ -37,7 +38,8 @@ export default function App() {
                 </ProtectedRoute>
               }
             >
-              <Route index element={<Navigate to="/employees" replace />} />
+              <Route index element={<Navigate to="/dashboard" replace />} />
+              <Route path="dashboard" element={<DashboardPage />} />
               <Route path="employees" element={<EmployeeListPage />} />
               <Route path="categories" element={<CategoryListPage />} />
               <Route path="products" element={<ProductListPage />} />

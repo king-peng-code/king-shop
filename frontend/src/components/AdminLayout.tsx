@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Layout, Menu, Button, Space, Tag, Typography } from 'antd';
 import {
+  DashboardOutlined,
   TeamOutlined,
   AppstoreOutlined,
   ShoppingOutlined,
@@ -40,17 +41,19 @@ export default function AdminLayout() {
     }
   }, [user]);
 
-  const selectedKey = location.pathname.startsWith('/orders')
-    ? 'orders'
-    : location.pathname.startsWith('/products')
-    ? 'products'
-    : location.pathname.startsWith('/categories')
-      ? 'categories'
-      : location.pathname.startsWith('/settings')
-        ? 'settings'
-        : location.pathname.startsWith('/employees')
-          ? 'employees'
-          : '';
+  const selectedKey = location.pathname.startsWith('/dashboard')
+    ? 'dashboard'
+    : location.pathname.startsWith('/orders')
+      ? 'orders'
+      : location.pathname.startsWith('/products')
+        ? 'products'
+        : location.pathname.startsWith('/categories')
+          ? 'categories'
+          : location.pathname.startsWith('/settings')
+            ? 'settings'
+            : location.pathname.startsWith('/employees')
+              ? 'employees'
+              : '';
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
@@ -71,6 +74,12 @@ export default function AdminLayout() {
           mode="inline"
           selectedKeys={[selectedKey]}
           items={[
+            {
+              key: 'dashboard',
+              icon: <DashboardOutlined />,
+              label: '数据统计',
+              onClick: () => navigate('/dashboard'),
+            },
             {
               key: 'employees',
               icon: <TeamOutlined />,
