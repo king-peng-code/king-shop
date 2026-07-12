@@ -19,4 +19,13 @@ class CategoryStatusTest extends TestCase
     {
         $this->assertFalse(CategoryStatus::disabled()->isActive());
     }
+
+    #[Test]
+    public function from_string_rejects_invalid_value(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('Invalid status: invalid');
+
+        CategoryStatus::fromString('invalid');
+    }
 }

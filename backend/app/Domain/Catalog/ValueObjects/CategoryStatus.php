@@ -22,6 +22,10 @@ final class CategoryStatus
 
     public static function fromString(string $value): self
     {
+        if (! in_array($value, [self::ACTIVE, self::DISABLED], true)) {
+            throw new \InvalidArgumentException("Invalid status: {$value}");
+        }
+
         return new self($value);
     }
 

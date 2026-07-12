@@ -16,5 +16,7 @@ final class UpdateProductCommand
         public readonly ?string $imagePath,
         public readonly ProductStatus $status,
         public readonly int $sort,
+        public readonly bool $uploadIdProvided = false,
+        public readonly bool $imagePathProvided = false,
     ) {}
 }

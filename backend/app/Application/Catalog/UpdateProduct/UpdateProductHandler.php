@@ -21,12 +21,23 @@ class UpdateProductHandler
         $existing = $this->productRepository->findById($command->productId)
             ?? throw new ProductNotFoundException;
 
-        $imagePath = $command->imagePath;
+        $uploadId = $existing->uploadId;
+        $imagePath = $existing->imagePath;
 
-        if ($command->uploadId !== null) {
-            $upload = $this->uploadRepository->findById($command->uploadId)
-                ?? throw new UploadNotFoundException;
-            $imagePath = $upload->path;
+        if ($command->uploadIdProvided) {
+            $uploadId = $command->uploadId;
+
+            if ($command->uploadId !== null) {
+                $upload = $this->uploadRepository->findById($command->uploadId)
+                    ?? throw new UploadNotFoundException;
+                $imagePath = $upload->path;
+            } elseif (! $command->imagePathProvided) {
+                $imagePath = null;
+            } else {
+                $imagePath = $command->imagePath;
+            }
+        } elseif ($command->imagePathProvided) {
+            $imagePath = $command->imagePath;
         }
 
         $product = new Product(
@@ -35,7 +46,7 @@ class UpdateProductHandler
             name: $command->name,
             description: $command->description,
             price: $command->price,
-            uploadId: $command->uploadId,
+            uploadId: $uploadId,
             imagePath: $imagePath,
             status: $command->status,
             sort: $command->sort,

@@ -87,4 +87,16 @@ class EloquentProductRepositoryTest extends TestCase
         $this->assertSame(1, $result['total']);
         $this->assertSame('苹果笔记本', $result['items'][0]->name);
     }
+
+    #[Test]
+    public function find_by_id_includes_category_name(): void
+    {
+        $category = CategoryModel::factory()->create(['name' => '饮品']);
+        $product = ProductModel::factory()->create(['category_id' => $category->id]);
+
+        $result = app(ProductRepositoryInterface::class)->findById($product->id);
+
+        $this->assertNotNull($result);
+        $this->assertSame('饮品', $result->categoryName);
+    }
 }

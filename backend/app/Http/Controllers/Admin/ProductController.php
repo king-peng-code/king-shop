@@ -88,10 +88,12 @@ class ProductController extends Controller
                 name: $validated['name'],
                 description: $validated['description'] ?? null,
                 price: $validated['price'],
-                uploadId: $validated['upload_id'] ?? null,
-                imagePath: $validated['image_path'] ?? null,
+                uploadId: $request->has('upload_id') ? ($validated['upload_id'] ?? null) : null,
+                imagePath: $request->has('image_path') ? ($validated['image_path'] ?? null) : null,
                 status: ProductStatus::fromString($validated['status']),
                 sort: $validated['sort'],
+                uploadIdProvided: $request->has('upload_id'),
+                imagePathProvided: $request->has('image_path'),
             ),
         );
 

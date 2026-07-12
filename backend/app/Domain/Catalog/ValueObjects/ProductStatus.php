@@ -22,6 +22,10 @@ final class ProductStatus
 
     public static function fromString(string $value): self
     {
+        if (! in_array($value, [self::ON_SALE, self::OFF_SALE], true)) {
+            throw new \InvalidArgumentException("Invalid status: {$value}");
+        }
+
         return new self($value);
     }
 

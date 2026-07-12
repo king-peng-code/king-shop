@@ -6,6 +6,7 @@ use App\Domain\Catalog\Entities\Product;
 use App\Domain\Catalog\Repositories\ProductRepositoryInterface;
 use App\Domain\Catalog\ValueObjects\CategoryStatus;
 use App\Domain\Catalog\ValueObjects\ProductStatus;
+use App\Infrastructure\Persistence\Eloquent\Models\CategoryModel;
 use App\Infrastructure\Persistence\Eloquent\Models\ProductModel;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -13,9 +14,13 @@ class EloquentProductRepository implements ProductRepositoryInterface
 {
     public function findById(int $id): ?Product
     {
-        $model = ProductModel::query()->find($id);
+        $model = ProductModel::query()
+            ->join('categories', 'categories.id', '=', 'products.category_id')
+            ->select('products.*', 'categories.name as category_name')
+            ->where('products.id', $id)
+            ->first();
 
-        return $model ? $this->toDomain($model) : null;
+        return $model ? $this->toDomain($model, $model->category_name) : null;
     }
 
     public function save(Product $product): Product
@@ -39,7 +44,12 @@ class EloquentProductRepository implements ProductRepositoryInterface
             $model->save();
         }
 
-        return $this->toDomain($model->fresh());
+        $model = $model->fresh();
+        $categoryName = CategoryModel::query()
+            ->where('id', $model->category_id)
+            ->value('name');
+
+        return $this->toDomain($model, $categoryName);
     }
 
     public function searchAdmin(?int $categoryId, ?string $status, string $keyword, int $page, int $perPage): array
