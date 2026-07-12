@@ -30,6 +30,6 @@ class SystemConfigController extends Controller
             $request->validated('configs'),
         );
 
-        return ApiResponse::success($handler->handle($items));
+        return ApiResponse::success($handler->handle($items, $request->user()->role));
     }
 }

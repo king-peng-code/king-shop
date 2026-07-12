@@ -135,7 +135,10 @@ class SystemConfigApiTest extends TestCase
     #[Test]
     public function sensitive_config_values_are_stored_encrypted_in_database(): void
     {
-        $this->withToken($this->token)
+        $superAdmin = UserModel::factory()->superAdmin()->create();
+        $token = $superAdmin->createToken('test')->plainTextToken;
+
+        $this->withToken($token)
             ->putJson('/api/v1/admin/configs', [
                 'configs' => [
                     ['group' => 'payment', 'key' => 'wechat.mch_id', 'value' => '1234567890'],
@@ -158,5 +161,59 @@ class SystemConfigApiTest extends TestCase
         $this->withToken($token)
             ->getJson('/api/v1/admin/configs')
             ->assertForbidden();
+    }
+
+    #[Test]
+    public function admin_cannot_update_sensitive_config_via_api(): void
+    {
+        $admin = UserModel::factory()->admin()->create();
+        $token = $admin->createToken('test')->plainTextToken;
+
+        $this->withToken($token)
+            ->putJson('/api/v1/admin/configs', [
+                'configs' => [
+                    ['group' => 'payment', 'key' => 'wechat.mch_id', 'value' => '1234567890'],
+                ],
+            ])
+            ->assertForbidden()
+            ->assertJsonPath('code', 403)
+            ->assertJsonPath('message', '无权修改敏感配置');
+    }
+
+    #[Test]
+    public function super_admin_can_update_sensitive_config_via_api(): void
+    {
+        $superAdmin = UserModel::factory()->superAdmin()->create();
+        $token = $superAdmin->createToken('test')->plainTextToken;
+
+        $this->withToken($token)
+            ->putJson('/api/v1/admin/configs', [
+                'configs' => [
+                    ['group' => 'payment', 'key' => 'wechat.mch_id', 'value' => '9876543210'],
+                ],
+            ])
+            ->assertOk()
+            ->assertJsonPath('code', 0);
+    }
+
+    #[Test]
+    public function admin_can_update_non_sensitive_config_via_api(): void
+    {
+        $admin = UserModel::factory()->admin()->create();
+        $token = $admin->createToken('test')->plainTextToken;
+
+        $this->withToken($token)
+            ->putJson('/api/v1/admin/configs', [
+                'configs' => [
+                    ['group' => 'app', 'key' => 'name', 'value' => '管理员可改'],
+                ],
+            ])
+            ->assertOk()
+            ->assertJsonPath('code', 0);
+
+        $appGroup = collect($this->withToken($token)->getJson('/api/v1/admin/configs')->json('data.groups'))
+            ->firstWhere('name', 'app');
+        $nameItem = collect($appGroup['items'])->firstWhere('key', 'name');
+        $this->assertSame('管理员可改', $nameItem['value']);
     }
 }
