@@ -12,17 +12,24 @@ use Illuminate\Support\Facades\DB;
 
 class EloquentStatsRepository implements StatsRepositoryInterface
 {
+    private const int MAX_RESULTS = 200;
+
+    private const array EXCLUDED_STATUSES = ['cancelled'];
+
     public function getEmployeeStats(): array
     {
         $subQuery = OrderModel::query()
             ->select('user_id', DB::raw('COUNT(*) as order_count'), DB::raw('SUM(total_amount) as total_amount'))
+            ->whereNotIn('status', self::EXCLUDED_STATUSES)
             ->groupBy('user_id');
 
         return UserModel::query()
+            ->where('role', 'employee')
             ->joinSub($subQuery, 'order_stats', function ($join): void {
                 $join->on('users.id', '=', 'order_stats.user_id');
             })
             ->orderByDesc('order_stats.order_count')
+            ->limit(self::MAX_RESULTS)
             ->get()
             ->map(fn ($row) => [
                 'user_id' => (int) $row->id,
@@ -43,6 +50,7 @@ class EloquentStatsRepository implements StatsRepositoryInterface
                 DB::raw('SUM(total_amount) as total_amount'),
             )
             ->whereNotNull('paid_by_external_user_id')
+            ->whereNotIn('status', self::EXCLUDED_STATUSES)
             ->groupBy('paid_by_external_user_id');
 
         return ExternalUserModel::query()
@@ -50,6 +58,7 @@ class EloquentStatsRepository implements StatsRepositoryInterface
                 $join->on('external_users.id', '=', 'order_stats.paid_by_external_user_id');
             })
             ->orderByDesc('order_stats.order_count')
+            ->limit(self::MAX_RESULTS)
             ->get()
             ->map(fn ($row) => [
                 'external_user_id' => (int) $row->id,

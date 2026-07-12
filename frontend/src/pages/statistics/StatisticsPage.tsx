@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import {
   Card,
   Empty,
@@ -19,11 +19,16 @@ export default function StatisticsPage() {
   const [proxyPayerLoading, setProxyPayerLoading] = useState(false);
   const [proxyPayerData, setProxyPayerData] = useState<ProxyPayerStatsItem[]>([]);
 
+  const employeeFetched = useRef(false);
+  const proxyPayerFetched = useRef(false);
+
   const fetchEmployeeStats = useCallback(async () => {
+    if (employeeFetched.current) return;
     setEmployeeLoading(true);
     try {
       const data = await statisticsApi.getEmployeeStats();
       setEmployeeData(data);
+      employeeFetched.current = true;
     } catch (e) {
       if (e instanceof ApiError) {
         message.error(e.message);
@@ -34,10 +39,12 @@ export default function StatisticsPage() {
   }, []);
 
   const fetchProxyPayerStats = useCallback(async () => {
+    if (proxyPayerFetched.current) return;
     setProxyPayerLoading(true);
     try {
       const data = await statisticsApi.getProxyPayerStats();
       setProxyPayerData(data);
+      proxyPayerFetched.current = true;
     } catch (e) {
       if (e instanceof ApiError) {
         message.error(e.message);
@@ -46,11 +53,6 @@ export default function StatisticsPage() {
       setProxyPayerLoading(false);
     }
   }, []);
-
-  useEffect(() => {
-    void fetchEmployeeStats();
-    void fetchProxyPayerStats();
-  }, [fetchEmployeeStats, fetchProxyPayerStats]);
 
   const employeeColumns = [
     {
@@ -99,6 +101,14 @@ export default function StatisticsPage() {
     },
   ];
 
+  const handleTabChange = (key: string) => {
+    if (key === 'employees') {
+      void fetchEmployeeStats();
+    } else if (key === 'proxy-payers') {
+      void fetchProxyPayerStats();
+    }
+  };
+
   const tabItems: TabsProps['items'] = [
     {
       key: 'employees',
@@ -113,7 +123,7 @@ export default function StatisticsPage() {
                 rowKey="user_id"
                 columns={employeeColumns}
                 dataSource={employeeData}
-                pagination={false}
+                pagination={employeeData.length > 20 ? { pageSize: 20 } : false}
               />
             )}
           </Spin>
@@ -133,7 +143,7 @@ export default function StatisticsPage() {
                 rowKey="external_user_id"
                 columns={proxyPayerColumns}
                 dataSource={proxyPayerData}
-                pagination={false}
+                pagination={proxyPayerData.length > 20 ? { pageSize: 20 } : false}
               />
             )}
           </Spin>
@@ -145,7 +155,7 @@ export default function StatisticsPage() {
   return (
     <div>
       <h2 style={{ marginBottom: 16 }}>统计报表</h2>
-      <Tabs defaultActiveKey="employees" items={tabItems} />
+      <Tabs defaultActiveKey="employees" items={tabItems} onChange={handleTabChange} />
     </div>
   );
 }
