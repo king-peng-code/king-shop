@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Domain\Catalog\Repositories\CategoryRepositoryInterface;
 use App\Domain\Catalog\Repositories\ProductRepositoryInterface;
+use App\Domain\Order\Repositories\OrderRepositoryInterface;
 use App\Domain\Identity\Repositories\UserRepositoryInterface;
 use App\Domain\Storage\Repositories\UploadRepositoryInterface;
 use App\Domain\Storage\Services\PublicUrlGeneratorInterface;
@@ -12,6 +13,7 @@ use App\Domain\SystemConfig\Repositories\SystemConfigRepositoryInterface;
 use App\Domain\SystemConfig\Services\ConfigEncryptionInterface;
 use App\Infrastructure\Encryption\LaravelConfigEncryption;
 use App\Infrastructure\Persistence\Eloquent\EloquentCategoryRepository;
+use App\Infrastructure\Persistence\Eloquent\EloquentOrderRepository;
 use App\Infrastructure\Persistence\Eloquent\EloquentProductRepository;
 use App\Infrastructure\Persistence\Eloquent\EloquentSystemConfigRepository;
 use App\Infrastructure\Persistence\Eloquent\EloquentUploadRepository;
@@ -37,6 +39,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(UserRepositoryInterface::class, EloquentUserRepository::class);
         $this->app->bind(CategoryRepositoryInterface::class, EloquentCategoryRepository::class);
         $this->app->bind(ProductRepositoryInterface::class, EloquentProductRepository::class);
+        $this->app->bind(OrderRepositoryInterface::class, EloquentOrderRepository::class);
 
         $this->app->singleton(LocalStorageDriver::class);
         $this->app->singleton(OssStorageDriver::class);
