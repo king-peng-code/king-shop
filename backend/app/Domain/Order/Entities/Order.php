@@ -17,7 +17,7 @@ final class Order
         public readonly int $totalAmount,
         public readonly OrderStatus $status,
         public readonly PaymentMethod $paymentMethod,
-        public readonly ?int $paidByUserId,
+        public readonly ?int $paidByExternalUserId,
         public readonly ?\DateTimeImmutable $paidAt,
         public readonly ?string $remark,
         public readonly ?\DateTimeImmutable $cancelledAt,
@@ -27,8 +27,8 @@ final class Order
         public readonly ?string $userName = null,
         public readonly ?string $userPhone = null,
         public readonly ?string $userDepartment = null,
-        public readonly ?string $paidByUserName = null,
-        public readonly ?string $paidByUserPhone = null,
-        public readonly ?string $paidByUserDepartment = null,
+        public readonly ?string $paidByPayerName = null,
+        public readonly ?string $paidByPayerPhone = null,
+        public readonly ?string $paidByPayerProvider = null,
     ) {}
 }

@@ -28,7 +28,7 @@ class InitiateProxyPaymentHandler
     /**
      * @return array{payment: Payment, pay_params: array<string, mixed>}
      */
-    public function handle(string $token, int $payerUserId, ?string $openid = null, ?string $channel = null): array
+    public function handle(string $token, int $payerExternalUserId, ?string $openid = null, ?string $channel = null): array
     {
         $proxyToken = $this->tokenRepository->findByToken($token);
 
@@ -55,7 +55,7 @@ class InitiateProxyPaymentHandler
             $payment = $this->paymentRepository->save(new Payment(
                 id: $existing->id,
                 orderId: $existing->orderId,
-                payerUserId: $payerUserId,
+                payerExternalUserId: $payerExternalUserId,
                 outTradeNo: $existing->outTradeNo,
                 tradeNo: $existing->tradeNo,
                 amount: $existing->amount,
@@ -68,7 +68,7 @@ class InitiateProxyPaymentHandler
             $payment = $this->paymentRepository->save(new Payment(
                 id: null,
                 orderId: $order->id,
-                payerUserId: $payerUserId,
+                payerExternalUserId: $payerExternalUserId,
                 outTradeNo: $this->outTradeNoGenerator->generate($order->id),
                 tradeNo: null,
                 amount: $order->totalAmount,

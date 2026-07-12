@@ -23,7 +23,7 @@ class GetAdminOrderHandlerTest extends TestCase
             totalAmount: 1500,
             status: OrderStatus::fromString('pending_payment'),
             paymentMethod: PaymentMethod::fromString('self'),
-            paidByUserId: null,
+            paidByExternalUserId: null,
             paidAt: null,
             remark: '少糖',
             cancelledAt: null,

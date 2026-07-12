@@ -23,9 +23,9 @@ class ConfirmPaymentHandler
         string $outTradeNo,
         string $tradeNo,
         array $rawNotify,
-        ?int $paidByUserId = null,
+        ?int $paidByExternalUserId = null,
     ): Payment {
-        return DB::transaction(function () use ($outTradeNo, $tradeNo, $rawNotify, $paidByUserId): Payment {
+        return DB::transaction(function () use ($outTradeNo, $tradeNo, $rawNotify, $paidByExternalUserId): Payment {
             $payment = $this->paymentRepository->findByOutTradeNo($outTradeNo);
 
             if ($payment === null) {
@@ -41,7 +41,7 @@ class ConfirmPaymentHandler
             $updatedPayment = $this->paymentRepository->save(new Payment(
                 id: $payment->id,
                 orderId: $payment->orderId,
-                payerUserId: $payment->payerUserId,
+                payerExternalUserId: $payment->payerExternalUserId,
                 outTradeNo: $payment->outTradeNo,
                 tradeNo: $tradeNo,
                 amount: $payment->amount,
@@ -53,7 +53,7 @@ class ConfirmPaymentHandler
 
             $this->markOrderPaidHandler->handle(
                 orderId: $payment->orderId,
-                paidByUserId: $paidByUserId ?? $payment->payerUserId,
+                paidByExternalUserId: $paidByExternalUserId ?? $payment->payerExternalUserId,
                 paidAt: $paidAt,
             );
 

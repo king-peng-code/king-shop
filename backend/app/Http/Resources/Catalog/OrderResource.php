@@ -31,10 +31,10 @@ class OrderResource extends JsonResource
             $data['items'] = OrderItemResource::collection($order->items);
         }
 
-        if ($order->paidByUserId !== null) {
+        if ($order->paidByExternalUserId !== null) {
             $data['paid_by_user'] = [
-                'id' => $order->paidByUserId,
-                'name' => $order->paidByUserName,
+                'id' => $order->paidByExternalUserId,
+                'name' => $order->paidByPayerName,
             ];
         }
 

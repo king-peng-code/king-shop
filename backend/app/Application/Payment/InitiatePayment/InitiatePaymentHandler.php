@@ -56,7 +56,7 @@ class InitiatePaymentHandler
         $payment = $existing ?? $this->paymentRepository->save(new Payment(
             id: null,
             orderId: $orderId,
-            payerUserId: null,
+            payerExternalUserId: null,
             outTradeNo: $this->outTradeNoGenerator->generate($orderId),
             tradeNo: null,
             amount: $order->totalAmount,

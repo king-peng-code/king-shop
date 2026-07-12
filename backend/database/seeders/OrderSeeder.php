@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Infrastructure\Persistence\Eloquent\Models\ExternalUserModel;
 use App\Infrastructure\Persistence\Eloquent\Models\OrderItemModel;
 use App\Infrastructure\Persistence\Eloquent\Models\OrderModel;
 use App\Infrastructure\Persistence\Eloquent\Models\ProductModel;
@@ -20,8 +21,6 @@ class OrderSeeder extends Seeder
 
         $user = UserModel::query()->where('phone', '13800000001')->first()
             ?? UserModel::factory()->create(['name' => '张三', 'phone' => '13800000001']);
-        $payer = UserModel::query()->where('phone', '13800000002')->first()
-            ?? UserModel::factory()->create(['name' => '李四', 'phone' => '13800000002']);
         $product = ProductModel::query()->where('name', '拿铁')->first()
             ?? ProductModel::factory()->onSale()->create([
                 'name' => '拿铁',
@@ -30,11 +29,10 @@ class OrderSeeder extends Seeder
 
         $this->seedOrder(
             user: $user,
-            payer: $payer,
             product: $product,
             orderNo: 'KS20260712000001',
             status: 'pending_payment',
-            paidByUserId: null,
+            paidByExternalUserId: null,
             paidAt: null,
             cancelledAt: null,
             cancelReason: null,
@@ -42,11 +40,10 @@ class OrderSeeder extends Seeder
 
         $this->seedOrder(
             user: $user,
-            payer: $payer,
             product: $product,
             orderNo: 'KS20260712000002',
             status: 'paid',
-            paidByUserId: null,
+            paidByExternalUserId: null,
             paidAt: now(),
             cancelledAt: null,
             cancelReason: null,
@@ -54,15 +51,21 @@ class OrderSeeder extends Seeder
 
         $this->seedOrder(
             user: $user,
-            payer: $payer,
             product: $product,
             orderNo: 'KS20260712000003',
             status: 'cancelled',
-            paidByUserId: null,
+            paidByExternalUserId: null,
             paidAt: null,
             cancelledAt: now(),
             cancelReason: '超时未支付自动取消',
         );
+
+        $payer = ExternalUserModel::factory()->create([
+            'provider' => 'fake',
+            'external_id' => 'seed-proxy-payer',
+            'name' => '李四',
+            'phone' => '13800000002',
+        ]);
 
         $proxyOrder = OrderModel::factory()
             ->for($user, 'user')
@@ -70,7 +73,7 @@ class OrderSeeder extends Seeder
             ->proxy()
             ->create([
                 'order_no' => 'KS20260712999999',
-                'paid_by_user_id' => $payer->id,
+                'paid_by_external_user_id' => $payer->id,
                 'total_amount' => 4500,
             ]);
 
@@ -86,11 +89,10 @@ class OrderSeeder extends Seeder
 
     private function seedOrder(
         UserModel $user,
-        UserModel $payer,
         ProductModel $product,
         string $orderNo,
         string $status,
-        ?int $paidByUserId,
+        ?int $paidByExternalUserId,
         $paidAt,
         $cancelledAt,
         ?string $cancelReason,
@@ -106,7 +108,7 @@ class OrderSeeder extends Seeder
         $order = $factory->create([
             'order_no' => $orderNo,
             'total_amount' => 3000,
-            'paid_by_user_id' => $paidByUserId,
+            'paid_by_external_user_id' => $paidByExternalUserId,
             'paid_at' => $paidAt,
             'cancelled_at' => $cancelledAt,
             'cancel_reason' => $cancelReason,

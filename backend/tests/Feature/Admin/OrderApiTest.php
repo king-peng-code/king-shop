@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Infrastructure\Persistence\Eloquent\Models\ExternalUserModel;
 use App\Infrastructure\Persistence\Eloquent\Models\OrderModel;
 use App\Infrastructure\Persistence\Eloquent\Models\UserModel;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -63,10 +64,10 @@ class OrderApiTest extends TestCase
     #[Test]
     public function proxy_order_detail_includes_paid_by_user(): void
     {
-        $payer = UserModel::factory()->create(['name' => '李四']);
+        $payer = ExternalUserModel::factory()->create(['name' => '李四']);
         $order = OrderModel::factory()->paid()->create([
             'payment_method' => 'proxy',
-            'paid_by_user_id' => $payer->id,
+            'paid_by_external_user_id' => $payer->id,
         ]);
 
         $this->withToken($this->adminToken())

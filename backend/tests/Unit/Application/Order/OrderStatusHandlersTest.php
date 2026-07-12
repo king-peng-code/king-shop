@@ -23,7 +23,7 @@ class OrderStatusHandlersTest extends TestCase
             totalAmount: 1500,
             status: $status,
             paymentMethod: PaymentMethod::fromString('self'),
-            paidByUserId: null,
+            paidByExternalUserId: null,
             paidAt: null,
             remark: null,
             cancelledAt: null,

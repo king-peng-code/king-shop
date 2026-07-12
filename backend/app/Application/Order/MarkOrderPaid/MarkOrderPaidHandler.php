@@ -15,7 +15,7 @@ class MarkOrderPaidHandler
         private readonly OrderStateMachine $stateMachine,
     ) {}
 
-    public function handle(int $orderId, ?int $paidByUserId = null, ?\DateTimeImmutable $paidAt = null): Order
+    public function handle(int $orderId, ?int $paidByExternalUserId = null, ?\DateTimeImmutable $paidAt = null): Order
     {
         $order = $this->repository->findById($orderId);
 
@@ -39,7 +39,7 @@ class MarkOrderPaidHandler
             totalAmount: $order->totalAmount,
             status: $newStatus,
             paymentMethod: $order->paymentMethod,
-            paidByUserId: $paidByUserId ?? $order->paidByUserId,
+            paidByExternalUserId: $paidByExternalUserId ?? $order->paidByExternalUserId,
             paidAt: $paidAt ?? new \DateTimeImmutable,
             remark: $order->remark,
             cancelledAt: $order->cancelledAt,
@@ -49,9 +49,9 @@ class MarkOrderPaidHandler
             userName: $order->userName,
             userPhone: $order->userPhone,
             userDepartment: $order->userDepartment,
-            paidByUserName: $order->paidByUserName,
-            paidByUserPhone: $order->paidByUserPhone,
-            paidByUserDepartment: $order->paidByUserDepartment,
+            paidByPayerName: $order->paidByPayerName,
+            paidByPayerPhone: $order->paidByPayerPhone,
+            paidByPayerProvider: $order->paidByPayerProvider,
         ));
     }
 }

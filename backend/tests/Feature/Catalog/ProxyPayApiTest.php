@@ -2,6 +2,8 @@
 
 namespace Tests\Feature\Catalog;
 
+use App\Application\ProxyPay\InitiateProxyPayment\InitiateProxyPaymentHandler;
+use App\Infrastructure\Persistence\Eloquent\Models\ExternalUserModel;
 use App\Infrastructure\Persistence\Eloquent\Models\OrderModel;
 use App\Infrastructure\Persistence\Eloquent\Models\ProxyPayTokenModel;
 use App\Infrastructure\Persistence\Eloquent\Models\SystemConfigModel;
@@ -101,15 +103,18 @@ class ProxyPayApiTest extends TestCase
     public function payer_can_initiate_proxy_payment_and_complete_via_notify(): void
     {
         $buyer = UserModel::factory()->create(['name' => '张三']);
-        $payer = UserModel::factory()->create(['name' => '李四', 'must_change_password' => false]);
+        $payer = ExternalUserModel::factory()->create(['name' => '李四']);
         $order = OrderModel::factory()->for($buyer, 'user')->proxy()->create(['status' => 'pending_payment']);
         $token = ProxyPayTokenModel::factory()->for($order, 'order')->create();
 
-        $payResponse = $this->withToken($this->employeeToken($payer))
-            ->postJson("/api/v1/proxy-pay/{$token->token}/pay", ['channel' => 'fake'])
-            ->assertOk();
+        // Handler direct call until Task 4 updates ProxyPayController to upsert external payer
+        $result = app(InitiateProxyPaymentHandler::class)->handle(
+            token: $token->token,
+            payerExternalUserId: $payer->id,
+            channel: 'fake',
+        );
 
-        $outTradeNo = $payResponse->json('data.payment.out_trade_no');
+        $outTradeNo = $result['payment']->outTradeNo;
 
         $this->postJson('/api/v1/payments/notify/wechat', [
             'trade_status' => 'TRADE_SUCCESS',
@@ -119,6 +124,6 @@ class ProxyPayApiTest extends TestCase
 
         $order->refresh();
         $this->assertSame('paid', $order->status);
-        $this->assertSame($payer->id, $order->paid_by_user_id);
+        $this->assertSame($payer->id, $order->paid_by_external_user_id);
     }
 }

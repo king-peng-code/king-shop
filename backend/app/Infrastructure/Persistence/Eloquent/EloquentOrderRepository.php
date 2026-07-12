@@ -18,7 +18,7 @@ class EloquentOrderRepository implements OrderRepositoryInterface
     public function findById(int $id): ?Order
     {
         $model = OrderModel::query()
-            ->with(['user', 'paidByUser', 'items'])
+            ->with(['user', 'paidByExternalUser', 'items'])
             ->find($id);
 
         return $model ? $this->toDomain($model, includeItems: true) : null;
@@ -27,7 +27,7 @@ class EloquentOrderRepository implements OrderRepositoryInterface
     public function searchAdmin(AdminOrderListQuery $query): array
     {
         $builder = OrderModel::query()
-            ->with(['user', 'paidByUser'])
+            ->with(['user', 'paidByExternalUser'])
             ->orderByDesc('orders.id');
 
         $this->applyAdminFilters($builder, $query);
@@ -52,7 +52,7 @@ class EloquentOrderRepository implements OrderRepositoryInterface
         $model->fill([
             'status' => $order->status->value,
             'paid_at' => $order->paidAt?->format('Y-m-d H:i:s'),
-            'paid_by_user_id' => $order->paidByUserId,
+            'paid_by_external_user_id' => $order->paidByExternalUserId,
             'cancelled_at' => $order->cancelledAt?->format('Y-m-d H:i:s'),
             'cancel_reason' => $order->cancelReason,
         ]);
@@ -103,7 +103,7 @@ class EloquentOrderRepository implements OrderRepositoryInterface
             'total_amount' => $order->totalAmount,
             'status' => $order->status->value,
             'payment_method' => $order->paymentMethod->value,
-            'paid_by_user_id' => $order->paidByUserId,
+            'paid_by_external_user_id' => $order->paidByExternalUserId,
             'paid_at' => $order->paidAt?->format('Y-m-d H:i:s'),
             'remark' => $order->remark,
             'cancelled_at' => $order->cancelledAt?->format('Y-m-d H:i:s'),
@@ -183,7 +183,7 @@ class EloquentOrderRepository implements OrderRepositoryInterface
             totalAmount: $model->total_amount,
             status: OrderStatus::fromString($model->status),
             paymentMethod: PaymentMethod::fromString($model->payment_method),
-            paidByUserId: $model->paid_by_user_id,
+            paidByExternalUserId: $model->paid_by_external_user_id,
             paidAt: $model->paid_at ? \DateTimeImmutable::createFromMutable($model->paid_at) : null,
             remark: $model->remark,
             cancelledAt: $model->cancelled_at ? \DateTimeImmutable::createFromMutable($model->cancelled_at) : null,
@@ -193,9 +193,9 @@ class EloquentOrderRepository implements OrderRepositoryInterface
             userName: $model->user?->name,
             userPhone: $model->user?->phone,
             userDepartment: $model->user?->department,
-            paidByUserName: $model->paidByUser?->name,
-            paidByUserPhone: $model->paidByUser?->phone,
-            paidByUserDepartment: $model->paidByUser?->department,
+            paidByPayerName: $model->paidByExternalUser?->name,
+            paidByPayerPhone: $model->paidByExternalUser?->phone,
+            paidByPayerProvider: $model->paidByExternalUser?->provider,
         );
     }
 }

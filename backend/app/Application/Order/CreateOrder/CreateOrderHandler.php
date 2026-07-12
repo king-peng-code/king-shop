@@ -40,7 +40,7 @@ class CreateOrderHandler
             totalAmount: $totalAmount,
             status: OrderStatus::fromString(OrderStatus::PENDING_PAYMENT),
             paymentMethod: $command->paymentMethod,
-            paidByUserId: null,
+            paidByExternalUserId: null,
             paidAt: null,
             remark: $command->remark,
             cancelledAt: null,

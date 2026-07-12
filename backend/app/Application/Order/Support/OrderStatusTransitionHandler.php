@@ -36,7 +36,7 @@ abstract class OrderStatusTransitionHandler
             totalAmount: $order->totalAmount,
             status: $newStatus,
             paymentMethod: $order->paymentMethod,
-            paidByUserId: $order->paidByUserId,
+            paidByExternalUserId: $order->paidByExternalUserId,
             paidAt: $order->paidAt,
             remark: $order->remark,
             cancelledAt: $cancelledAt ?? $order->cancelledAt,
@@ -46,9 +46,9 @@ abstract class OrderStatusTransitionHandler
             userName: $order->userName,
             userPhone: $order->userPhone,
             userDepartment: $order->userDepartment,
-            paidByUserName: $order->paidByUserName,
-            paidByUserPhone: $order->paidByUserPhone,
-            paidByUserDepartment: $order->paidByUserDepartment,
+            paidByPayerName: $order->paidByPayerName,
+            paidByPayerPhone: $order->paidByPayerPhone,
+            paidByPayerProvider: $order->paidByPayerProvider,
         ));
     }
 }

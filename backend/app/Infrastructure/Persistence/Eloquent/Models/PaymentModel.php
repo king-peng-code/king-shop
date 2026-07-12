@@ -15,7 +15,7 @@ class PaymentModel extends Model
     protected $table = 'payments';
 
     protected $fillable = [
-        'order_id', 'payer_user_id', 'out_trade_no', 'trade_no', 'amount', 'channel',
+        'order_id', 'payer_external_user_id', 'out_trade_no', 'trade_no', 'amount', 'channel',
         'status', 'paid_at', 'raw_notify',
     ];
 

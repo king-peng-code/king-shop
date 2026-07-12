@@ -28,7 +28,7 @@ class ProxyPayController extends Controller
 
         $result = $handler->handle(
             token: $token,
-            payerUserId: $request->user()->id,
+            payerExternalUserId: $request->user()->id,
             openid: $validated['openid'] ?? null,
             channel: $validated['channel'] ?? null,
         );

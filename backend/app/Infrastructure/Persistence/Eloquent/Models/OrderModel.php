@@ -17,7 +17,7 @@ class OrderModel extends Model
 
     protected $fillable = [
         'order_no', 'user_id', 'total_amount', 'status', 'payment_method',
-        'paid_by_user_id', 'paid_at', 'remark', 'cancelled_at', 'cancel_reason',
+        'paid_by_external_user_id', 'paid_at', 'remark', 'cancelled_at', 'cancel_reason',
     ];
 
     protected function casts(): array
@@ -33,9 +33,9 @@ class OrderModel extends Model
         return $this->belongsTo(UserModel::class, 'user_id');
     }
 
-    public function paidByUser(): BelongsTo
+    public function paidByExternalUser(): BelongsTo
     {
-        return $this->belongsTo(UserModel::class, 'paid_by_user_id');
+        return $this->belongsTo(ExternalUserModel::class, 'paid_by_external_user_id');
     }
 
     public function items(): HasMany

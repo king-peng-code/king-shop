@@ -24,7 +24,7 @@ class OrderFactory extends Factory
             'total_amount' => 3000,
             'status' => 'pending_payment',
             'payment_method' => 'self',
-            'paid_by_user_id' => null,
+            'paid_by_external_user_id' => null,
             'paid_at' => null,
             'remark' => null,
             'cancelled_at' => null,
