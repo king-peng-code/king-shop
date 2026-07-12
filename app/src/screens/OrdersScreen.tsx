@@ -7,28 +7,55 @@ import {
   Text,
   View,
 } from 'react-native';
-import {useNavigation} from '@react-navigation/native';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
-import {fetchCategories, fetchProducts} from '../api/catalog';
+import {listOrders, type PaginatedOrders} from '../api/orders';
 import {ApiError} from '../api/client';
-import CategoryTabs from '../components/CategoryTabs';
 import EmptyState from '../components/EmptyState';
 import LoadingView from '../components/LoadingView';
-import ProductListItem from '../components/ProductListItem';
+import OrderListItem from '../components/OrderListItem';
+import OrderStatusTabs, {
+  type OrderStatusTabKey,
+} from '../components/OrderStatusTabs';
 import {useAuth} from '../context/AuthContext';
-import type {ShopStackParamList} from '../navigation/types';
-import type {Category, Product} from '../types/api';
+import type {OrdersStackParamList} from '../navigation/types';
+import type {Order} from '../types/order';
 
-export default function HomeScreen() {
+type TabKey = OrderStatusTabKey;
+
+async function fetchOrdersForTab(
+  tab: TabKey,
+  page: number,
+): Promise<PaginatedOrders> {
+  if (tab === 'in_progress') {
+    const [paid, preparing] = await Promise.all([
+      listOrders({status: 'paid', page, per_page: 20}),
+      listOrders({status: 'preparing', page, per_page: 20}),
+    ]);
+    const items = [...paid.items, ...preparing.items].sort(
+      (a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
+    );
+    return {
+      items,
+      meta: {
+        total: paid.meta.total + preparing.meta.total,
+        page,
+        per_page: 20,
+      },
+    };
+  }
+  const status = tab === 'all' ? undefined : tab;
+  return listOrders({status, page, per_page: 20});
+}
+
+export default function OrdersScreen() {
   const navigation =
-    useNavigation<NativeStackNavigationProp<ShopStackParamList>>();
+    useNavigation<NativeStackNavigationProp<OrdersStackParamList>>();
   const {refreshUser} = useAuth();
 
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(
-    null,
-  );
-  const [products, setProducts] = useState<Product[]>([]);
+  const [selectedTab, setSelectedTab] = useState<TabKey>('all');
+  const [orders, setOrders] = useState<Order[]>([]);
   const [total, setTotal] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -37,13 +64,15 @@ export default function HomeScreen() {
 
   const pageRef = useRef(1);
   const totalRef = useRef(0);
-  const productsLengthRef = useRef(0);
+  const ordersLengthRef = useRef(0);
   const loadingMoreRef = useRef(false);
   const refreshingRef = useRef(false);
+  const hasFocusedRef = useRef(false);
+  const loadRequestIdRef = useRef(0);
 
   useEffect(() => {
-    productsLengthRef.current = products.length;
-  }, [products.length]);
+    ordersLengthRef.current = orders.length;
+  }, [orders.length]);
 
   const handleApiError = useCallback(
     async (e: unknown) => {
@@ -62,23 +91,16 @@ export default function HomeScreen() {
     [refreshUser],
   );
 
-  const loadCategories = useCallback(async () => {
-    try {
-      const data = await fetchCategories();
-      setCategories(data);
-    } catch (e) {
-      await handleApiError(e);
-    }
-  }, [handleApiError]);
+  const loadOrders = useCallback(
+    async (reset: boolean, tab: TabKey) => {
+      const requestId = ++loadRequestIdRef.current;
 
-  const loadProducts = useCallback(
-    async (reset: boolean, categoryId: number | null) => {
       if (!reset) {
         if (loadingMoreRef.current || refreshingRef.current) {
           return;
         }
         if (
-          productsLengthRef.current >= totalRef.current &&
+          ordersLengthRef.current >= totalRef.current &&
           totalRef.current > 0
         ) {
           return;
@@ -97,21 +119,27 @@ export default function HomeScreen() {
 
       try {
         setError(null);
-        const result = await fetchProducts({
-          categoryId,
-          page: nextPage,
-          perPage: 20,
-        });
+        const result = await fetchOrdersForTab(tab, nextPage);
 
-        setProducts(prev =>
+        if (requestId !== loadRequestIdRef.current) {
+          return;
+        }
+
+        setOrders(prev =>
           reset ? result.items : [...prev, ...result.items],
         );
         pageRef.current = nextPage;
         totalRef.current = result.meta.total;
         setTotal(result.meta.total);
       } catch (e) {
+        if (requestId !== loadRequestIdRef.current) {
+          return;
+        }
         await handleApiError(e);
       } finally {
+        if (requestId !== loadRequestIdRef.current) {
+          return;
+        }
         if (reset) {
           refreshingRef.current = false;
           setIsRefreshing(false);
@@ -126,44 +154,49 @@ export default function HomeScreen() {
   );
 
   useEffect(() => {
-    void loadCategories();
-  }, [loadCategories]);
-
-  useEffect(() => {
     pageRef.current = 1;
     totalRef.current = 0;
-    productsLengthRef.current = 0;
-    setProducts([]);
+    ordersLengthRef.current = 0;
+    setOrders([]);
     setTotal(0);
     setIsInitialLoading(true);
-    void loadProducts(true, selectedCategoryId);
-  }, [selectedCategoryId, loadProducts]);
+    void loadOrders(true, selectedTab);
+  }, [selectedTab, loadOrders]);
 
-  const handleCategorySelect = (id: number | null) => {
-    setSelectedCategoryId(id);
+  useFocusEffect(
+    useCallback(() => {
+      if (!hasFocusedRef.current) {
+        hasFocusedRef.current = true;
+        return;
+      }
+      void loadOrders(true, selectedTab);
+    }, [loadOrders, selectedTab]),
+  );
+
+  const handleTabSelect = (tab: TabKey) => {
+    setSelectedTab(tab);
   };
 
   const handleRefresh = () => {
-    void loadProducts(true, selectedCategoryId);
+    void loadOrders(true, selectedTab);
   };
 
   const handleLoadMore = () => {
-    if (products.length < total && !isLoadingMore && !isRefreshing) {
-      void loadProducts(false, selectedCategoryId);
+    if (orders.length < total && !isLoadingMore && !isRefreshing) {
+      void loadOrders(false, selectedTab);
     }
   };
 
-  const handleProductPress = (productId: number) => {
-    navigation.navigate('ProductDetail', {productId});
+  const handleOrderPress = (orderId: number) => {
+    navigation.navigate('OrderDetail', {orderId});
   };
 
-  if (isInitialLoading && products.length === 0) {
+  if (isInitialLoading && orders.length === 0) {
     return (
       <View style={styles.container}>
-        <CategoryTabs
-          categories={categories}
-          selectedId={selectedCategoryId}
-          onSelect={handleCategorySelect}
+        <OrderStatusTabs
+          selectedTab={selectedTab}
+          onSelect={handleTabSelect}
         />
         <LoadingView />
       </View>
@@ -172,19 +205,15 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <CategoryTabs
-        categories={categories}
-        selectedId={selectedCategoryId}
-        onSelect={handleCategorySelect}
-      />
+      <OrderStatusTabs selectedTab={selectedTab} onSelect={handleTabSelect} />
       {error ? <Text style={styles.error}>{error}</Text> : null}
       <FlatList
-        data={products}
+        data={orders}
         keyExtractor={item => String(item.id)}
         renderItem={({item}) => (
-          <ProductListItem
-            product={item}
-            onPress={() => handleProductPress(item.id)}
+          <OrderListItem
+            order={item}
+            onPress={() => handleOrderPress(item.id)}
           />
         )}
         refreshControl={
@@ -193,7 +222,7 @@ export default function HomeScreen() {
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.3}
         ListEmptyComponent={
-          !isRefreshing ? <EmptyState message="暂无商品" /> : null
+          !isRefreshing ? <EmptyState message="暂无订单" /> : null
         }
         ListFooterComponent={
           isLoadingMore ? (
@@ -210,7 +239,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f5f5f5',
   },
   error: {
     color: '#d32f2f',

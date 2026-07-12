@@ -64,6 +64,7 @@ class EloquentOrderRepository implements OrderRepositoryInterface
     public function searchUser(UserOrderListQuery $query): array
     {
         $builder = OrderModel::query()
+            ->with('items')
             ->where('user_id', $query->userId)
             ->orderByDesc('orders.id');
 
@@ -75,7 +76,7 @@ class EloquentOrderRepository implements OrderRepositoryInterface
 
         return [
             'items' => $paginator->getCollection()
-                ->map(fn (OrderModel $model) => $this->toDomain($model, includeItems: false))
+                ->map(fn (OrderModel $model) => $this->toDomain($model, includeItems: true))
                 ->all(),
             'total' => $paginator->total(),
         ];

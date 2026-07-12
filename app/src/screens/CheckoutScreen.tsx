@@ -15,30 +15,18 @@ import type {RouteProp} from '@react-navigation/native';
 import {fetchProduct} from '../api/catalog';
 import {createOrder} from '../api/orders';
 import {ApiError} from '../api/client';
-import PaymentChannelPicker, {
-  type ChannelOption,
-} from '../components/PaymentChannelPicker';
+import PaymentChannelPicker from '../components/PaymentChannelPicker';
 import PaymentMethodPicker from '../components/PaymentMethodPicker';
 import LoadingView from '../components/LoadingView';
 import {useAuth} from '../context/AuthContext';
-import type {MainStackParamList} from '../navigation/types';
+import type {ShopStackParamList} from '../navigation/types';
 import type {PayChannel, PaymentMethod} from '../types/order';
 import type {Product} from '../types/api';
 import {formatPrice} from '../utils/formatPrice';
+import {selfPayChannels} from '../utils/payChannels';
 
-type CheckoutRouteProp = RouteProp<MainStackParamList, 'Checkout'>;
-type CheckoutNavProp = NativeStackNavigationProp<MainStackParamList, 'Checkout'>;
-
-function selfPayChannels(): ChannelOption[] {
-  const channels: ChannelOption[] = [
-    {value: 'alipay_sandbox', label: '支付宝'},
-    {value: 'wechat', label: '微信支付'},
-  ];
-  if (__DEV__) {
-    channels.push({value: 'fake', label: '模拟支付（开发）'});
-  }
-  return channels;
-}
+type CheckoutRouteProp = RouteProp<ShopStackParamList, 'Checkout'>;
+type CheckoutNavProp = NativeStackNavigationProp<ShopStackParamList, 'Checkout'>;
 
 export default function CheckoutScreen() {
   const route = useRoute<CheckoutRouteProp>();

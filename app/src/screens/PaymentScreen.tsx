@@ -15,7 +15,7 @@ import {getOrder, payOrder} from '../api/orders';
 import {ApiError} from '../api/client';
 import LoadingView from '../components/LoadingView';
 import {useAuth} from '../context/AuthContext';
-import type {MainStackParamList} from '../navigation/types';
+import type {ShopStackParamList} from '../navigation/types';
 import {
   isAlipayParams,
   isFakeParams,
@@ -27,8 +27,8 @@ import type {Order, PayChannel, PaymentOutcome} from '../types/order';
 import {formatPrice} from '../utils/formatPrice';
 import {pollOrderStatus} from '../utils/pollOrderStatus';
 
-type PaymentRouteProp = RouteProp<MainStackParamList, 'Payment'>;
-type PaymentNavProp = NativeStackNavigationProp<MainStackParamList, 'Payment'>;
+type PaymentRouteProp = RouteProp<ShopStackParamList, 'Payment'>;
+type PaymentNavProp = NativeStackNavigationProp<ShopStackParamList, 'Payment'>;
 
 const CHANNEL_LABELS: Record<PayChannel, string> = {
   fake: '模拟支付',

@@ -15,13 +15,13 @@ import {ApiError} from '../api/client';
 import QuantityStepper from '../components/QuantityStepper';
 import LoadingView from '../components/LoadingView';
 import {useAuth} from '../context/AuthContext';
-import type {MainStackParamList} from '../navigation/types';
+import type {ShopStackParamList} from '../navigation/types';
 import type {Product} from '../types/api';
 import {formatPrice} from '../utils/formatPrice';
 
-type ProductDetailRouteProp = RouteProp<MainStackParamList, 'ProductDetail'>;
+type ProductDetailRouteProp = RouteProp<ShopStackParamList, 'ProductDetail'>;
 type ProductDetailNavProp = NativeStackNavigationProp<
-  MainStackParamList,
+  ShopStackParamList,
   'ProductDetail'
 >;
 

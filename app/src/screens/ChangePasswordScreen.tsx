@@ -9,6 +9,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
+import {useNavigation} from '@react-navigation/native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 import {ApiError} from '../api/client';
 import {useAuth} from '../context/AuthContext';
@@ -24,6 +25,7 @@ function changePasswordErrorMessage(error: unknown): string {
 }
 
 export default function ChangePasswordScreen() {
+  const navigation = useNavigation();
   const {changePassword} = useAuth();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -53,6 +55,9 @@ export default function ChangePasswordScreen() {
     setLoading(true);
     try {
       await changePassword(currentPassword, newPassword);
+      if (navigation.canGoBack()) {
+        navigation.goBack();
+      }
     } catch (e) {
       setError(changePasswordErrorMessage(e));
     } finally {
