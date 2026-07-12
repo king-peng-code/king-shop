@@ -21,6 +21,25 @@ class ProductCatalogApiTest extends TestCase
     }
 
     #[Test]
+    public function employee_can_list_active_categories_only(): void
+    {
+        CategoryModel::factory()->create(['name' => '饮品', 'sort' => 1]);
+        CategoryModel::factory()->disabled()->create(['name' => '已禁用']);
+
+        $this->withToken($this->employeeToken())
+            ->getJson('/api/v1/categories')
+            ->assertOk()
+            ->assertJsonPath('data.items.0.name', '饮品')
+            ->assertJsonCount(1, 'data.items');
+    }
+
+    #[Test]
+    public function unauthenticated_cannot_access_categories(): void
+    {
+        $this->getJson('/api/v1/categories')->assertUnauthorized();
+    }
+
+    #[Test]
     public function employee_can_list_visible_products(): void
     {
         $category = CategoryModel::factory()->create();
