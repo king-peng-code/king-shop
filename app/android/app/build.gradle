@@ -77,6 +77,22 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
+    configurations.all {
+        resolutionStrategy {
+            force 'com.facebook.fresco:fresco:3.2.0'
+            force 'com.facebook.fresco:fbcore:3.2.0'
+        }
+    }
+
+    packaging {
+        resources {
+            excludes += ['META-INF/LICENSE', 'META-INF/NOTICE']
+        }
+        dex {
+            useLegacyPackaging true
+        }
+    }
+
     namespace "com.kingshop"
     defaultConfig {
         applicationId "com.kingshop"

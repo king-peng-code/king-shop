@@ -1,11 +1,24 @@
-import { defineConfig } from 'vite'
+import {defineConfig} from 'vite'
 import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    {
+      name: 'apk-mime',
+      configureServer(server) {
+        server.middlewares.use((req, res, next) => {
+          if (req.url && req.url.endsWith('.apk')) {
+            res.setHeader('Content-Type', 'application/vnd.android.package-archive')
+          }
+          next()
+        })
+      },
+    },
+  ],
   server: {
-    host: '0.0.0.0',
+    host: '127.0.0.1',
     allowedHosts: true,
     proxy: {
       '/api/v1': {

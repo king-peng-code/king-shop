@@ -25,15 +25,15 @@ export default function PaymentMethodPicker({
             key={option.value}
             style={[styles.option, selected && styles.optionSelected]}
             onPress={() => onChange(option.value)}>
-            <View style={styles.header}>
-              <View style={[styles.radio, selected && styles.radioSelected]}>
-                {selected ? <View style={styles.radioDot} /> : null}
-              </View>
+            <View style={[styles.radio, selected && styles.radioSelected]}>
+              {selected ? <View style={styles.radioDot} /> : null}
+            </View>
+            <View style={styles.textWrap}>
               <Text style={[styles.label, selected && styles.labelSelected]}>
                 {option.label}
               </Text>
+              <Text style={styles.hint}>{option.hint}</Text>
             </View>
-            <Text style={styles.hint}>{option.hint}</Text>
           </Pressable>
         );
       })}
@@ -43,9 +43,13 @@ export default function PaymentMethodPicker({
 
 const styles = StyleSheet.create({
   container: {
+    flexDirection: 'row',
     gap: 8,
   },
   option: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: 12,
     paddingHorizontal: 12,
     borderRadius: 8,
@@ -57,9 +61,9 @@ const styles = StyleSheet.create({
     borderColor: '#1976d2',
     backgroundColor: '#e3f2fd',
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  textWrap: {
+    flex: 1,
+    marginLeft: 8,
   },
   radio: {
     width: 20,
@@ -69,7 +73,6 @@ const styles = StyleSheet.create({
     borderColor: '#bbb',
     alignItems: 'center',
     justifyContent: 'center',
-    marginRight: 10,
   },
   radioSelected: {
     borderColor: '#1976d2',
@@ -89,9 +92,8 @@ const styles = StyleSheet.create({
     color: '#1976d2',
   },
   hint: {
-    marginTop: 6,
-    marginLeft: 30,
-    fontSize: 13,
+    marginTop: 2,
+    fontSize: 11,
     color: '#888',
   },
 });

@@ -23,6 +23,9 @@ const META_OVERRIDES: Record<string, FieldMeta> = {
   'payment.wechat.enabled': {
     type: 'switch',
   },
+  'payment.fake.enabled': {
+    type: 'switch',
+  },
   'payment.wechat.mode': {
     type: 'select',
     options: [
@@ -80,6 +83,10 @@ export const PAYMENT_SUB_GROUPS: Record<string, { label: string; keys: string[] 
     label: '微信付款',
     keys: ['wechat.enabled', 'wechat.mode', 'wechat.app_id', 'wechat.mch_id', 'wechat.api_key', 'wechat.cert'],
   },
+  fake: {
+    label: '模拟支付',
+    keys: ['fake.enabled'],
+  },
 };
 
 export function isFieldVisible(
@@ -110,19 +117,6 @@ export function isFieldVisible(
 
   return true;
 }
-
-const WECHAT_KEYS = new Set([
-  'wechat.mch_id',
-  'wechat.api_key',
-  'wechat.cert',
-  'wechat.app_id',
-]);
-
-const ALIPAY_KEYS = new Set([
-  'alipay.app_id',
-  'alipay.private_key',
-  'alipay.public_key',
-]);
 
 const LOCAL_KEYS = new Set(['local.public_base_url']);
 
@@ -155,6 +149,8 @@ const GROUP_FIELD_ORDER: Record<string, string[]> = {
     'wechat.mch_id',
     'wechat.api_key',
     'wechat.cert',
+    // Fake payment group
+    'fake.enabled',
   ],
   storage: [
     'driver',
@@ -179,6 +175,9 @@ export function getFieldExtra(group: string, key: string): string | undefined {
   }
   if (group === 'payment' && key === 'wechat.mode') {
     return '沙箱: 开发测试环境 / 生产: 线上真实交易';
+  }
+  if (group === 'payment' && key === 'fake.enabled') {
+    return '开启后可在线上环境使用模拟支付调试，不产生真实交易';
   }
   return undefined;
 }
@@ -205,16 +204,27 @@ export function sortConfigItems<T extends { key: string }>(
  * Returns undefined for non-payment groups.
  */
 export function getPaymentSubGroups(items: { key: string }[]): { label: string; items: { key: string }[] }[] | undefined {
-  if (items.length === 0 || !items[0].key.startsWith('alipay.') && !items[0].key.startsWith('wechat.')) {
+  if (items.length === 0) {
+    return undefined;
+  }
+
+  const hasPaymentItem = items.some(
+    item => item.key.startsWith('alipay.') || item.key.startsWith('wechat.') || item.key.startsWith('fake.'),
+  );
+  if (!hasPaymentItem) {
     return undefined;
   }
 
   const alipayKeys = new Set(PAYMENT_SUB_GROUPS.alipay.keys);
   const wechatKeys = new Set(PAYMENT_SUB_GROUPS.wechat.keys);
+  const fakeKeys = new Set(PAYMENT_SUB_GROUPS.fake.keys);
 
   const alipayItems = items.filter(item => alipayKeys.has(item.key));
   const wechatItems = items.filter(item => wechatKeys.has(item.key));
-  const otherItems = items.filter(item => !alipayKeys.has(item.key) && !wechatKeys.has(item.key));
+  const fakeItems = items.filter(item => fakeKeys.has(item.key));
+  const otherItems = items.filter(
+    item => !alipayKeys.has(item.key) && !wechatKeys.has(item.key) && !fakeKeys.has(item.key),
+  );
 
   const groups: { label: string; items: { key: string }[] }[] = [];
   if (alipayItems.length > 0) {
@@ -222,6 +232,9 @@ export function getPaymentSubGroups(items: { key: string }[]): { label: string; 
   }
   if (wechatItems.length > 0) {
     groups.push({ label: PAYMENT_SUB_GROUPS.wechat.label, items: wechatItems });
+  }
+  if (fakeItems.length > 0) {
+    groups.push({ label: PAYMENT_SUB_GROUPS.fake.label, items: fakeItems });
   }
   if (otherItems.length > 0) {
     groups.push({ label: '其他', items: otherItems });
