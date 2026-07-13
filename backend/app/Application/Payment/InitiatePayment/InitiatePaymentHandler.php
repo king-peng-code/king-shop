@@ -53,6 +53,25 @@ class InitiatePaymentHandler
         $paymentChannel = PaymentChannel::fromString($gateway->channel());
 
         $existing = $this->paymentRepository->findPendingByOrderId($orderId);
+
+        // If the existing pending payment uses a different channel, mark it as
+        // failed so a new one gets created with the user's selected channel.
+        if ($existing !== null && $existing->channel->value !== $paymentChannel->value) {
+            $this->paymentRepository->save(new Payment(
+                id: $existing->id,
+                orderId: $existing->orderId,
+                payerExternalUserId: $existing->payerExternalUserId,
+                outTradeNo: $existing->outTradeNo,
+                tradeNo: $existing->tradeNo,
+                amount: $existing->amount,
+                channel: $existing->channel,
+                status: PaymentStatus::fromString(PaymentStatus::FAILED),
+                paidAt: $existing->paidAt,
+                rawNotify: $existing->rawNotify,
+            ));
+            $existing = null;
+        }
+
         $payment = $existing ?? $this->paymentRepository->save(new Payment(
             id: null,
             orderId: $orderId,

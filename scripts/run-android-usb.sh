@@ -44,7 +44,7 @@ echo ""
 echo "=== 构建 JS Bundle ==="
 cd "$ROOT/app"
 
-if [ ! -f android/app/src/main/assets/index.android.bundle ] || [ "$1" = "--rebuild" ]; then
+if [ ! -f android/app/src/main/assets/index.android.bundle ] || [ "${1:-}" = "--rebuild" ]; then
   mkdir -p android/app/src/main/assets
   npx react-native bundle \
     --platform android \

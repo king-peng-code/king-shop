@@ -112,6 +112,11 @@ export default function CheckoutScreen() {
       return;
     }
 
+    if (paymentMethod === 'self' && !channel) {
+      setError('支付渠道加载中，请稍候');
+      return;
+    }
+
     setIsSubmitting(true);
     setError(null);
 

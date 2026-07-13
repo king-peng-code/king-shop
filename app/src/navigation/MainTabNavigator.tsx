@@ -2,6 +2,7 @@ import React from 'react';
 import {StyleSheet} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
+import {CommonActions} from '@react-navigation/native';
 import HomeScreen from '../screens/HomeScreen';
 import ProductDetailScreen from '../screens/ProductDetailScreen';
 import CheckoutScreen from '../screens/CheckoutScreen';
@@ -115,11 +116,39 @@ export default function MainTabNavigator() {
         name="OrdersTab"
         component={OrdersNavigator}
         options={{title: '订单'}}
+        listeners={({navigation}) => ({
+          tabPress: (e) => {
+            const state = navigation.getState();
+            const route = state.routes.find(r => r.name === 'OrdersTab');
+            if (route?.state?.index && route.state.index > 0) {
+              e.preventDefault();
+              navigation.dispatch(
+                CommonActions.navigate('OrdersTab', {
+                  state: {routes: [{name: 'OrdersList'}], index: 0},
+                }),
+              );
+            }
+          },
+        })}
       />
       <Tab.Screen
         name="ProfileTab"
         component={ProfileNavigator}
         options={{title: '我的'}}
+        listeners={({navigation}) => ({
+          tabPress: (e) => {
+            const state = navigation.getState();
+            const route = state.routes.find(r => r.name === 'ProfileTab');
+            if (route?.state?.index && route.state.index > 0) {
+              e.preventDefault();
+              navigation.dispatch(
+                CommonActions.navigate('ProfileTab', {
+                  state: {routes: [{name: 'Profile'}], index: 0},
+                }),
+              );
+            }
+          },
+        })}
       />
     </Tab.Navigator>
   );

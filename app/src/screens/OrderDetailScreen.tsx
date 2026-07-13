@@ -65,7 +65,7 @@ export default function OrderDetailScreen() {
   const [error, setError] = useState<string | null>(null);
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [showPayModal, setShowPayModal] = useState(false);
-  const [channel, setChannel] = useState<PayChannel>('alipay_sandbox');
+  const [channel, setChannel] = useState<PayChannel | null>(null);
   const [channelOptions, setChannelOptions] = useState<ChannelOption[]>([]);
 
   const hasFocusedRef = useRef(false);
@@ -152,6 +152,9 @@ export default function OrderDetailScreen() {
   };
 
   const handlePayConfirm = () => {
+    if (!channel) {
+      return;
+    }
     setShowPayModal(false);
     navigation.getParent()?.navigate('ShopTab', {
       screen: 'Payment',
@@ -302,10 +305,10 @@ export default function OrderDetailScreen() {
                   <Text style={styles.noChannelText}>暂无可用的支付方式</Text>
                 ) : (
                   <PaymentChannelPicker
-                    options={channelOptions}
-                    value={channel}
-                    onChange={setChannel}
-                  />
+                options={channelOptions}
+                value={channel ?? channelOptions[0]?.value}
+                onChange={setChannel}
+              />
                 )}
                 <View style={styles.modalActions}>
                   <Pressable
@@ -316,9 +319,9 @@ export default function OrderDetailScreen() {
                   <Pressable
                     style={[
                       styles.modalConfirm,
-                      channelOptions.length === 0 && styles.disabled,
+                      (!channel || channelOptions.length === 0) && styles.disabled,
                     ]}
-                    disabled={channelOptions.length === 0}
+                    disabled={!channel || channelOptions.length === 0}
                     onPress={handlePayConfirm}>
                     <Text style={styles.modalConfirmText}>确认支付</Text>
                   </Pressable>
