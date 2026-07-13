@@ -1,6 +1,6 @@
 import * as WeChat from 'react-native-wechat-lib';
 import {simulateFakeNotify} from '../api/orders';
-import {WECHAT_APP_ID} from '../config/payment';
+import {getWechatAppId} from '../config/payment';
 import type {PayParams, WechatPrepayParams} from '../types/order';
 
 export interface WechatShareOptions {
@@ -14,18 +14,23 @@ export interface WechatShareOptions {
 let wechatRegistered = false;
 
 function ensureWechatRegistered(): void {
-  if (wechatRegistered || !WECHAT_APP_ID) {
+  if (wechatRegistered) {
     return;
   }
-  WeChat.registerApp(WECHAT_APP_ID, '');
+  const appId = getWechatAppId();
+  if (!appId) {
+    return;
+  }
+  WeChat.registerApp(appId, '');
   wechatRegistered = true;
 }
 
 export async function launchWechatPay(
   prepay: WechatPrepayParams,
 ): Promise<'success' | 'cancelled' | 'failed'> {
-  if (!WECHAT_APP_ID) {
-    throw new Error('未配置微信 AppID，请在 app/src/config/payment.ts 设置 WECHAT_APP_ID');
+  const appId = getWechatAppId();
+  if (!appId) {
+    throw new Error('未获取到微信 AppID，请检查支付渠道配置');
   }
 
   ensureWechatRegistered();
@@ -89,7 +94,8 @@ export function isWechatParams(
 export async function shareToWechat(
   options: WechatShareOptions,
 ): Promise<'shared' | 'cancelled' | 'unavailable'> {
-  if (!WECHAT_APP_ID) {
+  const appId = getWechatAppId();
+  if (!appId) {
     return 'unavailable';
   }
 

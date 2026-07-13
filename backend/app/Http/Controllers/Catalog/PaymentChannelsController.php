@@ -37,9 +37,12 @@ class PaymentChannelsController extends Controller
             $this->policy->proxyPayChannels(),
         );
 
+        $wechatAppId = $this->policy->wechatAppId();
+
         return ApiResponse::success([
             'self_pay' => $selfPayChannels,
             'proxy_pay' => $proxyPayChannels,
+            'wechat_app_id' => $wechatAppId !== '' ? $wechatAppId : null,
         ]);
     }
 }

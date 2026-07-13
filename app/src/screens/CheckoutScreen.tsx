@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {
   ActivityIndicator,
   Image,
@@ -16,6 +16,7 @@ import {fetchProduct} from '../api/catalog';
 import {createOrder} from '../api/orders';
 import {ApiError} from '../api/client';
 import PaymentChannelPicker from '../components/PaymentChannelPicker';
+import type {ChannelOption} from '../components/PaymentChannelPicker';
 import PaymentMethodPicker from '../components/PaymentMethodPicker';
 import LoadingView from '../components/LoadingView';
 import {useAuth} from '../context/AuthContext';
@@ -40,11 +41,22 @@ export default function CheckoutScreen() {
   const [error, setError] = useState<string | null>(null);
   const [remark, setRemark] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('self');
-  const [channel, setChannel] = useState<PayChannel>(
-    __DEV__ ? 'fake' : 'alipay_sandbox',
-  );
+  const [channel, setChannel] = useState<PayChannel | null>(null);
+  const [channelOptions, setChannelOptions] = useState<ChannelOption[]>([]);
 
-  const channelOptions = useMemo(() => selfPayChannels(), []);
+  useEffect(() => {
+    void (async () => {
+      try {
+        const channels = await selfPayChannels();
+        setChannelOptions(channels);
+        if (channels.length > 0) {
+          setChannel(channels[0].value);
+        }
+      } catch {
+        // 保持空列表，UI 显示「暂无可用的支付方式」
+      }
+    })();
+  }, []);
   const totalAmount = product ? product.price * quantity : 0;
 
   const handleApiError = useCallback(
@@ -178,11 +190,15 @@ export default function CheckoutScreen() {
             <Text style={[styles.sectionTitle, styles.sectionGap]}>
               支付渠道
             </Text>
-            <PaymentChannelPicker
-              options={channelOptions}
-              value={channel}
-              onChange={setChannel}
-            />
+            {channelOptions.length === 0 ? (
+              <Text style={styles.noChannelText}>暂无可用的支付方式</Text>
+            ) : (
+              <PaymentChannelPicker
+                options={channelOptions}
+                value={channel ?? channelOptions[0]?.value}
+                onChange={setChannel}
+              />
+            )}
           </>
         ) : null}
 
@@ -291,6 +307,12 @@ const styles = StyleSheet.create({
   },
   submitDisabled: {
     opacity: 0.7,
+  },
+  noChannelText: {
+    fontSize: 14,
+    color: '#999',
+    textAlign: 'center',
+    paddingVertical: 16,
   },
   submitText: {
     color: '#fff',

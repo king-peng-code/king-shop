@@ -115,6 +115,60 @@ class PaymentConfigReaderTest extends TestCase
     }
 
     #[Test]
+    public function fake_is_configured_by_default(): void
+    {
+        $reader = $this->createReader([]);
+
+        $this->assertTrue($reader->isConfigured('fake'));
+    }
+
+    #[Test]
+    public function fake_is_enabled_when_config_is_1(): void
+    {
+        $reader = $this->createReader([
+            ['group' => 'payment', 'key' => 'fake.enabled', 'value' => '1'],
+        ]);
+
+        $this->assertTrue($reader->isEnabled('fake'));
+    }
+
+    #[Test]
+    public function fake_is_not_enabled_when_config_is_0(): void
+    {
+        $reader = $this->createReader([
+            ['group' => 'payment', 'key' => 'fake.enabled', 'value' => '0'],
+        ]);
+
+        $this->assertFalse($reader->isEnabled('fake'));
+    }
+
+    #[Test]
+    public function fake_is_not_enabled_when_not_set(): void
+    {
+        $reader = $this->createReader([]);
+
+        $this->assertFalse($reader->isEnabled('fake'));
+    }
+
+    #[Test]
+    public function fake_is_available_when_enabled(): void
+    {
+        $reader = $this->createReader([
+            ['group' => 'payment', 'key' => 'fake.enabled', 'value' => '1'],
+        ]);
+
+        $this->assertTrue($reader->isAvailable('fake'));
+    }
+
+    #[Test]
+    public function fake_is_not_available_when_not_enabled(): void
+    {
+        $reader = $this->createReader([]);
+
+        $this->assertFalse($reader->isAvailable('fake'));
+    }
+
+    #[Test]
     public function is_available_returns_true_when_enabled_and_configured(): void
     {
         $reader = $this->createReader([

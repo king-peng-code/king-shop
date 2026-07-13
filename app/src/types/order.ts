@@ -10,6 +10,7 @@ export interface PayChannelOption {
 export interface PaymentChannelsResult {
   self_pay: PayChannelOption[];
   proxy_pay: PayChannelOption[];
+  wechat_app_id?: string;
 }
 
 export type OrderStatus = 'pending_payment' | 'paid' | 'cancelled';

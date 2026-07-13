@@ -32,6 +32,12 @@ class PaymentChannelsApiTest extends TestCase
                 ['value' => '', 'is_sensitive' => ! str_contains($key, 'app_id'), 'description' => 'test'],
             );
         }
+
+        // Ensure fake.enabled exists (defaults to 0)
+        SystemConfigModel::query()->updateOrCreate(
+            ['group' => 'payment', 'key' => 'fake.enabled'],
+            ['value' => '0', 'is_sensitive' => false, 'description' => 'test'],
+        );
     }
 
     private function employeeToken(): string
@@ -172,5 +178,49 @@ class PaymentChannelsApiTest extends TestCase
         $proxyPay = $response->json('data.proxy_pay');
         $values = array_column($proxyPay, 'value');
         $this->assertNotContains('alipay_sandbox', $values);
+    }
+
+    #[Test]
+    public function fake_channel_can_be_enabled_by_config(): void
+    {
+        // Enable fake via config
+        SystemConfigModel::where('group', 'payment')->where('key', 'fake.enabled')
+            ->update(['value' => '1']);
+
+        $response = $this->withToken($this->employeeToken())
+            ->getJson('/api/v1/payment-channels')
+            ->assertOk();
+
+        $selfPay = $response->json('data.self_pay');
+        $selfValues = array_column($selfPay, 'value');
+        $this->assertContains('fake', $selfValues);
+
+        $proxyPay = $response->json('data.proxy_pay');
+        $proxyValues = array_column($proxyPay, 'value');
+        $this->assertContains('fake', $proxyValues);
+    }
+
+    #[Test]
+    public function returns_wechat_app_id_in_response(): void
+    {
+        $response = $this->withToken($this->employeeToken())
+            ->getJson('/api/v1/payment-channels')
+            ->assertOk();
+
+        // When wechat.app_id is empty, wechat_app_id should be null
+        $this->assertNull($response->json('data.wechat_app_id'));
+    }
+
+    #[Test]
+    public function returns_wechat_app_id_when_configured(): void
+    {
+        SystemConfigModel::where('group', 'payment')->where('key', 'wechat.app_id')
+            ->update(['value' => 'wx_test_app_id_123']);
+
+        $response = $this->withToken($this->employeeToken())
+            ->getJson('/api/v1/payment-channels')
+            ->assertOk();
+
+        $this->assertSame('wx_test_app_id_123', $response->json('data.wechat_app_id'));
     }
 }

@@ -124,6 +124,7 @@ class PaymentConfigReader
         $key = match ($channel) {
             'alipay_sandbox' => 'alipay.enabled',
             'wechat' => 'wechat.enabled',
+            'fake' => 'fake.enabled',
             default => null,
         };
 
@@ -142,11 +143,13 @@ class PaymentConfigReader
         $group = match ($channel) {
             'alipay_sandbox' => self::ALIPAY,
             'wechat' => self::WECHAT,
+            'fake' => null,
             default => null,
         };
 
+        // Channels without required keys (e.g. fake) are always configured
         if ($group === null) {
-            return false;
+            return $channel === 'fake';
         }
 
         foreach (self::REQUIRED_KEYS[$group] as $key) {

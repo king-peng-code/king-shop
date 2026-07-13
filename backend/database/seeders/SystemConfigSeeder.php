@@ -15,6 +15,8 @@ class SystemConfigSeeder extends Seeder
         $configs = [
             ['group' => 'app', 'key' => 'name', 'value' => '内部下午茶', 'is_sensitive' => false, 'description' => '商城名称'],
             ['group' => 'order', 'key' => 'auto_cancel_minutes', 'value' => '30', 'is_sensitive' => false, 'description' => '未支付自动取消（分钟）'],
+            // 模拟支付
+            ['group' => 'payment', 'key' => 'fake.enabled', 'value' => '0', 'is_sensitive' => false, 'description' => '模拟支付 - 启用（开启后可在线上环境使用模拟支付调试）'],
             // 支付宝付款
             ['group' => 'payment', 'key' => 'alipay.enabled', 'value' => '0', 'is_sensitive' => false, 'description' => '支付宝付款 - 启用'],
             ['group' => 'payment', 'key' => 'alipay.mode', 'value' => 'sandbox', 'is_sensitive' => false, 'description' => '支付宝付款 - 模式'],

@@ -60,7 +60,7 @@ class PaymentChannelPolicy
     {
         $channels = [PaymentChannel::ALIPAY_SANDBOX, PaymentChannel::WECHAT];
 
-        if (self::fakeAllowed()) {
+        if (self::fakeAllowedStatic()) {
             $channels[] = PaymentChannel::FAKE;
         }
 
@@ -75,21 +75,40 @@ class PaymentChannelPolicy
     {
         $channels = [PaymentChannel::WECHAT];
 
-        if (self::fakeAllowed()) {
+        if (self::fakeAllowedStatic()) {
             $channels[] = PaymentChannel::FAKE;
         }
 
         return $channels;
     }
 
-    public static function fakeAllowed(): bool
+    public function wechatAppId(): string
+    {
+        return $this->config->get('wechat.app_id');
+    }
+
+    public function fakeAllowed(): bool
+    {
+        // 配置显式开启 → 放行（可用于线上调试）
+        if ($this->config->isEnabled(PaymentChannel::FAKE)) {
+            return true;
+        }
+
+        // 兜底：仅非生产环境
+        return app()->environment('local', 'testing');
+    }
+
+    /**
+     * @deprecated Use instance method fakeAllowed() instead
+     */
+    public static function fakeAllowedStatic(): bool
     {
         return app()->environment('local', 'testing');
     }
 
     public static function assertNotifyAllowed(Payment $payment): void
     {
-        if ($payment->channel->value === PaymentChannel::FAKE && ! self::fakeAllowed()) {
+        if ($payment->channel->value === PaymentChannel::FAKE && ! self::fakeAllowedStatic()) {
             throw new InvalidPaymentSignatureException();
         }
     }
