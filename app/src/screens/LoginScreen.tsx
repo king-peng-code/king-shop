@@ -4,6 +4,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -60,48 +61,54 @@ export default function LoginScreen() {
     <SafeAreaView style={styles.safe}>
       <KeyboardAvoidingView
         style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <View style={styles.header}>
-          <Text style={styles.title}>员工登录</Text>
-          <Text style={styles.subtitle}>请输入手机号和密码</Text>
-        </View>
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}>
+        <ScrollView
+          contentContainerStyle={styles.scroll}
+          keyboardShouldPersistTaps="handled"
+          bounces={false}>
+          <View style={styles.header}>
+            <Text style={styles.title}>员工登录</Text>
+            <Text style={styles.subtitle}>请输入手机号和密码</Text>
+          </View>
 
-        <View style={styles.form}>
-          <Text style={styles.label}>手机号</Text>
-          <TextInput
-            style={styles.input}
-            value={phone}
-            onChangeText={setPhone}
-            placeholder="请输入手机号"
-            keyboardType="phone-pad"
-            maxLength={11}
-            autoCapitalize="none"
-            editable={!loading}
-          />
+          <View style={styles.form}>
+            <Text style={styles.label}>手机号</Text>
+            <TextInput
+              style={styles.input}
+              value={phone}
+              onChangeText={setPhone}
+              placeholder="请输入手机号"
+              keyboardType="phone-pad"
+              maxLength={11}
+              autoCapitalize="none"
+              editable={!loading}
+            />
 
-          <Text style={styles.label}>密码</Text>
-          <TextInput
-            style={styles.input}
-            value={password}
-            onChangeText={setPassword}
-            placeholder="请输入密码"
-            secureTextEntry
-            editable={!loading}
-          />
+            <Text style={styles.label}>密码</Text>
+            <TextInput
+              style={styles.input}
+              value={password}
+              onChangeText={setPassword}
+              placeholder="请输入密码"
+              secureTextEntry
+              editable={!loading}
+            />
 
-          {error ? <Text style={styles.error}>{error}</Text> : null}
+            {error ? <Text style={styles.error}>{error}</Text> : null}
 
-          <Pressable
-            style={[styles.button, loading && styles.buttonDisabled]}
-            onPress={handleLogin}
-            disabled={loading}>
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>登录</Text>
-            )}
-          </Pressable>
-        </View>
+            <Pressable
+              style={[styles.button, loading && styles.buttonDisabled]}
+              onPress={handleLogin}
+              disabled={loading}>
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>登录</Text>
+              )}
+            </Pressable>
+          </View>
+        </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -114,7 +121,11 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    justifyContent: 'center',
+  },
+  scroll: {
+    flexGrow: 1,
+    justifyContent: 'flex-start',
+    paddingTop: 120,
     paddingHorizontal: 24,
   },
   header: {

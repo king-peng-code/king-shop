@@ -1,5 +1,5 @@
 import React from 'react';
-import {Pressable, ScrollView, StyleSheet, Text} from 'react-native';
+import {Pressable, ScrollView, StyleSheet, Text, View} from 'react-native';
 
 export type OrderStatusTabKey =
   | 'all'
@@ -24,37 +24,42 @@ export default function OrderStatusTabs({
   onSelect,
 }: OrderStatusTabsProps) {
   return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.container}>
-      {TABS.map(tab => {
-        const isSelected = tab.key === selectedTab;
-        return (
-          <Pressable
-            key={tab.key}
-            style={[styles.tab, isSelected && styles.tabSelected]}
-            onPress={() => onSelect(tab.key)}>
-            <Text
-              style={[styles.tabText, isSelected && styles.tabTextSelected]}>
-              {tab.label}
-            </Text>
-          </Pressable>
-        );
-      })}
-    </ScrollView>
+    <View style={styles.wrapper}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.container}>
+        {TABS.map(tab => {
+          const isSelected = tab.key === selectedTab;
+          return (
+            <Pressable
+              key={tab.key}
+              style={[styles.tab, isSelected && styles.tabSelected]}
+              onPress={() => onSelect(tab.key)}>
+              <Text
+                style={[styles.tabText, isSelected && styles.tabTextSelected]}>
+                {tab.label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: 8,
+  wrapper: {
+    height: 40,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: '#e8e8e8',
   },
+  container: {
+    paddingHorizontal: 8,
+  },
   tab: {
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 8,
     borderBottomWidth: 2,
     borderBottomColor: 'transparent',
   },

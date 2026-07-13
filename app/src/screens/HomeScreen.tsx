@@ -7,17 +7,19 @@ import {
   Text,
   View,
 } from 'react-native';
-import {useNavigation} from '@react-navigation/native';
+import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {fetchCategories, fetchProducts} from '../api/catalog';
 import {ApiError} from '../api/client';
-import CategoryTabs from '../components/CategoryTabs';
+import CategorySidebar from '../components/CategorySidebar';
 import EmptyState from '../components/EmptyState';
 import LoadingView from '../components/LoadingView';
 import ProductListItem from '../components/ProductListItem';
 import {useAuth} from '../context/AuthContext';
 import type {ShopStackParamList} from '../navigation/types';
 import type {Category, Product} from '../types/api';
+
+const SIDEBAR_WIDTH = 88;
 
 export default function HomeScreen() {
   const navigation =
@@ -40,13 +42,24 @@ export default function HomeScreen() {
   const productsLengthRef = useRef(0);
   const loadingMoreRef = useRef(false);
   const refreshingRef = useRef(false);
+  const hasFocusedRef = useRef(false);
+  const isMountedRef = useRef(true);
 
   useEffect(() => {
     productsLengthRef.current = products.length;
   }, [products.length]);
 
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
   const handleApiError = useCallback(
     async (e: unknown) => {
+      if (!isMountedRef.current) {
+        return;
+      }
       if (e instanceof ApiError && e.code === 40301) {
         await refreshUser();
         return;
@@ -65,7 +78,9 @@ export default function HomeScreen() {
   const loadCategories = useCallback(async () => {
     try {
       const data = await fetchCategories();
-      setCategories(data);
+      if (isMountedRef.current) {
+        setCategories(data);
+      }
     } catch (e) {
       await handleApiError(e);
     }
@@ -103,6 +118,10 @@ export default function HomeScreen() {
           perPage: 20,
         });
 
+        if (!isMountedRef.current) {
+          return;
+        }
+
         setProducts(prev =>
           reset ? result.items : [...prev, ...result.items],
         );
@@ -110,8 +129,13 @@ export default function HomeScreen() {
         totalRef.current = result.meta.total;
         setTotal(result.meta.total);
       } catch (e) {
-        await handleApiError(e);
+        if (isMountedRef.current) {
+          await handleApiError(e);
+        }
       } finally {
+        if (!isMountedRef.current) {
+          return;
+        }
         if (reset) {
           refreshingRef.current = false;
           setIsRefreshing(false);
@@ -139,11 +163,26 @@ export default function HomeScreen() {
     void loadProducts(true, selectedCategoryId);
   }, [selectedCategoryId, loadProducts]);
 
+  useFocusEffect(
+    useCallback(() => {
+      if (!hasFocusedRef.current) {
+        hasFocusedRef.current = true;
+        return;
+      }
+      const timer = setTimeout(() => {
+        void loadCategories();
+        void loadProducts(true, selectedCategoryId);
+      }, 350);
+      return () => clearTimeout(timer);
+    }, [loadCategories, loadProducts, selectedCategoryId]),
+  );
+
   const handleCategorySelect = (id: number | null) => {
     setSelectedCategoryId(id);
   };
 
   const handleRefresh = () => {
+    void loadCategories();
     void loadProducts(true, selectedCategoryId);
   };
 
@@ -157,58 +196,69 @@ export default function HomeScreen() {
     navigation.navigate('ProductDetail', {productId});
   };
 
-  if (isInitialLoading && products.length === 0) {
-    return (
-      <View style={styles.container}>
-        <CategoryTabs
+  return (
+    <View style={styles.container}>
+      <View style={styles.sidebar}>
+        <CategorySidebar
           categories={categories}
           selectedId={selectedCategoryId}
           onSelect={handleCategorySelect}
         />
-        <LoadingView />
       </View>
-    );
-  }
-
-  return (
-    <View style={styles.container}>
-      <CategoryTabs
-        categories={categories}
-        selectedId={selectedCategoryId}
-        onSelect={handleCategorySelect}
-      />
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-      <FlatList
-        data={products}
-        keyExtractor={item => String(item.id)}
-        renderItem={({item}) => (
-          <ProductListItem
-            product={item}
-            onPress={() => handleProductPress(item.id)}
+      <View style={styles.divider} />
+      <View style={styles.main}>
+        {error ? <Text style={styles.error}>{error}</Text> : null}
+        {isInitialLoading && products.length === 0 ? (
+          <LoadingView />
+        ) : products.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <EmptyState message="暂无商品" />
+          </View>
+        ) : (
+          <FlatList
+            data={products}
+            keyExtractor={item => String(item.id)}
+            renderItem={({item}) => (
+              <ProductListItem
+                product={item}
+                onPress={() => handleProductPress(item.id)}
+              />
+            )}
+            contentContainerStyle={styles.listContent}
+            refreshControl={
+              <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
+            }
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.3}
+            ListFooterComponent={
+              isLoadingMore ? (
+                <View style={styles.footer}>
+                  <ActivityIndicator />
+                </View>
+              ) : null
+            }
           />
         )}
-        refreshControl={
-          <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
-        }
-        onEndReached={handleLoadMore}
-        onEndReachedThreshold={0.3}
-        ListEmptyComponent={
-          !isRefreshing ? <EmptyState message="暂无商品" /> : null
-        }
-        ListFooterComponent={
-          isLoadingMore ? (
-            <View style={styles.footer}>
-              <ActivityIndicator />
-            </View>
-          ) : null
-        }
-      />
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+  },
+  sidebar: {
+    width: SIDEBAR_WIDTH,
+    backgroundColor: '#fafafa',
+  },
+  divider: {
+    width: StyleSheet.hairlineWidth,
+    backgroundColor: '#e0e0e0',
+  },
+  main: {
     flex: 1,
     backgroundColor: '#fff',
   },
@@ -220,6 +270,15 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingVertical: 16,
+    alignItems: 'center',
+  },
+  listContent: {
+    flexGrow: 1,
+    paddingTop: 8,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
   },
 });

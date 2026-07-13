@@ -2,6 +2,16 @@ export type PaymentMethod = 'self' | 'proxy';
 
 export type PayChannel = 'fake' | 'alipay_sandbox' | 'wechat';
 
+export interface PayChannelOption {
+  value: PayChannel;
+  label: string;
+}
+
+export interface PaymentChannelsResult {
+  self_pay: PayChannelOption[];
+  proxy_pay: PayChannelOption[];
+}
+
 export type OrderStatus = 'pending_payment' | 'paid' | 'cancelled';
 
 export interface OrderItem {
@@ -9,6 +19,7 @@ export interface OrderItem {
   product_id: number;
   product_name: string;
   product_image: string | null;
+  image_url: string | null;
   price: number;
   quantity: number;
   subtotal: number;

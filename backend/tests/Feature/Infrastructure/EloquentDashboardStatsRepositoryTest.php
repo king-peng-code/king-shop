@@ -107,18 +107,27 @@ class EloquentDashboardStatsRepositoryTest extends TestCase
     }
 
     #[Test]
-    public function status_distribution_counts_all_orders(): void
+    public function status_distribution_counts_this_week_orders_only(): void
     {
         $user = UserModel::factory()->create();
+
+        // 本周已支付 x2
         OrderModel::factory()->for($user, 'user')->paid()->count(2)->create();
+        // 本周已取消 x1
         OrderModel::factory()->for($user, 'user')->cancelled()->create();
+        // 上周已支付 x1 — 不计入本周
+        OrderModel::factory()->for($user, 'user')->paid()->create([
+            'created_at' => Carbon::parse('2026-07-05 23:59:00', 'Asia/Shanghai'), // 上周日
+        ]);
 
         $stats = $this->repository->getStats();
         $byStatus = collect($stats['status_distribution'])->keyBy('status');
 
         $this->assertSame(2, $byStatus['paid']['count']);
         $this->assertSame(1, $byStatus['cancelled']['count']);
+        $this->assertArrayNotHasKey('pending_payment', $byStatus->toArray());
         $this->assertSame('已支付', $byStatus['paid']['label']);
+        $this->assertSame('已取消', $byStatus['cancelled']['label']);
     }
 
     #[Test]

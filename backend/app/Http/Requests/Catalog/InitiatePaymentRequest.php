@@ -18,8 +18,10 @@ class InitiatePaymentRequest extends FormRequest
      */
     public function rules(): array
     {
+        $policy = app(PaymentChannelPolicy::class);
+
         return [
-            'channel' => ['nullable', Rule::in(PaymentChannelPolicy::selfPayChannels())],
+            'channel' => ['nullable', Rule::in($policy->selfPayChannels())],
         ];
     }
 }

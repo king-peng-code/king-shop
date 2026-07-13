@@ -1,4 +1,5 @@
 import React from 'react';
+import {StyleSheet} from 'react-native';
 import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import HomeScreen from '../screens/HomeScreen';
@@ -96,7 +97,15 @@ function ProfileNavigator() {
 
 export default function MainTabNavigator() {
   return (
-    <Tab.Navigator screenOptions={{headerShown: false}}>
+    <Tab.Navigator
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveTintColor: '#007AFF',
+        tabBarInactiveTintColor: '#8e8e93',
+        tabBarLabelStyle: styles.tabLabel,
+        tabBarIconStyle: {display: 'none'},
+        tabBarIcon: () => null,
+      }}>
       <Tab.Screen
         name="ShopTab"
         component={ShopNavigator}
@@ -115,3 +124,12 @@ export default function MainTabNavigator() {
     </Tab.Navigator>
   );
 }
+
+const styles = StyleSheet.create({
+  tabLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    paddingTop: 2,
+    paddingBottom: 10,
+  },
+});

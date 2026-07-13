@@ -8,10 +8,55 @@ use App\Domain\Payment\ValueObjects\PaymentChannel;
 
 class PaymentChannelPolicy
 {
+    public function __construct(
+        private readonly PaymentConfigReader $config,
+    ) {}
+
     /**
      * @return list<string>
      */
-    public static function selfPayChannels(): array
+    public function selfPayChannels(): array
+    {
+        $channels = [];
+
+        if ($this->config->isAvailable(PaymentChannel::ALIPAY_SANDBOX)) {
+            $channels[] = PaymentChannel::ALIPAY_SANDBOX;
+        }
+
+        if ($this->config->isAvailable(PaymentChannel::WECHAT)) {
+            $channels[] = PaymentChannel::WECHAT;
+        }
+
+        if ($this->fakeAllowed()) {
+            $channels[] = PaymentChannel::FAKE;
+        }
+
+        return $channels;
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function proxyPayChannels(): array
+    {
+        $channels = [];
+
+        if ($this->config->isAvailable(PaymentChannel::WECHAT)) {
+            $channels[] = PaymentChannel::WECHAT;
+        }
+
+        if ($this->fakeAllowed()) {
+            $channels[] = PaymentChannel::FAKE;
+        }
+
+        return $channels;
+    }
+
+    /**
+     * @deprecated Use instance method selfPayChannels() instead
+     * @return list<string>
+     */
+    public static function selfPayChannelsStatic(): array
     {
         $channels = [PaymentChannel::ALIPAY_SANDBOX, PaymentChannel::WECHAT];
 
@@ -23,9 +68,10 @@ class PaymentChannelPolicy
     }
 
     /**
+     * @deprecated Use instance method proxyPayChannels() instead
      * @return list<string>
      */
-    public static function proxyPayChannels(): array
+    public static function proxyPayChannelsStatic(): array
     {
         $channels = [PaymentChannel::WECHAT];
 

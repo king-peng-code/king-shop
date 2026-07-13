@@ -14,19 +14,23 @@ class GetSystemConfigsHandler
         private readonly SystemConfigListCache $cache,
     ) {}
 
-    public function handle(): array
+    public function handle(bool $exposeSensitive = false): array
     {
-        return $this->cache->getOrSet(function (): array {
-            return $this->buildGrouped();
-        });
+        if ($exposeSensitive) {
+            return $this->buildGrouped(exposeSensitive: true);
+        }
+
+        return $this->cache->getOrSet(fn (): array => $this->buildGrouped());
     }
 
-    private function buildGrouped(): array
+    private function buildGrouped(bool $exposeSensitive = false): array
     {
         $grouped = [];
 
         foreach ($this->repository->all() as $config) {
-            $value = $config->displayValue();
+            $value = $exposeSensitive
+                ? $config->value
+                : $config->displayValue();
 
             $grouped[$config->group][] = [
                 'key' => $config->key,

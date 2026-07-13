@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -22,7 +22,7 @@ import type {RouteProp} from '@react-navigation/native';
 import {cancelOrder, getOrder} from '../api/orders';
 import {ApiError} from '../api/client';
 import LoadingView from '../components/LoadingView';
-import PaymentChannelPicker from '../components/PaymentChannelPicker';
+import PaymentChannelPicker, {type ChannelOption} from '../components/PaymentChannelPicker';
 import {useAuth} from '../context/AuthContext';
 import type {MainTabParamList, OrdersStackParamList} from '../navigation/types';
 import type {Order, PayChannel} from '../types/order';
@@ -65,12 +65,21 @@ export default function OrderDetailScreen() {
   const [error, setError] = useState<string | null>(null);
   const [isActionLoading, setIsActionLoading] = useState(false);
   const [showPayModal, setShowPayModal] = useState(false);
-  const [channel, setChannel] = useState<PayChannel>(
-    __DEV__ ? 'fake' : 'alipay_sandbox',
-  );
+  const [channel, setChannel] = useState<PayChannel>('alipay_sandbox');
+  const [channelOptions, setChannelOptions] = useState<ChannelOption[]>([]);
 
   const hasFocusedRef = useRef(false);
-  const channelOptions = useMemo(() => selfPayChannels(), []);
+
+  // Load available payment channels on mount
+  useEffect(() => {
+    void (async () => {
+      const channels = await selfPayChannels();
+      setChannelOptions(channels);
+      if (channels.length > 0) {
+        setChannel(channels[0].value);
+      }
+    })();
+  }, []);
 
   const handleApiError = useCallback(
     async (e: unknown) => {
@@ -150,162 +159,175 @@ export default function OrderDetailScreen() {
     });
   };
 
-  if (isLoading) {
-    return <LoadingView />;
-  }
-
-  if (error && !order) {
-    return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>{error}</Text>
-      </View>
-    );
-  }
-
-  if (!order) {
-    return (
-      <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>订单不存在</Text>
-      </View>
-    );
-  }
-
-  const statusColor = getOrderStatusColor(order.status);
-  const statusLabel = getOrderStatusLabel(order.status, order.cancel_reason);
-  const showPendingActions = order.status === 'pending_payment';
+  const statusColor = order ? getOrderStatusColor(order.status) : '#999';
+  const statusLabel = order
+    ? getOrderStatusLabel(order.status, order.cancel_reason)
+    : '';
+  const showPendingActions = order?.status === 'pending_payment';
   const showSelfPayButton =
-    showPendingActions && order.payment_method === 'self';
+    showPendingActions && order?.payment_method === 'self';
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.headerCard}>
-          <Text style={styles.orderNo}>{order.order_no}</Text>
-          <View style={[styles.statusBadge, {backgroundColor: statusColor}]}>
-            <Text style={styles.statusText}>{statusLabel}</Text>
-          </View>
+      {isLoading ? (
+        <LoadingView />
+      ) : !order && error ? (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error}</Text>
         </View>
+      ) : !order ? (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>订单不存在</Text>
+        </View>
+      ) : (
+        <>
+          <ScrollView contentContainerStyle={styles.content}>
+            <View style={styles.headerCard}>
+              <Text style={styles.orderNo}>{order.order_no}</Text>
+              <View style={[styles.statusBadge, {backgroundColor: statusColor}]}>
+                <Text style={styles.statusText}>{statusLabel}</Text>
+              </View>
+            </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>商品明细</Text>
-          {(order.items ?? []).map(item => (
-            <View key={item.id} style={styles.itemRow}>
-              {item.product_image ? (
-                <Image
-                  source={{uri: item.product_image}}
-                  style={styles.itemImage}
-                />
-              ) : (
-                <View style={[styles.itemImage, styles.placeholder]} />
-              )}
-              <View style={styles.itemInfo}>
-                <Text style={styles.itemName}>{item.product_name}</Text>
-                <Text style={styles.itemMeta}>
-                  {formatPrice(item.price)} × {item.quantity}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>商品明细</Text>
+              {(order.items ?? []).map(item => (
+                <View key={item.id} style={styles.itemRow}>
+                  {item.image_url ?? item.product_image ? (
+                    <Image
+                      source={{uri: item.image_url ?? item.product_image ?? undefined}}
+                      style={styles.itemImage}
+                    />
+                  ) : (
+                    <View style={[styles.itemImage, styles.placeholder]} />
+                  )}
+                  <View style={styles.itemInfo}>
+                    <Text style={styles.itemName}>{item.product_name}</Text>
+                    <Text style={styles.itemMeta}>
+                      {formatPrice(item.price)} × {item.quantity}
+                    </Text>
+                  </View>
+                  <Text style={styles.itemSubtotal}>
+                    {formatPrice(item.subtotal)}
+                  </Text>
+                </View>
+              ))}
+              <View style={styles.totalRow}>
+                <Text style={styles.totalLabel}>合计</Text>
+                <Text style={styles.totalAmount}>
+                  {formatPrice(order.total_amount)}
                 </Text>
               </View>
-              <Text style={styles.itemSubtotal}>
-                {formatPrice(item.subtotal)}
-              </Text>
             </View>
-          ))}
-          <View style={styles.totalRow}>
-            <Text style={styles.totalLabel}>合计</Text>
-            <Text style={styles.totalAmount}>
-              {formatPrice(order.total_amount)}
-            </Text>
-          </View>
-        </View>
 
-        {order.remark ? (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>备注</Text>
-            <Text style={styles.remarkText}>{order.remark}</Text>
-          </View>
-        ) : null}
+            {order.remark ? (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>备注</Text>
+                <Text style={styles.remarkText}>{order.remark}</Text>
+              </View>
+            ) : null}
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>订单信息</Text>
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>支付方式</Text>
-            <Text style={styles.infoValue}>
-              {PAYMENT_METHOD_LABELS[order.payment_method]}
-            </Text>
-          </View>
-          {order.paid_by_payer ? (
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>代付人</Text>
-              <Text style={styles.infoValue}>{order.paid_by_payer.name}</Text>
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>订单信息</Text>
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>支付方式</Text>
+                <Text style={styles.infoValue}>
+                  {PAYMENT_METHOD_LABELS[order.payment_method]}
+                </Text>
+              </View>
+              {order.paid_by_payer ? (
+                <View style={styles.infoRow}>
+                  <Text style={styles.infoLabel}>代付人</Text>
+                  <Text style={styles.infoValue}>{order.paid_by_payer.name}</Text>
+                </View>
+              ) : null}
+              <View style={styles.infoRow}>
+                <Text style={styles.infoLabel}>下单时间</Text>
+                <Text style={styles.infoValue}>
+                  {formatOrderTime(order.created_at)}
+                </Text>
+              </View>
+              {order.paid_at ? (
+                <View style={styles.infoRow}>
+                  <Text style={styles.infoLabel}>支付时间</Text>
+                  <Text style={styles.infoValue}>
+                    {formatOrderTime(order.paid_at)}
+                  </Text>
+                </View>
+              ) : null}
             </View>
-          ) : null}
-          <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>下单时间</Text>
-            <Text style={styles.infoValue}>
-              {formatOrderTime(order.created_at)}
-            </Text>
-          </View>
-          {order.paid_at ? (
-            <View style={styles.infoRow}>
-              <Text style={styles.infoLabel}>支付时间</Text>
-              <Text style={styles.infoValue}>
-                {formatOrderTime(order.paid_at)}
-              </Text>
-            </View>
-          ) : null}
-        </View>
 
-        {error ? <Text style={styles.inlineError}>{error}</Text> : null}
-      </ScrollView>
+            {error ? <Text style={styles.inlineError}>{error}</Text> : null}
+          </ScrollView>
 
-      {showPendingActions ? (
-        <View style={styles.footer}>
-          {showSelfPayButton ? (
-            <Pressable
-              style={[styles.primaryButton, isActionLoading && styles.disabled]}
-              onPress={() => setShowPayModal(true)}
-              disabled={isActionLoading}>
-              {isActionLoading ? (
-                <ActivityIndicator color="#fff" />
+          {showPendingActions ? (
+            <View style={styles.footer}>
+              {showSelfPayButton ? (
+                <Pressable
+                  style={[styles.primaryButton, isActionLoading && styles.disabled]}
+                  onPress={() => setShowPayModal(true)}
+                  disabled={isActionLoading}>
+                  {isActionLoading ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={styles.primaryButtonText}>去支付</Text>
+                  )}
+                </Pressable>
               ) : (
-                <Text style={styles.primaryButtonText}>去支付</Text>
+                <Pressable
+                  style={styles.primaryButton}
+                  onPress={() =>
+                    navigation.getParent()?.navigate('ShopTab', {
+                      screen: 'ProxyShare',
+                      params: {orderId: order.id},
+                    })
+                  }>
+                  <Text style={styles.primaryButtonText}>分享代付链接</Text>
+                </Pressable>
               )}
-            </Pressable>
-          ) : (
-            <Text style={styles.proxyHint}>
-              代付订单请通过代付链接完成支付
-            </Text>
-          )}
-          <Pressable
-            style={[styles.secondaryButton, isActionLoading && styles.disabled]}
-            onPress={handleCancel}
-            disabled={isActionLoading}>
-            <Text style={styles.secondaryButtonText}>取消订单</Text>
-          </Pressable>
-        </View>
-      ) : null}
-
-      <Modal visible={showPayModal} transparent animationType="slide">
-        <View style={styles.modalBackdrop}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>选择支付渠道</Text>
-            <PaymentChannelPicker
-              options={channelOptions}
-              value={channel}
-              onChange={setChannel}
-            />
-            <View style={styles.modalActions}>
               <Pressable
-                style={styles.modalCancel}
-                onPress={() => setShowPayModal(false)}>
-                <Text style={styles.modalCancelText}>取消</Text>
-              </Pressable>
-              <Pressable style={styles.modalConfirm} onPress={handlePayConfirm}>
-                <Text style={styles.modalConfirmText}>确认支付</Text>
+                style={[styles.secondaryButton, isActionLoading && styles.disabled]}
+                onPress={handleCancel}
+                disabled={isActionLoading}>
+                <Text style={styles.secondaryButtonText}>取消订单</Text>
               </Pressable>
             </View>
-          </View>
-        </View>
-      </Modal>
+          ) : null}
+
+          <Modal visible={showPayModal} transparent animationType="slide">
+            <View style={styles.modalBackdrop}>
+              <View style={styles.modalCard}>
+                <Text style={styles.modalTitle}>选择支付渠道</Text>
+                {channelOptions.length === 0 ? (
+                  <Text style={styles.noChannelText}>暂无可用的支付方式</Text>
+                ) : (
+                  <PaymentChannelPicker
+                    options={channelOptions}
+                    value={channel}
+                    onChange={setChannel}
+                  />
+                )}
+                <View style={styles.modalActions}>
+                  <Pressable
+                    style={styles.modalCancel}
+                    onPress={() => setShowPayModal(false)}>
+                    <Text style={styles.modalCancelText}>取消</Text>
+                  </Pressable>
+                  <Pressable
+                    style={[
+                      styles.modalConfirm,
+                      channelOptions.length === 0 && styles.disabled,
+                    ]}
+                    disabled={channelOptions.length === 0}
+                    onPress={handlePayConfirm}>
+                    <Text style={styles.modalConfirmText}>确认支付</Text>
+                  </Pressable>
+                </View>
+              </View>
+            </View>
+          </Modal>
+        </>
+      )}
     </View>
   );
 }
@@ -454,13 +476,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ddd',
   },
-  proxyHint: {
-    fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
-    lineHeight: 20,
-    paddingVertical: 8,
-  },
   primaryButtonText: {
     color: '#fff',
     fontSize: 16,
@@ -503,6 +518,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#333',
     marginBottom: 16,
+  },
+  noChannelText: {
+    fontSize: 14,
+    color: '#999',
+    textAlign: 'center',
+    paddingVertical: 16,
   },
   modalActions: {
     flexDirection: 'row',

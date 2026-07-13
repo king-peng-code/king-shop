@@ -12,9 +12,13 @@ use Illuminate\Http\JsonResponse;
 
 class SystemConfigController extends Controller
 {
-    public function index(GetSystemConfigsHandler $handler): JsonResponse
-    {
-        return ApiResponse::success($handler->handle());
+    public function index(
+        GetSystemConfigsHandler $handler,
+        \Illuminate\Http\Request $request,
+    ): JsonResponse {
+        $isSuperAdmin = ($request->user()->role ?? '') === 'super_admin';
+
+        return ApiResponse::success($handler->handle(exposeSensitive: $isSuperAdmin));
     }
 
     public function update(

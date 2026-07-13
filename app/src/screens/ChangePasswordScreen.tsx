@@ -26,7 +26,7 @@ function changePasswordErrorMessage(error: unknown): string {
 
 export default function ChangePasswordScreen() {
   const navigation = useNavigation();
-  const {changePassword} = useAuth();
+  const {changePassword, mustChangePassword} = useAuth();
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -70,11 +70,13 @@ export default function ChangePasswordScreen() {
       <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-        <View style={styles.notice}>
-          <Text style={styles.noticeText}>
-            首次登录须修改密码后方可使用系统
-          </Text>
-        </View>
+        {mustChangePassword && (
+          <View style={styles.notice}>
+            <Text style={styles.noticeText}>
+              首次登录须修改密码后方可使用系统
+            </Text>
+          </View>
+        )}
 
         <View style={styles.form}>
           <Text style={styles.label}>当前密码</Text>

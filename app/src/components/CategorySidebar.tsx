@@ -7,17 +7,17 @@ import {
 } from 'react-native';
 import type {Category} from '../types/api';
 
-interface CategoryTabsProps {
+interface CategorySidebarProps {
   categories: Category[];
   selectedId: number | null;
   onSelect: (id: number | null) => void;
 }
 
-export default function CategoryTabs({
+export default function CategorySidebar({
   categories,
   selectedId,
   onSelect,
-}: CategoryTabsProps) {
+}: CategorySidebarProps) {
   const tabs: {id: number | null; name: string}[] = [
     {id: null, name: '全部'},
     ...categories.map(c => ({id: c.id, name: c.name})),
@@ -25,8 +25,7 @@ export default function CategoryTabs({
 
   return (
     <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
+      showsVerticalScrollIndicator={false}
       contentContainerStyle={styles.container}>
       {tabs.map(tab => {
         const isSelected = tab.id === selectedId;
@@ -47,25 +46,26 @@ export default function CategoryTabs({
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    gap: 8,
+    paddingVertical: 4,
   },
   tab: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 16,
-    backgroundColor: '#f0f0f0',
+    paddingHorizontal: 12,
+    paddingVertical: 14,
+    borderLeftWidth: 3,
+    borderLeftColor: 'transparent',
+    backgroundColor: '#fafafa',
   },
   tabSelected: {
-    backgroundColor: '#1677ff',
+    backgroundColor: '#e6f0ff',
+    borderLeftColor: '#1677ff',
   },
   tabText: {
     fontSize: 14,
     color: '#333',
+    textAlign: 'center',
   },
   tabTextSelected: {
-    color: '#fff',
+    color: '#1677ff',
     fontWeight: '600',
   },
 });

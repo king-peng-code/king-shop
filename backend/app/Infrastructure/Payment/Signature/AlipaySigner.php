@@ -12,7 +12,7 @@ class AlipaySigner
         ksort($params);
         $pairs = [];
         foreach ($params as $key => $value) {
-            if ($value === '' || $key === 'sign' || $key === 'sign_type') {
+            if ($value === '' || $key === 'sign') {
                 continue;
             }
             $pairs[] = $key.'='.$value;
@@ -65,6 +65,8 @@ class AlipaySigner
 
         $wrapped = chunk_split(str_replace(["\r", "\n", ' '], '', $key), 64, "\n");
 
-        return "-----BEGIN {$type} KEY-----\n{$wrapped}-----END {$type} KEY-----";
+        $header = $type === 'PRIVATE' ? 'RSA PRIVATE KEY' : 'PUBLIC KEY';
+
+        return "-----BEGIN {$header}-----\n{$wrapped}-----END {$header}-----";
     }
 }

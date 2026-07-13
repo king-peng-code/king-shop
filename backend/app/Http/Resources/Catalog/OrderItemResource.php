@@ -2,7 +2,7 @@
 
 namespace App\Http\Resources\Catalog;
 
-use App\Domain\Order\Entities\Order;
+use App\Application\Catalog\Services\ProductImageResolver;
 use App\Domain\Order\Entities\OrderItem;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -14,12 +14,14 @@ class OrderItemResource extends JsonResource
     {
         /** @var OrderItem $item */
         $item = $this->resource;
+        $resolver = app(ProductImageResolver::class);
 
         return [
             'id' => $item->id,
             'product_id' => $item->productId,
             'product_name' => $item->productName,
             'product_image' => $item->productImage,
+            'image_url' => $resolver->resolveUrl($item->productImage, null),
             'price' => $item->price,
             'quantity' => $item->quantity,
             'subtotal' => $item->subtotal,

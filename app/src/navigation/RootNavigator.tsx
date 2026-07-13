@@ -1,5 +1,5 @@
 import React from 'react';
-import {ActivityIndicator, View} from 'react-native';
+import {ActivityIndicator, StyleSheet, View} from 'react-native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import {useAuth} from '../context/AuthContext';
 import LoginScreen from '../screens/LoginScreen';
@@ -9,6 +9,15 @@ import type {
   AuthStackParamList,
   ChangePasswordStackParamList,
 } from './types';
+
+type RootStackParamList = {
+  Loading: undefined;
+  Auth: undefined;
+  ChangePassword: undefined;
+  Main: undefined;
+};
+
+const RootStack = createNativeStackNavigator<RootStackParamList>();
 
 const AuthStack = createNativeStackNavigator<AuthStackParamList>();
 const ChangePasswordStack =
@@ -34,24 +43,36 @@ function ChangePasswordNavigator() {
   );
 }
 
+function LoadingScreen() {
+  return (
+    <View style={styles.loading}>
+      <ActivityIndicator size="large" />
+    </View>
+  );
+}
+
 export default function RootNavigator() {
   const {isLoading, isAuthenticated, mustChangePassword} = useAuth();
 
-  if (isLoading) {
-    return (
-      <View style={{flex: 1, justifyContent: 'center', alignItems: 'center'}}>
-        <ActivityIndicator size="large" />
-      </View>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return <AuthNavigator />;
-  }
-
-  if (mustChangePassword) {
-    return <ChangePasswordNavigator />;
-  }
-
-  return <MainTabNavigator />;
+  return (
+    <RootStack.Navigator screenOptions={{headerShown: false}}>
+      {isLoading ? (
+        <RootStack.Screen name="Loading" component={LoadingScreen} />
+      ) : !isAuthenticated ? (
+        <RootStack.Screen name="Auth" component={AuthNavigator} />
+      ) : mustChangePassword ? (
+        <RootStack.Screen name="ChangePassword" component={ChangePasswordNavigator} />
+      ) : (
+        <RootStack.Screen name="Main" component={MainTabNavigator} />
+      )}
+    </RootStack.Navigator>
+  );
 }
+
+const styles = StyleSheet.create({
+  loading: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+});

@@ -1,3 +1,5 @@
+import {apiRequest} from './client';
+import {buildQueryString} from '../utils/queryString';
 import {API_BASE_URL} from '../config/api';
 import type {
   CreateOrderPayload,
@@ -5,6 +7,7 @@ import type {
   OrderStatus,
   PayChannel,
   PayOrderResult,
+  PaymentChannelsResult,
   ProxyPayLinkResult,
 } from '../types/order';
 
@@ -18,7 +21,6 @@ export interface PaginatedOrders {
   items: Order[];
   meta: {total: number; page: number; per_page: number};
 }
-import {apiRequest} from './client';
 
 export async function createOrder(payload: CreateOrderPayload): Promise<Order> {
   return apiRequest<Order>('/orders', {
@@ -34,11 +36,11 @@ export async function getOrder(orderId: number): Promise<Order> {
 export async function listOrders(
   params: ListOrdersParams = {},
 ): Promise<PaginatedOrders> {
-  const search = new URLSearchParams();
-  if (params.status) search.set('status', params.status);
-  if (params.page) search.set('page', String(params.page));
-  if (params.per_page) search.set('per_page', String(params.per_page));
-  const qs = search.toString();
+  const qs = buildQueryString({
+    status: params.status,
+    page: params.page,
+    per_page: params.per_page,
+  });
   return apiRequest<PaginatedOrders>(`/orders${qs ? `?${qs}` : ''}`);
 }
 
@@ -54,6 +56,10 @@ export async function payOrder(
     method: 'POST',
     body: JSON.stringify({channel}),
   });
+}
+
+export async function getPaymentChannels(): Promise<PaymentChannelsResult> {
+  return apiRequest<PaymentChannelsResult>('/payment-channels');
 }
 
 export async function generateProxyPayLink(

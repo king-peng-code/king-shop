@@ -17,10 +17,6 @@ use Illuminate\Support\Str;
 
 class WechatPayGateway implements PaymentGatewayInterface
 {
-    private const UNIFIED_ORDER_URL = 'https://api.mch.weixin.qq.com/pay/unifiedorder';
-
-    private const ORDER_QUERY_URL = 'https://api.mch.weixin.qq.com/pay/orderquery';
-
     public function __construct(
         private readonly PaymentConfigReader $config,
         private readonly WechatSigner $signer,
@@ -58,7 +54,7 @@ class WechatPayGateway implements PaymentGatewayInterface
         $params['sign'] = $this->signer->sign($params, $this->config->get('wechat.api_key'));
 
         $response = Http::withBody($this->toXml($params), 'application/xml')
-            ->post(self::UNIFIED_ORDER_URL);
+            ->post($this->config->wechatUnifiedOrderUrl());
 
         $result = $this->parseXml($response->body());
         if (($result['return_code'] ?? '') !== 'SUCCESS' || ($result['result_code'] ?? '') !== 'SUCCESS') {
@@ -121,7 +117,7 @@ class WechatPayGateway implements PaymentGatewayInterface
         $params['sign'] = $this->signer->sign($params, $this->config->get('wechat.api_key'));
 
         $response = Http::withBody($this->toXml($params), 'application/xml')
-            ->post(self::ORDER_QUERY_URL);
+            ->post($this->config->wechatOrderQueryUrl());
 
         $result = $this->parseXml($response->body());
         if (($result['trade_state'] ?? '') === 'SUCCESS') {

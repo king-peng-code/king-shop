@@ -20,6 +20,7 @@ export interface OrderItem {
   product_id: number;
   product_name: string;
   product_image: string | null;
+  image_url: string | null;
   price: number;
   quantity: number;
   subtotal: number;

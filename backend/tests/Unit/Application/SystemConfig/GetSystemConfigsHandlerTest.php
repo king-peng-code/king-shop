@@ -80,4 +80,27 @@ class GetSystemConfigsHandlerTest extends TestCase
         $this->assertSame('https://api.test.com', $item['value']);
         $this->assertFalse($item['is_readonly']);
     }
+
+    #[Test]
+    public function handle_exposes_sensitive_values_when_flag_is_true(): void
+    {
+        $repository = $this->createMock(SystemConfigRepositoryInterface::class);
+        $repository->method('all')->willReturn([
+            new SystemConfig('payment', 'alipay.private_key', 'MIICXAIBAAKBgQC...', true, '支付宝私钥'),
+            new SystemConfig('payment', 'alipay.public_key', 'MIIBIjANBgkqhkiG...', true, '支付宝公钥'),
+        ]);
+
+        $handler = $this->createHandler($repository);
+        $result = $handler->handle(exposeSensitive: true);
+
+        $paymentGroup = collect($result['groups'])->firstWhere('name', 'payment');
+
+        $privateKeyItem = collect($paymentGroup['items'])->firstWhere('key', 'alipay.private_key');
+        $this->assertSame('MIICXAIBAAKBgQC...', $privateKeyItem['value']);
+        $this->assertTrue($privateKeyItem['is_sensitive']);
+
+        $publicKeyItem = collect($paymentGroup['items'])->firstWhere('key', 'alipay.public_key');
+        $this->assertSame('MIIBIjANBgkqhkiG...', $publicKeyItem['value']);
+        $this->assertTrue($publicKeyItem['is_sensitive']);
+    }
 }

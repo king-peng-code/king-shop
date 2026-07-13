@@ -16,8 +16,6 @@ use Illuminate\Support\Facades\Http;
 
 class AlipaySandboxGateway implements PaymentGatewayInterface
 {
-    private const GATEWAY_URL = 'https://openapi-sandbox.dl.alipaydev.com/gateway.do';
-
     public function __construct(
         private readonly PaymentConfigReader $config,
         private readonly AlipaySigner $signer,
@@ -26,6 +24,11 @@ class AlipaySandboxGateway implements PaymentGatewayInterface
     public function channel(): string
     {
         return PaymentChannel::ALIPAY_SANDBOX;
+    }
+
+    private function gatewayUrl(): string
+    {
+        return $this->config->alipayGatewayUrl();
     }
 
     public function createPayment(Payment $payment, Order $order, array $options = []): PaymentCreateResult
@@ -56,7 +59,7 @@ class AlipaySandboxGateway implements PaymentGatewayInterface
             outTradeNo: $payment->outTradeNo,
             payParams: [
                 'channel' => PaymentChannel::ALIPAY_SANDBOX,
-                'pay_url' => self::GATEWAY_URL.'?'.$query,
+                'pay_url' => $this->gatewayUrl().'?'.$query,
             ],
         );
     }
@@ -76,7 +79,7 @@ class AlipaySandboxGateway implements PaymentGatewayInterface
         ];
         $params['sign'] = $this->signer->sign($params, $this->config->get('alipay.private_key'));
 
-        $response = Http::asForm()->post(self::GATEWAY_URL, $params);
+        $response = Http::asForm()->post($this->gatewayUrl(), $params);
         if (! $response->successful()) {
             return PaymentQueryResult::failed();
         }

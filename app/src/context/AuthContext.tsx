@@ -90,9 +90,10 @@ export function AuthProvider({children}: {children: React.ReactNode}) {
   const logout = useCallback(async () => {
     try {
       await authApi.logout();
-    } finally {
-      await clearSession();
+    } catch {
+      // ignore
     }
+    await clearSession();
   }, [clearSession]);
 
   const changePassword = useCallback(

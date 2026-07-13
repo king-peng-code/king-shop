@@ -1,5 +1,5 @@
 // frontend/src/config/configFieldMeta.ts
-export type FieldType = 'input' | 'password' | 'textarea' | 'select' | 'number';
+export type FieldType = 'input' | 'password' | 'textarea' | 'select' | 'number' | 'switch';
 
 export interface FieldMeta {
   type: FieldType;
@@ -10,11 +10,24 @@ export interface FieldMeta {
 }
 
 const META_OVERRIDES: Record<string, FieldMeta> = {
-  'payment.provider': {
+  'payment.alipay.enabled': {
+    type: 'switch',
+  },
+  'payment.alipay.mode': {
     type: 'select',
     options: [
-      { label: '支付宝沙箱', value: 'alipay_sandbox' },
-      { label: '微信支付', value: 'wechat' },
+      { label: '沙箱环境', value: 'sandbox' },
+      { label: '生产环境', value: 'production' },
+    ],
+  },
+  'payment.wechat.enabled': {
+    type: 'switch',
+  },
+  'payment.wechat.mode': {
+    type: 'select',
+    options: [
+      { label: '沙箱环境', value: 'sandbox' },
+      { label: '生产环境', value: 'production' },
     ],
   },
   'storage.driver': {
@@ -57,6 +70,47 @@ export function getFieldMeta(
   return { type: 'input' };
 }
 
+/** Payment sub-groups for visual separation in the UI */
+export const PAYMENT_SUB_GROUPS: Record<string, { label: string; keys: string[] }> = {
+  alipay: {
+    label: '支付宝付款',
+    keys: ['alipay.enabled', 'alipay.mode', 'alipay.app_id', 'alipay.private_key', 'alipay.public_key'],
+  },
+  wechat: {
+    label: '微信付款',
+    keys: ['wechat.enabled', 'wechat.mode', 'wechat.app_id', 'wechat.mch_id', 'wechat.api_key', 'wechat.cert'],
+  },
+};
+
+export function isFieldVisible(
+  group: string,
+  key: string,
+  values: Record<string, string>,
+): boolean {
+  if (group === 'payment') {
+    // Show alipay fields only when alipay is enabled
+    if (key.startsWith('alipay.') && key !== 'alipay.enabled') {
+      return values['payment.alipay.enabled'] === '1';
+    }
+    // Show wechat fields only when wechat is enabled
+    if (key.startsWith('wechat.') && key !== 'wechat.enabled') {
+      return values['payment.wechat.enabled'] === '1';
+    }
+  }
+
+  if (group === 'storage') {
+    const driver = values['storage.driver'] ?? 'local';
+    if (driver === 'local' && OSS_KEYS.has(key)) {
+      return false;
+    }
+    if (driver === 'oss' && LOCAL_KEYS.has(key)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 const WECHAT_KEYS = new Set([
   'wechat.mch_id',
   'wechat.api_key',
@@ -80,34 +134,6 @@ const OSS_KEYS = new Set([
   'oss.secret_key',
 ]);
 
-export function isFieldVisible(
-  group: string,
-  key: string,
-  values: Record<string, string>,
-): boolean {
-  if (group === 'payment') {
-    const provider = values['payment.provider'] ?? 'alipay_sandbox';
-    if (provider === 'alipay_sandbox' && WECHAT_KEYS.has(key)) {
-      return false;
-    }
-    if (provider === 'wechat' && ALIPAY_KEYS.has(key)) {
-      return false;
-    }
-  }
-
-  if (group === 'storage') {
-    const driver = values['storage.driver'] ?? 'local';
-    if (driver === 'local' && OSS_KEYS.has(key)) {
-      return false;
-    }
-    if (driver === 'oss' && LOCAL_KEYS.has(key)) {
-      return false;
-    }
-  }
-
-  return true;
-}
-
 const GROUP_FIELD_ORDER: Record<string, string[]> = {
   order: [
     'auto_cancel_minutes',
@@ -116,10 +142,15 @@ const GROUP_FIELD_ORDER: Record<string, string[]> = {
     'share_copy_text',
   ],
   payment: [
-    'provider',
+    // Alipay group
+    'alipay.enabled',
+    'alipay.mode',
     'alipay.app_id',
     'alipay.private_key',
     'alipay.public_key',
+    // WeChat group
+    'wechat.enabled',
+    'wechat.mode',
     'wechat.app_id',
     'wechat.mch_id',
     'wechat.api_key',
@@ -143,6 +174,12 @@ export function getFieldExtra(group: string, key: string): string | undefined {
   if (group === 'storage' && key === 'oss.public_base_url') {
     return '图片 CDN 或 OSS 绑定的公开访问域名，如 https://cdn.example.com';
   }
+  if (group === 'payment' && key === 'alipay.mode') {
+    return '沙箱: 开发测试环境 / 生产: 线上真实交易';
+  }
+  if (group === 'payment' && key === 'wechat.mode') {
+    return '沙箱: 开发测试环境 / 生产: 线上真实交易';
+  }
   return undefined;
 }
 
@@ -161,4 +198,34 @@ export function sortConfigItems<T extends { key: string }>(
     const rankB = rank.get(b.key) ?? Number.MAX_SAFE_INTEGER;
     return rankA - rankB;
   });
+}
+
+/**
+ * Get sub-groups for payment config items, used for visual separation.
+ * Returns undefined for non-payment groups.
+ */
+export function getPaymentSubGroups(items: { key: string }[]): { label: string; items: { key: string }[] }[] | undefined {
+  if (items.length === 0 || !items[0].key.startsWith('alipay.') && !items[0].key.startsWith('wechat.')) {
+    return undefined;
+  }
+
+  const alipayKeys = new Set(PAYMENT_SUB_GROUPS.alipay.keys);
+  const wechatKeys = new Set(PAYMENT_SUB_GROUPS.wechat.keys);
+
+  const alipayItems = items.filter(item => alipayKeys.has(item.key));
+  const wechatItems = items.filter(item => wechatKeys.has(item.key));
+  const otherItems = items.filter(item => !alipayKeys.has(item.key) && !wechatKeys.has(item.key));
+
+  const groups: { label: string; items: { key: string }[] }[] = [];
+  if (alipayItems.length > 0) {
+    groups.push({ label: PAYMENT_SUB_GROUPS.alipay.label, items: alipayItems });
+  }
+  if (wechatItems.length > 0) {
+    groups.push({ label: PAYMENT_SUB_GROUPS.wechat.label, items: wechatItems });
+  }
+  if (otherItems.length > 0) {
+    groups.push({ label: '其他', items: otherItems });
+  }
+
+  return groups.length > 0 ? groups : undefined;
 }

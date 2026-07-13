@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\ProductController as AdminProductController;
 use App\Http\Controllers\Catalog\CategoryController;
 use App\Http\Controllers\Catalog\OrderController as CatalogOrderController;
 use App\Http\Controllers\Catalog\ProductController;
+use App\Http\Controllers\Catalog\PaymentChannelsController;
 use App\Http\Controllers\Catalog\ProxyPayController;
 use App\Http\Controllers\PaymentNotifyController;
 use App\Http\Controllers\Admin\ExternalUserController;
@@ -53,6 +54,7 @@ Route::middleware(['auth:sanctum', 'password.changed', 'admin'])->prefix('admin'
 });
 
 Route::middleware(['auth:sanctum', 'password.changed'])->group(function (): void {
+    Route::get('/payment-channels', [PaymentChannelsController::class, 'index']);
     Route::get('/categories', [CategoryController::class, 'index']);
     Route::get('/products', [ProductController::class, 'index']);
     Route::get('/products/{product}', [ProductController::class, 'show']);

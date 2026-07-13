@@ -12,6 +12,7 @@ import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import type {RouteProp} from '@react-navigation/native';
 import {generateProxyPayLink, getOrder} from '../api/orders';
 import {ApiError} from '../api/client';
+import {shareToWechat} from '../services/paymentLauncher';
 import LoadingView from '../components/LoadingView';
 import {useAuth} from '../context/AuthContext';
 import type {ShopStackParamList} from '../navigation/types';
@@ -83,8 +84,8 @@ export default function ProxyShareScreen() {
           setOrder(orderData);
           setShareUrl(linkData.url);
           setShareTitle(linkData.share_title);
-          setShareMessage(linkData.share_message);
-          setShareCopyText(linkData.share_copy_text);
+          setShareMessage(linkData.share_message ?? null);
+          setShareCopyText(linkData.share_copy_text ?? null);
           setExpiresAt(linkData.expires_at);
         }
       } catch (e) {
@@ -106,15 +107,23 @@ export default function ProxyShareScreen() {
       return;
     }
 
-    try {
-      const title = shareTitle;
-      const message = shareMessage ?? shareUrl;
+    const shareText = shareMessage
+      ? `${shareMessage}\n\n立即进入\n${shareUrl}`
+      : shareUrl;
 
-      await Share.share({
-        title,
-        message,
-        url: shareUrl,
+    try {
+      const result = await shareToWechat({
+        title: shareTitle,
+        description: shareMessage ?? shareTitle,
+        webpageUrl: shareUrl,
       });
+
+      if (result === 'unavailable') {
+        await Share.share({
+          title: shareTitle,
+          message: shareText,
+        });
+      }
     } catch {
       setError('分享失败，请复制链接手动发送');
     }
@@ -124,8 +133,7 @@ export default function ProxyShareScreen() {
     if (!shareUrl) {
       return;
     }
-    const copyText = shareCopyText ?? shareUrl;
-    Clipboard.setString(copyText);
+    Clipboard.setString(shareUrl);
     setCopyHint('链接已复制');
     setTimeout(() => setCopyHint(null), 2000);
   };

@@ -174,14 +174,14 @@ export default function OrderDetailDrawer({
                   key: 'product',
                   render: (_, record) => (
                     <Space>
-                      {record.product_image && (
+                      {record.image_url || resolveMediaUrl(record.product_image) ? (
                         <Image
-                          src={resolveMediaUrl(record.product_image) ?? undefined}
+                          src={record.image_url ?? resolveMediaUrl(record.product_image) ?? undefined}
                           width={48}
                           height={48}
                           style={{ objectFit: 'cover' }}
                         />
-                      )}
+                      ) : null}
                       <span>{record.product_name}</span>
                     </Space>
                   ),

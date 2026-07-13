@@ -33,7 +33,7 @@ class EloquentDashboardStatsRepository implements DashboardStatsRepositoryInterf
                 'today' => $this->buildSummary($todayStart, $now),
                 'week' => $this->buildSummary($weekStart, $now),
             ],
-            'status_distribution' => $this->buildStatusDistribution(),
+            'status_distribution' => $this->buildStatusDistribution($weekStart, $now),
             'hot_products_by_quantity' => $this->buildHotProductsByQuantity($weekStart, $now),
             'hot_products_by_sales' => $this->buildHotProductsBySales($weekStart, $now),
             'week_daily_sales' => $this->buildWeekDailySales($weekStart),
@@ -64,10 +64,11 @@ class EloquentDashboardStatsRepository implements DashboardStatsRepositoryInterf
     /**
      * @return list<array{status: string, label: string, count: int}>
      */
-    private function buildStatusDistribution(): array
+    private function buildStatusDistribution(Carbon $weekStart, Carbon $now): array
     {
         return OrderModel::query()
             ->selectRaw('status, COUNT(*) as count')
+            ->whereBetween('created_at', [$weekStart, $now])
             ->groupBy('status')
             ->get()
             ->map(fn ($row) => [

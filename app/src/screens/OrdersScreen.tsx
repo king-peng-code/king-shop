@@ -12,7 +12,6 @@ import type {NativeStackNavigationProp} from '@react-navigation/native-stack';
 import {listOrders, type PaginatedOrders} from '../api/orders';
 import {ApiError} from '../api/client';
 import EmptyState from '../components/EmptyState';
-import LoadingView from '../components/LoadingView';
 import OrderListItem from '../components/OrderListItem';
 import OrderStatusTabs, {
   type OrderStatusTabKey,
@@ -151,7 +150,10 @@ export default function OrdersScreen() {
         hasFocusedRef.current = true;
         return;
       }
-      void loadOrders(true, selectedTab);
+      const timer = setTimeout(() => {
+        void loadOrders(true, selectedTab);
+      }, 350);
+      return () => clearTimeout(timer);
     }, [loadOrders, selectedTab]),
   );
 
@@ -173,17 +175,16 @@ export default function OrdersScreen() {
     navigation.navigate('OrderDetail', {orderId});
   };
 
-  if (isInitialLoading && orders.length === 0) {
+  const renderEmpty = () => {
+    if (isInitialLoading) {
+      return null;
+    }
     return (
-      <View style={styles.container}>
-        <OrderStatusTabs
-          selectedTab={selectedTab}
-          onSelect={handleTabSelect}
-        />
-        <LoadingView />
+      <View style={styles.emptyWrap}>
+        <EmptyState message="暂无订单" />
       </View>
     );
-  }
+  };
 
   return (
     <View style={styles.container}>
@@ -198,14 +199,16 @@ export default function OrdersScreen() {
             onPress={() => handleOrderPress(item.id)}
           />
         )}
+        style={styles.list}
+        contentContainerStyle={
+          orders.length === 0 ? styles.contentEmpty : styles.content
+        }
         refreshControl={
           <RefreshControl refreshing={isRefreshing} onRefresh={handleRefresh} />
         }
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.3}
-        ListEmptyComponent={
-          !isRefreshing ? <EmptyState message="暂无订单" /> : null
-        }
+        ListEmptyComponent={renderEmpty}
         ListFooterComponent={
           isLoadingMore ? (
             <View style={styles.footer}>
@@ -213,6 +216,7 @@ export default function OrdersScreen() {
             </View>
           ) : null
         }
+        removeClippedSubviews={false}
       />
     </View>
   );
@@ -223,6 +227,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f5f5f5',
   },
+  list: {
+    flex: 1,
+  },
+  content: {
+    paddingBottom: 8,
+  },
+  contentEmpty: {
+    flexGrow: 1,
+  },
   error: {
     color: '#d32f2f',
     fontSize: 14,
@@ -231,6 +244,11 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingVertical: 16,
+    alignItems: 'center',
+  },
+  emptyWrap: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
   },
 });

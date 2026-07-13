@@ -15,10 +15,9 @@ export default function EmptyState({message}: EmptyStateProps) {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
     alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
+    paddingVertical: 48,
+    paddingHorizontal: 24,
   },
   message: {
     fontSize: 15,

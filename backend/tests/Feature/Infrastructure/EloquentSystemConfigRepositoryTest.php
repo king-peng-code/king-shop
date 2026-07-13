@@ -36,8 +36,8 @@ class EloquentSystemConfigRepositoryTest extends TestCase
 
         $configs = $this->repository->all();
 
-        // 1 from test + 4 from migration (tag_presets, share_title, share_message, share_copy_text)
-        $this->assertCount(5, $configs);
+        // 1 from test + 8 from migrations (share_title, share_message, share_copy_text, tag_presets, alipay.enabled, alipay.mode, wechat.enabled, wechat.mode)
+        $this->assertCount(9, $configs);
         $this->assertInstanceOf(SystemConfig::class, $configs[0]);
         $this->assertSame('内部下午茶', $configs[0]->value);
     }
