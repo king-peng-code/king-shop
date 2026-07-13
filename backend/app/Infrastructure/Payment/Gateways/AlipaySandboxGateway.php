@@ -102,8 +102,13 @@ class AlipaySandboxGateway implements PaymentGatewayInterface
             return NotifyVerifyResult::failure();
         }
 
+        // Non-success trade (TRADE_CLOSED, WAIT_BUYER_PAY, etc.): acknowledge without tradeNo
         if (($params['trade_status'] ?? '') !== 'TRADE_SUCCESS') {
-            return NotifyVerifyResult::failure();
+            return NotifyVerifyResult::success(
+                (string) ($params['out_trade_no'] ?? ''),
+                null,
+                $params,
+            );
         }
 
         return NotifyVerifyResult::success(

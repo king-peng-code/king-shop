@@ -17,7 +17,7 @@ final class NotifyVerifyResult
     /**
      * @param  array<string, mixed>  $rawPayload
      */
-    public static function success(string $outTradeNo, string $tradeNo, array $rawPayload): self
+    public static function success(string $outTradeNo, ?string $tradeNo, array $rawPayload): self
     {
         return new self(true, $outTradeNo, $tradeNo, $rawPayload);
     }

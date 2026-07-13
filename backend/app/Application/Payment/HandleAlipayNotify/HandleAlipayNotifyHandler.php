@@ -32,8 +32,14 @@ class HandleAlipayNotifyHandler
         $gateway = $this->gatewayResolver->resolve($channel);
         $result = $gateway->verifyNotify($request);
 
-        if (! $result->verified || $result->outTradeNo === null || $result->tradeNo === null) {
+        if (! $result->verified) {
             throw new InvalidPaymentSignatureException();
+        }
+
+        // Valid notification but payment not successful (e.g. TRADE_CLOSED):
+        // acknowledge receipt so the platform stops retrying
+        if ($result->outTradeNo === null || $result->tradeNo === null) {
+            return;
         }
 
         $this->confirmPaymentHandler->handle(

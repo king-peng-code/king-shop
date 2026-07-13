@@ -133,4 +133,48 @@ class PaymentApiTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.status', 'paid');
     }
+
+    #[Test]
+    public function fake_alipay_notify_trade_closed_acknowledges_without_paying(): void
+    {
+        $user = UserModel::factory()->create();
+        $order = OrderModel::factory()->for($user, 'user')->create(['status' => 'pending_payment']);
+        $payment = PaymentModel::factory()->for($order, 'order')->create([
+            'channel' => 'fake',
+            'status' => 'pending',
+        ]);
+
+        $this->postJson('/api/v1/payments/notify/alipay', [
+            'trade_status' => 'TRADE_CLOSED',
+            'out_trade_no' => $payment->out_trade_no,
+            'trade_no' => 'FAKE_CLOSED',
+        ])->assertOk()
+            ->assertSee('success');
+
+        // Order and payment should remain unchanged (not paid)
+        $this->assertSame('pending_payment', $order->fresh()->status);
+        $this->assertSame('pending', $payment->fresh()->status);
+    }
+
+    #[Test]
+    public function fake_alipay_notify_invalid_trade_status_acknowledges(): void
+    {
+        $user = UserModel::factory()->create();
+        $order = OrderModel::factory()->for($user, 'user')->create(['status' => 'pending_payment']);
+        $payment = PaymentModel::factory()->for($order, 'order')->create([
+            'channel' => 'fake',
+            'status' => 'pending',
+        ]);
+
+        // An unknown trade_status should also be acknowledged
+        $this->postJson('/api/v1/payments/notify/alipay', [
+            'trade_status' => 'WAIT_BUYER_PAY',
+            'out_trade_no' => $payment->out_trade_no,
+            'trade_no' => 'FAKE_WAIT',
+        ])->assertOk()
+            ->assertSee('success');
+
+        $this->assertSame('pending_payment', $order->fresh()->status);
+        $this->assertSame('pending', $payment->fresh()->status);
+    }
 }

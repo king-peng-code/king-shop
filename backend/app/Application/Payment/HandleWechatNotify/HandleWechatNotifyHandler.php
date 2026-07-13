@@ -33,8 +33,13 @@ class HandleWechatNotifyHandler
         $gateway = $this->gatewayResolver->resolve($channel);
         $result = $gateway->verifyNotify($request);
 
-        if (! $result->verified || $result->outTradeNo === null || $result->tradeNo === null) {
+        if (! $result->verified) {
             throw new InvalidPaymentSignatureException();
+        }
+
+        // Valid notification but payment not successful: acknowledge receipt
+        if ($result->outTradeNo === null || $result->tradeNo === null) {
+            return;
         }
 
         $this->confirmPaymentHandler->handle(

@@ -140,8 +140,13 @@ class WechatPayGateway implements PaymentGatewayInterface
             return NotifyVerifyResult::failure();
         }
 
+        // Non-success trade: acknowledge without tradeNo
         if (($params['return_code'] ?? '') !== 'SUCCESS' || ($params['result_code'] ?? '') !== 'SUCCESS') {
-            return NotifyVerifyResult::failure();
+            return NotifyVerifyResult::success(
+                (string) ($params['out_trade_no'] ?? ''),
+                null,
+                $params,
+            );
         }
 
         return NotifyVerifyResult::success(

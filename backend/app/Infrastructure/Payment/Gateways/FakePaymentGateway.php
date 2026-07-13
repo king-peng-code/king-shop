@@ -49,11 +49,17 @@ class FakePaymentGateway implements PaymentGatewayInterface
     {
         $this->assertNotProduction();
 
+        $outTradeNo = (string) $request->input('out_trade_no');
+
+        // Non-success trade: acknowledge without tradeNo
         if ($request->input('trade_status') !== 'TRADE_SUCCESS') {
-            return NotifyVerifyResult::failure();
+            return NotifyVerifyResult::success(
+                $outTradeNo,
+                null,
+                $request->all(),
+            );
         }
 
-        $outTradeNo = (string) $request->input('out_trade_no');
         $tradeNo = (string) ($request->input('trade_no') ?: 'FAKE_'.$outTradeNo);
 
         return NotifyVerifyResult::success($outTradeNo, $tradeNo, $request->all());
